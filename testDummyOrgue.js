@@ -6,7 +6,7 @@ let or = {
     get state() {
       return or.leds.slice()
     },
-    set state(_s) {//console.log(new Date().getTime()-t0, "set state to ", _s)
+    set state(_s) {console.log(new Date().getTime()-t0, "set state to ", _s)
       or.leds = _s 
     },
     get length() {

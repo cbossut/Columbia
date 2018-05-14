@@ -4,10 +4,6 @@ const i2c = require('i2c-bus')
     , addr = 64 // Hard-soldered on the PCA card (0x40)
     , LED0ON = 6 // ON_L-ON_H-OFF_L-OFF_H
 
-/* Leave aside for now, see later if useful
-bus.writeByteSync(addr, 0, bus.readByteSync(addr, 0)|1<<5)
-Activates AI (autoincrement) to reap or write more than a byte per call */
-
 bus.writeByteSync(addr,0,0b00100001) //out of sleep and autoincrement
 bus.writeByteSync(64,0xFB,0) //Remove all led force on
 

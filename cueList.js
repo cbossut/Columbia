@@ -13,7 +13,8 @@ let cl = {}
 
 cl.content = [Object.assign(Object.create(cue), {state:cue.state.slice()})]
 
-cl.orgue = Object.create(orgue.proto)
+//cl.orgue = Object.create(orgue.proto) //should make copy of arrays to prevent modifying proto
+cl.orgue = orgue.proto
 
 cl.save = function(path) {
   fs.writeFileSync(path, JSON.stringify(this.content))
@@ -57,8 +58,8 @@ cl.play = function(n = 0) {
 cl.go = function() {
 //  console.log(new Date().getTime()-this.t0, this.to, this.nextFrame-this.t0)
 //  debugger;
-  if (this.index == this.content.length) return;
   this.orgue.state = this.to
+  if (this.index == this.content.length) return;
   this.from = this.to
   let time
     , derive = new Date().getTime() - this.nextFrame
