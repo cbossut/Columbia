@@ -15,6 +15,15 @@ cl.content = [Object.assign(Object.create(cue), {state:cue.state.slice()})]
 
 cl.orgue = Object.create(orgue.proto)
 
+cl.save = function(path) {
+  fs.writeFileSync(path, JSON.stringify(this.content))
+}
+
+cl.load = function(path) {
+  let parsed = JSON.parse(fs.readFileSync(path))
+  this.content = parsed.map((v,i,a)=>Object.assign(Object.create(cue), v))
+}
+
 cl.addCue = function(n = this.content.length-1, writeState = true) {
   let oldCue = this.content[n]
     , state = writeState ? this.orgue.state : oldCue.state.slice()
