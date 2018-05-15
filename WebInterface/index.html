@@ -3,11 +3,13 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <script src="/node_modules/socket.io-client/dist/socket.io.js"></script>
   <script>
     let socket = io(window.location.href)
     socket.on('connect', ()=>console.log(socket.id))
   </script>
+  <script src="./socket.io.dev.js"></script>
+  <script src="./svg.js"></script>
+  <script src="./interact.js"></script>
 </head>
 
 <body>
