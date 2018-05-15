@@ -7,6 +7,8 @@ cl.orgue.patch = [
   {pca:0,leds:[15]}
 ]
 
+cl.orgue.init()
+
 cl.load("./testOrgue.json")
 
 cl.print()
