@@ -110,8 +110,15 @@ for (let i = 0 ; i < nSliders ; i++) {
   v.onchange = up
   orgueDiv.appendChild(s)
   orgueDiv.appendChild(v)
-  sliders.push(s)
+  sliders.push({fader:s, number:v})
 }
+
+socket.on('orgueState', s => {
+  sliders.forEach((v,i,a) => {
+    v.fader.value = s[i]
+    v.number.value = s[i]
+  })
+})
 
 function addButton(container, name, action) {
   let bt = document.createElement('button')
