@@ -26,7 +26,7 @@ cl.load = function(path) {
 }
 
 cl.addCue = function(n = this.content.length-1, writeState = true) {
-  let oldCue = this.content[n]
+  let oldCue = this.content[n]|cue
     , state = writeState ? this.orgue.state : oldCue.state.slice()
     , newCue = Object.assign(Object.create(cue), oldCue, {name:oldCue.name+'|',state:state})
   this.content.splice(n+1, 0, newCue)
