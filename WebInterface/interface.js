@@ -39,15 +39,16 @@ let cue = document.createElement('input')
 cue.type = 'number'
 cue.value = 0
 cueListDiv.appendChild(cue)
-addButton(cueListDiv, 'Ajouter', ()=>socket.emit('add', cue.value))
+addButton(cueListDiv, 'Ajouter', ()=>socket.emit('add', cue.value++))
 addButton(cueListDiv, 'Jouer', ()=>socket.emit('play'))
 addButton(cueListDiv, 'Stop', ()=>socket.emit('stop'))
 
 cueListDiv.appendChild(document.createElement('br'))
 
-let cueTab = document.createElement('ol')
+let cueTab = document.createElement('ul')
 cueListDiv.appendChild(cueTab)
 socket.on('cueList', cl => {
+  cue.value = cl.length - 1
   cueTab.innerHTML = ''
   cl.forEach((v,i,a) => {
     let line = document.createElement('li')
