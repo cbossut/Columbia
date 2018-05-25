@@ -5,9 +5,7 @@ let or = {
       return this.levels.slice()
     },
     set state(s) {
-      for (let i = 0 ; i < this.patch.length ; i++) {
-        this.setLevel(i, s[i])
-      } 
+      s.forEach((v,i,a)=>this.setLevel(i,v))
     },
     get minMsInter() {
       return 1000/this.freq
