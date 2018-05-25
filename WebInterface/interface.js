@@ -87,31 +87,40 @@ socket.on('cueList', cl => {
 
 
 
-let nSliders = 16
-  , sliders = []
 
-for (let i = 0 ; i < nSliders ; i++) {
-  orgueDiv.appendChild(document.createElement('br'))
-  orgueDiv.appendChild(document.createTextNode(i))
-  let s = document.createElement('input')
-    , v = document.createElement('input')
-  s.type = 'range'
-  s.min = 0
-  s.max = 4095
-  s.value = 0
-  let up = function() {
-    s.value = this.value
-    v.value = this.value
-    socket.emit('orgue', {led:i, val:this.value})
+let sliders = []
+
+socket.on('patch', patch => {
+  orgueDiv.innerHTML = ''
+  sliders = []
+
+  for (let i = 0 ; i < patch.length ; i++) {
+    orgueDiv.appendChild(document.createElement('br'))
+    orgueDiv.appendChild(document.createTextNode(i))
+    let s = document.createElement('input')
+      , v = document.createElement('input')
+    s.type = 'range'
+    s.min = 0
+    s.max = 4095
+    s.value = 0
+    let up = function() {
+      s.value = this.value
+      v.value = this.value
+      socket.emit('orgue', {led:i, val:this.value})
+    }
+    s.oninput = up
+    v.type = 'number'
+    v.value = 0
+    v.onchange = up
+    orgueDiv.appendChild(s)
+    orgueDiv.appendChild(v)
+    sliders.push({fader:s, number:v})
   }
-  s.oninput = up
-  v.type = 'number'
-  v.value = 0
-  v.onchange = up
-  orgueDiv.appendChild(s)
-  orgueDiv.appendChild(v)
-  sliders.push({fader:s, number:v})
-}
+})
+
+
+
+
 
 socket.on('orgueState', s => {
   sliders.forEach((v,i,a) => {

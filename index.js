@@ -16,6 +16,7 @@ io.on('connection', sock => {
   or.init()
   
   sock.emit('cueList', cl.content)
+  sock.emit('patch', cl.orgue.patch)
   sock.emit('orgueState', cl.orgue.state)
   
   sock.on('refresh', () => {
