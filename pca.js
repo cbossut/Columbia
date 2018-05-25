@@ -2,18 +2,17 @@ const i2c = require('i2c-bus')
     , busNumber = 1 // RaspberryPi configuration
     , bus = i2c.openSync(busNumber)
     , LED0ON = 6 // ON_L-ON_H-OFF_L-OFF_H
+    , ALLCALLADDR = 112
 
 let pca = {}
 
-pca.init = function(addrs, cb) {
+pca.init = function(cb) {
   bus.sendByteSync(0,6) // Software Reset
   setTimeout(()=>{
-    for (let i = 0 ; i < addrs.length ; i++) {
-      bus.writeByteSync(addrs[i],0,0b00100001) //out of sleep and autoincrement
-      bus.writeByteSync(addrs[i],0xFB,0) //Remove all led force on
-    }
+    bus.writeByteSync(ALLCALLADDR,0,0b00100001) //out of sleep and autoincrement
+    bus.writeByteSync(ALLCALLADDR,0xFB,0) //Remove all led force on
     cb()
-  })
+  }, 20)
 }
 
 pca.setLed = function(addr, n, val) {
