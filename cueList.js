@@ -5,10 +5,9 @@ let cl = {}
   , cue = {
       name: 'Mise'
     , state: [0]
-//    , upTime: 0
-    , stayTime: 0
-    , transTime: 0
-    , date: 0
+    , upTime: 10
+    , downTime: 10
+    , date: -1
     }
 
 cl.content = [Object.assign(Object.create(cue), {state:cue.state.slice()})]
@@ -44,78 +43,63 @@ cl.applyCue = function(n) {
   this.orgue.state = this.content[n].state
 }
 
-cl.play = function(n = 0) {
-//  this.t0 = new Date().getTime()
-//  debugger;
+cl.go = function(n = 0) {
   if (!this.content[n]) return;
-  this.index = n
-  this.step = 's'
-  this.to = this.content[n].state
-  this.nextFrame = new Date().getTime()
-  this.go()
-}
-
-cl.go = function() {
-//  console.log(new Date().getTime()-this.t0, this.to, this.nextFrame-this.t0)
-//  debugger;
-  this.orgue.state = this.to
-  if (this.index == this.content.length) return;
-  this.from = this.to
-  let time
-    , derive = new Date().getTime() - this.nextFrame
-  switch(this.step) {
-    case 's':
-      time = this.content[this.index].stayTime*1000
-      this.step = 't'
-      this.to = this.from
-      this.nextFrame += time
-      this.timeOut = setTimeout(()=>{this.go()}, time-derive)
-      break;
-      
-    case 't':
-      time = this.content[this.index].transTime*1000
-      this.index++
-      this.step = 's'
-      if (this.index == this.content.length) this.to = [0]
-      else this.to = this.content[this.index].state
-      if (!time) {
-        this.timeOut = setTimeout(()=>{this.go()}, 0)
-        break;
-      }
-      let ll = this.from
-        , ss = this.to
-      if (this.from.length < this.to.length) {
-        ll = this.to
-        ss = this.from
-      }
-      let diff = Math.max.apply(null, ll.map(
-        (v,i,a)=>{
-          if (!v) a[i] = 0
-          if (!ss[i]) ss[i] = 0
-          return Math.abs((ss[i]|0)-v)
-        }))
-      this.interMs = Math.max(time/diff, this.orgue.minMsInter)
-      this.frames = Math.round(time/this.interMs)
-      this.remainingFrames = this.frames
-      this.timeOut = setTimeout(()=>{this.inter()}, this.interMs-derive)
+  this.from = this.content[n].state
+  this.to = []
+  let downMs = this.content[n].downTime * 1000
+    , upMs = 0
+    , downDiff = Math.max.apply(null, this.from)
+    , upDiff = -1
+  if (++n != this.content.length) {
+    this.to = this.content[n].state
+    upMs = this.content[n].upTime * 1000
+    upDiff = Math.max.apply(null, this.to)
   }
+  
+  this.interMs = Math.max(downMs/downDiff, this.orgue.minMsInter, upMs/upDiff)
+  this.downFrames = Math.round(downMs/this.interMs)
+  this.upFrames = Math.round(upMs/this.interMs)
+  this.frameCount = 0
+  
+  this.orgue.state = this.from
+  this.nextFrame = new Date().getTime()
+  this.timeOut = setTimeout(()=>{this.inter()}, this.interMs)
 }
 
 cl.inter = function() {
-  this.remainingFrames--
+  this.frameCount++
   this.nextFrame += this.interMs
   let diff = new Date().getTime() - this.nextFrame
-  while(diff >= this.interMs && this.remainingFrames--) {debugger;
+  while(diff >= this.interMs && this.frameCount++) {
     diff -= this.interMs
     this.nextFrame += this.interMs
   }
-  if (this.remainingFrames <= 0) {
-    this.go()
-    return
+  
+  let loop = false
+    , ratioUp
+  if (this.frameCount <= this.upFrames) {
+    loop = true
+    ratioUp = this.to.map(
+      (v,i,a)=>Math.round(v * this.frameCount/this.upFrames)
+    )
+  } else {
+    ratioUp = this.to
   }
-  let ratio = this.remainingFrames/this.frames
-  this.orgue.state = this.from.map((v,i,a)=>Math.round((this.to[i]|0)-ratio*((this.to[i]|0)-v)))
-  this.timeOut = setTimeout(()=>{this.inter()}, this.interMs - diff)
+  if (this.frameCount <= this.downFrames) {
+    loop = true
+    let ratioDown = this.from.map(
+      (v,i,a)=>Math.round((1 - this.frameCount/this.downFrames) * v)
+    )
+      , len = Math.max(ratioDown.length, ratioUp.length)
+      , res = []
+    for (let i = 0 ; i < len ; i++) res.push(Math.max(ratioDown[i]|0, ratioUp[i]|0))
+    this.orgue.state = res
+  } else {
+    this.orgue.state = ratioUp
+  }
+  
+  if (loop) this.timeOut = setTimeout(()=>{this.inter()}, this.interMs - diff)
 }
 
 cl.stop = function() {
