@@ -51,7 +51,10 @@ io.on('connection', sock => {
     sock.emit('orgueState', cl.orgue.state)
   })
   
-  sock.on('play', () => cl.play())
+  sock.on('go', n => cl.go(n, (ongoing, elapsed)=>{
+    sock.emit('orgueState', cl.orgue.state)
+    sock.emit('playStatus', {play:ongoing, time:elapsed/1000})
+  }))
   sock.on('stop', () => cl.stop())
   
   sock.on('print', () => cl.print())

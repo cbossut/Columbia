@@ -43,63 +43,77 @@ cl.applyCue = function(n) {
   this.orgue.state = this.content[n].state
 }
 
-cl.go = function(n = 0) {
-  if (!this.content[n]) return;
+cl.go = function(n = 0, cb = null) {
+  if (n < 0 || n >= this.content.length - 1) return;
   this.from = this.content[n].state
-  this.to = []
-  let downMs = this.content[n].downTime * 1000
-    , upMs = 0
-    , downDiff = Math.max.apply(null, this.from)
+  this.to = this.content[++n].state
+  this.downLeds = []
+  this.upLeds = []
+  let downDiff = -1
     , upDiff = -1
-  if (++n != this.content.length) {
-    this.to = this.content[n].state
-    upMs = this.content[n].upTime * 1000
-    upDiff = Math.max.apply(null, this.to)
+  for(let i = 0 ; i < Math.max(this.to.length, this.from.length) ; i++) {
+    let diff = (this.to[i]||0) - (this.from[i]||0)
+    if (diff < 0) {
+      this.downLeds.push(i)
+      downDiff = Math.max(downDiff, -diff)
+    } else if (diff > 0) {
+      this.upLeds.push(i)
+      upDiff = Math.max(upDiff, diff)
+    }
   }
+  let downMs = downDiff == -1 ? 0 : this.content[n].downTime * 1000
+    , upMs = upDiff == -1 ? 0 : this.content[n].upTime * 1000
   
   this.interMs = Math.max(downMs/downDiff, this.orgue.minMsInter, upMs/upDiff)
   this.downFrames = Math.round(downMs/this.interMs)
   this.upFrames = Math.round(upMs/this.interMs)
   this.frameCount = 0
   
-  this.orgue.state = this.from
+  let start = this.from.slice()
+  if (!this.downFrames) this.downLeds.forEach(v => start[v] = this.to[v])
+  if (!this.upFrames) this.upLeds.forEach(v => start[v] = this.to[v])
+  
+  this.orgue.state = start
   this.nextFrame = new Date().getTime()
-  this.timeOut = setTimeout(()=>{this.inter()}, this.interMs)
+  this.timeOut = setTimeout(()=>{this.inter(cb)}, this.interMs)
 }
 
-cl.inter = function() {
+cl.inter = function(cb) {
   this.frameCount++
   this.nextFrame += this.interMs
+
   let diff = new Date().getTime() - this.nextFrame
-  while(diff >= this.interMs && this.frameCount++) {
-    diff -= this.interMs
-    this.nextFrame += this.interMs
+  if (diff >= this.interMs) {
+    let jumped = Math.floor(diff/this.interMs)
+    diff -= jumped * this.interMs
+    this.nextFrame += jumped * this.interMs
+    this.frameCount += jumped
   }
   
   let loop = false
-    , ratioUp
-  if (this.frameCount <= this.upFrames) {
+    , ratioUp = this.frameCount/this.upFrames
+    , ratioDown = this.frameCount/this.downFrames
+    , res = this.from.slice()
+  if (ratioUp < 1) {
     loop = true
-    ratioUp = this.to.map(
-      (v,i,a)=>Math.round(v * this.frameCount/this.upFrames)
+    this.upLeds.forEach(
+      v => res[v] = Math.round(this.from[v] + ratioUp * (this.to[v]-this.from[v]))
     )
   } else {
-    ratioUp = this.to
+    this.upLeds.forEach(v => res[v] = this.to[v])
   }
-  if (this.frameCount <= this.downFrames) {
+  if (ratioDown < 1) {
     loop = true
-    let ratioDown = this.from.map(
-      (v,i,a)=>Math.round((1 - this.frameCount/this.downFrames) * v)
+    this.downLeds.forEach(
+      v => res[v] = Math.round(this.from[v] + ratioDown * (this.to[v]-this.from[v]))
     )
-      , len = Math.max(ratioDown.length, ratioUp.length)
-      , res = []
-    for (let i = 0 ; i < len ; i++) res.push(Math.max(ratioDown[i]|0, ratioUp[i]|0))
-    this.orgue.state = res
   } else {
-    this.orgue.state = ratioUp
+    this.downLeds.forEach(v => res[v] = this.to[v])
   }
+  this.orgue.state = res
   
-  if (loop) this.timeOut = setTimeout(()=>{this.inter()}, this.interMs - diff)
+  if (loop) this.timeOut = setTimeout(()=>{this.inter(cb)}, this.interMs - diff)
+  if (cb) cb(loop, this.frameCount*this.interMs)
 }
 
 cl.stop = function() {
@@ -109,7 +123,7 @@ cl.stop = function() {
 cl.print = function() {
   for(let i = 0 ; i < this.content.length ; i++) {
     let c = this.content[i]
-    console.log(c.name, "stay", c.stayTime, "trans", c.transTime, c.state)
+    console.log(c.name, "up", c.upTime, "down", c.downTime, c.state)
   }
 }
 

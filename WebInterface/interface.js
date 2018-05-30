@@ -40,8 +40,14 @@ cue.type = 'number'
 cue.value = 0
 cueListDiv.appendChild(cue)
 addButton(cueListDiv, 'Ajouter', ()=>socket.emit('add', cue.value++))
-addButton(cueListDiv, 'Jouer', ()=>socket.emit('play'))
+addButton(cueListDiv, 'Go', ()=>socket.emit('go', cue.value))
 addButton(cueListDiv, 'Stop', ()=>socket.emit('stop'))
+addButton(cueListDiv, 'Print', ()=>socket.emit('print'))
+
+let status = document.createElement('p')
+status.innerHTML = 'Non'
+cueListDiv.appendChild(status)
+socket.on('playStatus', st=>status.innerHTML = (st.play?'Oui':'Non')+st.time)
 
 cueListDiv.appendChild(document.createElement('br'))
 
@@ -55,29 +61,29 @@ socket.on('cueList', cl => {
       , n = document.createTextNode(i)
       , name = document.createElement('input')
       , state = document.createTextNode(v.state)
-      , stay = document.createElement('input')
-      , trans = document.createElement('input')
+      , up = document.createElement('input')
+      , down = document.createElement('input')
     name.value = v.name
     name.onchange = function() {
       socket.emit('cueChange', {n:i, change:{name:this.value}})
     }
-    stay.type = 'number'
-    stay.step = .001
-    stay.value = v.stayTime
-    stay.onchange = function() {
-      socket.emit('cueChange', {n:i, change:{stayTime:this.value}})
+    up.type = 'number'
+    up.step = .001
+    up.value = v.upTime
+    up.onchange = function() {
+      socket.emit('cueChange', {n:i, change:{upTime:this.value}})
     }
-    trans.type = 'number'
-    trans.step = .001
-    trans.value = v.transTime
-    trans.onchange = function() {
-      socket.emit('cueChange', {n:i, change:{transTime:this.value}})
+    down.type = 'number'
+    down.step = .001
+    down.value = v.downTime
+    down.onchange = function() {
+      socket.emit('cueChange', {n:i, change:{downTime:this.value}})
     }
     line.appendChild(n)
     line.appendChild(name)
     line.appendChild(state)
-    line.appendChild(stay)
-    line.appendChild(trans)
+    line.appendChild(up)
+    line.appendChild(down)
     addButton(line, '-', ()=>socket.emit('delete', i))
     addButton(line, '<-', ()=>socket.emit('update', i))
     addButton(line, '->', ()=>socket.emit('apply', i))
