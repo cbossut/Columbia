@@ -96,7 +96,7 @@ socket.on('patch', patch => {
 
   for (let i = 0 ; i < patch.length ; i++) {
     orgueDiv.appendChild(document.createElement('br'))
-    orgueDiv.appendChild(document.createTextNode(i))
+    orgueDiv.appendChild(document.createTextNode(i+1))
     let s = document.createElement('input')
       , v = document.createElement('input')
     s.type = 'range'

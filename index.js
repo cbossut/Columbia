@@ -54,6 +54,8 @@ io.on('connection', sock => {
   sock.on('play', () => cl.play())
   sock.on('stop', () => cl.stop())
   
+  sock.on('print', () => cl.print())
+  
   sock.on('orgue', (d)=>or.setLevel(d.led, parseInt(d.val)))
 })
 
