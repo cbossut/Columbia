@@ -13,7 +13,7 @@ let or = {
 }
 
 or.freq = 200
-or.pcas = [64, 65, 66]
+or.pcas = pca.getAddresses()
 or.patch = []
 or.levels = []
 
@@ -44,9 +44,7 @@ or.init = function() {
   pca.init(()=>{
     let s = this.levels
     this.levels = []
-    try {
-      this.state = s
-    } catch (error) {console.log(error)}
+    this.state = s
   })
   this.freq = 200
 }

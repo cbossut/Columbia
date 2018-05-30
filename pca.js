@@ -6,6 +6,10 @@ const i2c = require('i2c-bus')
 
 let pca = {}
 
+pca.getAddresses = function() {
+  return bus.scanSync(64,111)
+}
+
 pca.init = function(cb) {
   bus.sendByteSync(0,6) // Software Reset
   setTimeout(()=>{
