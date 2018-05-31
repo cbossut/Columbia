@@ -5,12 +5,67 @@
   <meta charset="utf-8">
   <script src="./socket.io.dev.js"></script>
   <script src="./interact.js"></script>
+  <link rel="stylesheet" type="text/css" href="./interface.css">
 </head>
 
 <body>
-
   <h1>Interface from RPi</h1>
+  <div class="led" id="co"></div>
+    
+  <div class="ligne" id="general">GLOBAL</div>
   
+  <div class="ligne" id="son">SON</div>
+  
+  <div id="flex">
+  
+    <div class="panel" id="cue">
+      <span>Mem N°</span>
+      <input id="mem">
+      <button>Ajouter</button>
+      
+      <br>
+      
+      <table>
+        <thead>
+          <th>Seq</th>
+          <th>Mem</th>
+          <th>Montée</th>
+          <th>Descente</th>
+          <th>Date</th>
+        </thead>
+        <tbody>
+          <tr class="proto" id="cue0">
+            <td>1</td>
+            <td>10</td>
+            <td><input class="time" type="number" min=0 step=0.01 value=10></td>
+            <td><input class="time" type="number" min=0 step=0.01 value=10></td>
+            <td>00:00.000</td>
+          </tr>
+          <tr class="sel">
+            <td>1</td>
+            <td>10</td>
+            <td><input class="time" type="number" min=0 step=0.01 value=10></td>
+            <td><input class="time" type="number" min=0 step=0.01 value=10></td>
+            <td>00:00.000</td>
+          </tr>
+          <tr>
+            <td>1</td>
+            <td>10</td>
+            <td><input class="time" type="number" min=0 step=0.01 value=10></td>
+            <td><input class="time" type="number" min=0 step=0.01 value=10></td>
+            <td>00:00.000</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="panel" id="orgue">
+      <div class="fader proto" id="fader0">1<br>0</div>
+    </div>
+
+    <div class="panel" id="patch">PATCH</div>
+    
+  </div>
   
   <script src="./interface.js"></script>
   
