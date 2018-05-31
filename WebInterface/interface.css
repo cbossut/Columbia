@@ -1,0 +1,101 @@
+body {
+  font-family: sans-serif;
+  color: aliceblue;
+  background-color: black;
+}
+
+h1 {
+  text-align: center;
+}
+
+div {
+  border: 2px solid green;
+  padding: 10px;
+  text-align: center;
+}
+
+span {
+  margin-right: 1ch;
+  margin-left: 10px;
+}
+
+button {
+  background-color: gray;
+  color: white;
+  border: none;
+  font-size: 1em;
+}
+
+#flex {
+  border: 1px solid red;
+  display: flex;
+}
+
+
+.led {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 2em;
+  height: 2em;
+  border-radius: 50%;
+  background-color: red;
+}
+
+
+#orgue {
+  flex-grow: 1;
+}
+
+.fader {
+  display: inline-block;
+  float: left;
+  width: 2em;
+  height: 2em;
+  align-content: center;
+}
+
+
+#cue>* {
+  float: left;
+}
+
+#mem {
+  width: 6ch;
+}
+
+table {
+  margin: 10px;
+  border-collapse: collapse;
+}
+
+tr:nth-child(odd) {
+  background-color: #222;
+}
+
+tr:nth-child(even) {
+  background-color: #444;
+}
+
+tr:hover {
+  background-color: #666;
+}
+
+tr.sel {
+  background-color: #888;
+  border: 2px solid red;
+}
+
+th, td {
+  border: 1px solid purple;
+}
+
+.time {
+  width: 8ch;
+  background-color: black;
+  color: white;
+}
+
+.proto {
+  display: none;
+}
