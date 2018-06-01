@@ -27,7 +27,7 @@ cl.addCue = function(c=cue, n = this.content.length-1, writeState = true) {
   let oldCue = this.content[n]||{}
     , newCue = {}
   if (writeState) c.state = this.orgue.state
-  cue.keys().forEach(k=>{
+  Object.keys(cue).forEach(k=>{
     newCue[k] = c[k] || oldCue[k] || cue[k]
   })
   newCue.state = newCue.state.splice() //Security, just to be sure...
