@@ -12,8 +12,7 @@ let cl = {}
 
 cl.content = [Object.assign(Object.create(cue), {state:cue.state.slice()})]
 
-//cl.orgue = Object.create(orgue.proto) //should make copy of arrays to prevent modifying proto
-cl.orgue = orgue.proto
+cl.orgue = orgue
 
 cl.save = function(path) {
   fs.writeFileSync(path, JSON.stringify(this.content))
