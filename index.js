@@ -13,8 +13,6 @@ const staticroute = require('static-route')
 io.on('connection', sock => {
   console.log(sock.id, sock.client.conn.remoteAddress)
   
-  or.init()
-  
   sock.emit('cueList', cl.content)
   sock.emit('patch', cl.orgue.patch)
   sock.emit('orgueState', cl.orgue.state)

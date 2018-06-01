@@ -13,6 +13,7 @@ let cl = {}
 cl.content = []
 
 cl.orgue = orgue
+orgue.init()
 
 cl.save = function(path) {
   fs.writeFileSync(path, JSON.stringify(this.content))
