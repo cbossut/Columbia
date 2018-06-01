@@ -33,9 +33,9 @@ io.on('connection', sock => {
     sock.emit('cueList', cl.content)
   })
   sock.on('save', fileName => cl.save(savePath + fileName + '.json'))
-  sock.on('add', n => {
-    cl.addCue(n)
-    sock.emit('cueList', cl.content)
+  sock.on('addCue', (name,n) => {
+    cl.addCue({name:name},n)
+    sock.emit('cueList', cl.content) //TODO should not update full cueList
   })
   sock.on('cueChange', ch => Object.assign(cl.content[ch.n], ch.change))
   sock.on('delete', n => {
