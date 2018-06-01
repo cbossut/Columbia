@@ -10,7 +10,7 @@ let cl = {}
     , date: -1
     }
 
-cl.content = [Object.assign(Object.create(cue), {state:cue.state.slice()})]
+cl.content = []
 
 cl.orgue = orgue
 
@@ -23,10 +23,14 @@ cl.load = function(path) {
   this.content = parsed.map((v,i,a)=>Object.assign(Object.create(cue), v))
 }
 
-cl.addCue = function(n = this.content.length-1, writeState = true) {
-  let oldCue = this.content[n]||cue
-    , state = writeState ? this.orgue.state : oldCue.state.slice()
-    , newCue = Object.assign(Object.create(cue), oldCue, {name:oldCue.name+'|',state:state})
+cl.addCue = function(c=cue, n = this.content.length-1, writeState = true) {
+  let oldCue = this.content[n]||{}
+    , newCue = {}
+  if (writeState) c.state = this.orgue.state
+  cue.keys().forEach(k=>{
+    newCue[k] = c[k] || oldCue[k] || cue[k]
+  })
+  newCue.state = newCue.state.splice() //Security, just to be sure...
   this.content.splice(n+1, 0, newCue)
 }
 
