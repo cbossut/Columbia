@@ -3,6 +3,8 @@ socket.on('connect', ()=>setCo(true))
 socket.on('reconnect', ()=>setCo(true))
 socket.on('disconnect', ()=>setCo(false))
 
+interact('#co').on('tap', ()=>socket.emit('print'))
+
 let mem = document.getElementById('mem')
   , add = document.getElementById('addCue')
   , cl = document.getElementById('cueList')

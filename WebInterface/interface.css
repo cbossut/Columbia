@@ -22,8 +22,9 @@ span {
 button {
   background-color: dimgrey;
   color: white;
-  border: none;
+  border: 1px solid black;
   font-size: 1em;
+  margin-left: 10px;
 }
 button:disabled {
   color: darkslategrey;

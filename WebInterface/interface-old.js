@@ -1,12 +1,3 @@
-let socket = io(window.location.href)
-socket.on('connect', ()=>console.log(socket.id))
-
-let cueListDiv = document.createElement('div')
-  , orgueDiv = document.createElement('div')
-
-document.body.appendChild(cueListDiv)
-document.body.appendChild(orgueDiv)
-
 addButton(cueListDiv, 'Actualiser', ()=>socket.emit('refresh'))
 let files = document.createElement('select')
   , opts = []
@@ -39,7 +30,6 @@ let cue = document.createElement('input')
 cue.type = 'number'
 cue.value = 0
 cueListDiv.appendChild(cue)
-addButton(cueListDiv, 'Ajouter', ()=>socket.emit('add', cue.value++))
 addButton(cueListDiv, 'Go', ()=>socket.emit('go', cue.value))
 addButton(cueListDiv, 'Stop', ()=>socket.emit('stop'))
 addButton(cueListDiv, 'Print', ()=>socket.emit('print'))
