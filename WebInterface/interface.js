@@ -12,7 +12,7 @@ mem.onkeyup = ()=>{
   add.disabled = !isMem()
 }
 
-interact(add).on('tap', ()=>{
+add.onclick = ()=>{
   let c = cl.firstElementChild
   while(c && beforeMem(c.children[1].innerHTML)) c = c.nextElementSibling
   
@@ -24,7 +24,7 @@ interact(add).on('tap', ()=>{
   
   mem.value = ''
   add.disabled = true
-})
+}
 
 function isMem() {
   return mem.value.split('.').every(v=>parseInt(v))
