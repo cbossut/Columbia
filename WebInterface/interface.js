@@ -42,6 +42,7 @@ function beforeMem(newMem) {
 
 socket.on('cueList', content => {
   cl.innerHTML = ''
+  unselCue()
   content.forEach((v,i,a) => {
     let line = cue.cloneNode(true)
     line.removeAttribute('id')
@@ -62,14 +63,48 @@ socket.on('cueList', content => {
 
 interact('.cueTR')
 .pointerEvents({ignoreFrom: 'input'})
-.on('tap', (e)=>{
+.on('tap', (e)=>{selCue(e.currentTarget)})
+
+document.getElementById('delCue').onclick = ()=>{
+  socket.emit('delete', getCueFirstSelIndex())
+}
+
+document.getElementById('upCue').onclick = ()=>{
+  socket.emit('update', getCueFirstSelIndex())
+}
+
+document.getElementById('go').onclick = ()=>{
+  socket.emit('go', getCueFirstSelIndex())
+}
+
+socket.on('playStatus', console.log)
+
+
+
+
+function selCue(trNode) {
   document.querySelectorAll('.cueTR.sel')
     .forEach(v=>v.classList.remove('sel'))
-  e.currentTarget.classList.add('sel')
-})
+  trNode.classList.add('sel')
+  
+  socket.emit('apply', getCueFirstSelIndex())
+  
+  document.querySelectorAll('.cueAct')
+    .forEach(v=>v.disabled = false)
+}
 
+function unselCue() {
+  document.querySelectorAll('.cueTR.sel')
+    .forEach(v=>v.classList.remove('sel'))
+  
+  document.querySelectorAll('.cueAct')
+    .forEach(v=>v.disabled = true)
+}
 
-
+function getCueFirstSelIndex() {
+  return parseInt(document.querySelector('.cueTR.sel')
+                  .firstElementChild.innerHTML) - 1
+}
 
 function setCo(co) {
   document.getElementById('co').style.backgroundColor = co?"green":"red"

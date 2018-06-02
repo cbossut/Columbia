@@ -42,7 +42,6 @@ io.on('connection', sock => {
   })
   sock.on('update', n => {
     cl.updateCue(n)
-    sock.emit('cueList', cl.content)
   })
   sock.on('apply', n => {
     cl.applyCue(n)
