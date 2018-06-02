@@ -20,10 +20,13 @@ span {
 }
 
 button {
-  background-color: gray;
+  background-color: dimgrey;
   color: white;
   border: none;
   font-size: 1em;
+}
+button:disabled {
+  color: darkslategrey;
 }
 
 #flex {
