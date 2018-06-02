@@ -100,6 +100,18 @@ th, td {
   color: white;
 }
 
+.progress {
+  display: none;
+  border: none;
+  position: absolute;
+  top: inherit;
+  height: inherit;
+  width: inherit;
+  background-color: #2a26
+}
+
+
+
 .proto {
   display: none;
 }

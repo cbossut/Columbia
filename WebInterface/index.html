@@ -28,6 +28,7 @@
       <button class="cueAct" id="delCue" disabled>Supprimer</button>
       <button class="cueAct" id="upCue" disabled>Modifier</button>
       <button class="cueAct" id="go" disabled>GO</button>
+      <span id="progress"></span>
       
       <br>
       
@@ -35,8 +36,8 @@
         <thead>
           <th>Seq</th>
           <th>Mem</th>
-          <th>Montée</th>
-          <th>Descente</th>
+          <th>Montée<div class="progress" id="upProgress"></div></th>
+          <th>Descente<div class="progress" id="downProgress"></div></th>
           <th>Date</th>
         </thead>
         <tr class="proto cueTR" id="cue">
@@ -58,6 +59,9 @@
     <div class="panel" id="patchP">PATCH</div>
     
   </div>
+  
+  
+  
   
   <script src="./interface.js"></script>
   

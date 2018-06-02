@@ -9,6 +9,8 @@ let mem = document.getElementById('mem')
   , add = document.getElementById('addCue')
   , cl = document.getElementById('cueList')
   , cue = document.getElementById('cue')
+  , prog = document.getElementById('progress')
+  , selCueIndex = -1
 
 mem.onkeyup = ()=>{
   add.disabled = !isMem()
@@ -66,28 +68,39 @@ interact('.cueTR')
 .on('tap', (e)=>{selCue(e.currentTarget)})
 
 document.getElementById('delCue').onclick = ()=>{
-  socket.emit('delete', getCueFirstSelIndex())
+  socket.emit('delete', selCueIndex)
 }
 
 document.getElementById('upCue').onclick = ()=>{
-  socket.emit('update', getCueFirstSelIndex())
+  socket.emit('update', selCueIndex)
 }
 
 document.getElementById('go').onclick = ()=>{
-  socket.emit('go', getCueFirstSelIndex())
+  socket.emit('go', selCueIndex)
 }
 
-socket.on('playStatus', console.log)
-
-
+socket.on('playStatus', o=>{
+  if (!o.ongoing) {
+    nextCue()
+    prog.innerHTML = ''
+    return;
+  }
+  prog.innerHTML = o.time
+})
 
 
 function selCue(trNode) {
+  if (!trNode) {
+    unselCue()
+    return;
+  }
+  
   document.querySelectorAll('.cueTR.sel')
     .forEach(v=>v.classList.remove('sel'))
   trNode.classList.add('sel')
+  selCueIndex = parseInt(trNode.firstElementChild.innerHTML) - 1
   
-  socket.emit('apply', getCueFirstSelIndex())
+  socket.emit('apply', selCueIndex)
   
   document.querySelectorAll('.cueAct')
     .forEach(v=>v.disabled = false)
@@ -96,15 +109,24 @@ function selCue(trNode) {
 function unselCue() {
   document.querySelectorAll('.cueTR.sel')
     .forEach(v=>v.classList.remove('sel'))
+  selCueIndex = -1
   
   document.querySelectorAll('.cueAct')
     .forEach(v=>v.disabled = true)
 }
 
-function getCueFirstSelIndex() {
-  return parseInt(document.querySelector('.cueTR.sel')
-                  .firstElementChild.innerHTML) - 1
+function nextCue() {
+  selCue(document.querySelector('.cueTR.sel').nextElementSibling)
 }
+
+
+
+
+
+
+
+
+
 
 function setCo(co) {
   document.getElementById('co').style.backgroundColor = co?"green":"red"
