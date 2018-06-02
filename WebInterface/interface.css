@@ -72,19 +72,19 @@ table {
   border-collapse: collapse;
 }
 
-tr:nth-child(odd) {
+.cueTR:nth-child(odd) {
   background-color: #222;
 }
 
-tr:nth-child(even) {
+.cueTR:nth-child(even) {
   background-color: #444;
 }
 
-tr:hover {
+.cueTR:hover {
   background-color: #666;
 }
 
-tr.sel {
+.cueTR.sel {
   background-color: #888;
   border: 2px solid red;
 }

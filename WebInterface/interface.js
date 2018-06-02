@@ -12,7 +12,7 @@ mem.onkeyup = ()=>{
   add.disabled = !isMem()
 }
 
-add.onclick = ()=>{
+interact(add).on('tap', ()=>{
   let c = cl.firstElementChild
   while(c && beforeMem(c.children[1].innerHTML)) c = c.nextElementSibling
   
@@ -24,7 +24,7 @@ add.onclick = ()=>{
   
   mem.value = ''
   add.disabled = true
-}
+})
 
 function isMem() {
   return mem.value.split('.').every(v=>parseInt(v))
@@ -43,7 +43,7 @@ socket.on('cueList', content => {
   content.forEach((v,i,a) => {
     let line = cue.cloneNode(true)
     line.removeAttribute('id')
-    line.removeAttribute('class')
+    line.classList.remove('proto')
     let el = line.firstElementChild
     el.innerHTML = i+1
     el = el.nextElementSibling
@@ -56,6 +56,14 @@ socket.on('cueList', content => {
     el.innerHTML = v.date
     cl.appendChild(line)
   })
+})
+
+interact('.cueTR')
+.pointerEvents({ignoreFrom: 'input'})
+.on('tap', (e)=>{
+  document.querySelectorAll('.cueTR.sel')
+    .forEach(v=>v.classList.remove('sel'))
+  e.currentTarget.classList.add('sel')
 })
 
 
