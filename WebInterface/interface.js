@@ -80,7 +80,7 @@ document.getElementById('go').onclick = ()=>{
 }
 
 socket.on('playStatus', o=>{
-  if (!o.ongoing) {
+  if (!o.play) {
     nextCue()
     prog.innerHTML = ''
     return;
