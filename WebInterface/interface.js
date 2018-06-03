@@ -9,6 +9,7 @@ let mem = document.getElementById('mem')
   , add = document.getElementById('addCue')
   , cl = document.getElementById('cueList')
   , cue = document.getElementById('cue')
+  , fader = document.getElementById('fader')
   , prog = document.getElementById('progress')
   , selCueIndex = -1
 
@@ -120,13 +121,51 @@ function nextCue() {
 }
 
 
+let faders = []
+socket.on('patch', patch => {
+  let panel = document.getElementById('orgueP')
+  panel.innerHTML = ''
+  faders = []
+  for (let i = 0 ; i < patch.length ; i++) {
+    let f = fader.cloneNode(true)
+    f.removeAttribute('id')
+    f.classList.remove('proto')
+    f.firstChild.replaceWith(i+1)
+    f.lastChild.replaceWith(0)
+    f.val = 0
+    Object.defineProperty(f, 'value', {
+      enumerable: true,
+      configurable: true,
+      get: function() {return this.val},
+      set: function(v) {
+        this.val = v
+        this.lastChild.replaceWith(v)
+        console.log(v*40.95)
+        socket.emit('orgue', {led:i, val:v*40.95})
+      }
+    })
+    panel.appendChild(f)
+    faders.push(f)
+  }
+})
+
+interact('.fader').draggable({
+  onmove: e=>{
+    if (!e.dy) return;
+    let f = e.currentTarget
+    f.value = limit(f.value - parseInt(e.dy)/2)
+  }
+})
 
 
 
 
 
-
-
+function limit(val, max=100, min=0) {
+  if (val < min) val = min
+  else if (val > max) val = max
+  return val
+}
 
 function setCo(co) {
   document.getElementById('co').style.backgroundColor = co?"green":"red"
