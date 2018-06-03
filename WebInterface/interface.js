@@ -1,4 +1,6 @@
 let socket = io(window.location.href)
+const factor = 40
+
 socket.on('connect', ()=>setCo(true))
 socket.on('reconnect', ()=>setCo(true))
 socket.on('disconnect', ()=>setCo(false))
@@ -131,6 +133,7 @@ socket.on('patch', patch => {
     f.removeAttribute('id')
     f.classList.remove('proto')
     f.firstChild.replaceWith(i+1)
+    f.num = i
     f.lastChild.replaceWith(0)
     f.val = 0
     Object.defineProperty(f, 'value', {
@@ -140,8 +143,6 @@ socket.on('patch', patch => {
       set: function(v) {
         this.val = v
         this.lastChild.replaceWith(v)
-        console.log(v*40.95)
-        socket.emit('orgue', {led:i, val:v*40.95})
       }
     })
     panel.appendChild(f)
@@ -154,7 +155,12 @@ interact('.fader').draggable({
     if (!e.dy) return;
     let f = e.currentTarget
     f.value = limit(f.value - parseInt(e.dy)/2)
+    socket.emit('orgue', {led:f.num, val:f.value*factor})
   }
+})
+
+socket.on('orgueState', s => {
+  faders.forEach((v,i,a)=>v.value = Math.ceil(100*s[i]/factor)/100)
 })
 
 
