@@ -48,7 +48,10 @@ cl.applyCue = function(n) {
 }
 
 cl.go = function(n = 0, cb = null) {
-  if (n < 0 || n >= this.content.length - 1) return;
+  if (n < 0 || n >= this.content.length - 1) {
+    if (cb) cb(false, null)
+    return;
+  }
   this.from = this.content[n].state
   this.to = this.content[++n].state
   this.downLeds = []

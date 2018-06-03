@@ -14,6 +14,7 @@ let mem = document.getElementById('mem')
   , fader = document.getElementById('fader')
   , prog = document.getElementById('progress')
   , selCueIndex = -1
+  , playing = false
 
 mem.onkeyup = ()=>{
   add.disabled = !isMem()
@@ -88,14 +89,28 @@ document.getElementById('upCue').onclick = ()=>{
   socket.emit('update', selCueIndex)
 }
 
-document.getElementById('go').onclick = ()=>{
-  socket.emit('go', selCueIndex)
+document.getElementById('go').onclick = function() {
+  if (playing) {
+    socket.emit('stop')
+    stop()
+  } else {
+    playing = true
+    this.innerHTML = 'STOP'
+    socket.emit('go', selCueIndex)
+  }
+}
+
+function stop() {
+  prog.innerHTML = ''
+  playing = false
+  document.getElementById('go').innerHTML = 'GO'
 }
 
 socket.on('playStatus', o=>{
+  if (!playing) return;
   if (!o.play) {
     nextCue()
-    prog.innerHTML = ''
+    stop()
     return;
   }
   prog.innerHTML = o.time
