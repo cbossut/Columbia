@@ -68,7 +68,10 @@ cl.go = function(n = 0, cb = null) {
   let downMs = downDiff == -1 ? 0 : this.content[n].downTime * 1000
     , upMs = upDiff == -1 ? 0 : this.content[n].upTime * 1000
   
-  this.interMs = Math.max(downMs/downDiff, this.orgue.minMsInter, upMs/upDiff)
+  this.interMs = Math.max(
+    this.orgue.minMsInter,
+    Math.min(downMs/downDiff, upMs/upDiff)
+    )
   this.downFrames = Math.round(downMs/this.interMs)
   this.upFrames = Math.round(upMs/this.interMs)
   this.frameCount = 0
