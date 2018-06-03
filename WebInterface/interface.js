@@ -57,9 +57,19 @@ socket.on('cueList', content => {
     el = el.nextElementSibling
     el.innerHTML = v.name
     el = el.nextElementSibling
-    el.value = v.upTime
+    let inp = el.children[0]
+    inp.num = i
+    inp.value = v.upTime
+    inp.onchange = inp.onkeyup = function() {
+      socket.emit('cueChange', {n:this.num, change:{upTime:this.value}})
+    }
     el = el.nextElementSibling
     el.value = v.downTime
+    inp = el.children[0]
+    inp.num = i
+    inp.onchange = inp.onkeyup = function() {
+      socket.emit('cueChange', {n:this.num, change:{downTime:this.value}})
+    }
     el = el.nextElementSibling
     el.innerHTML = v.date
     cl.appendChild(line)
