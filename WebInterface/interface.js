@@ -9,6 +9,8 @@ interact('#co').on('tap', ()=>socket.emit('print'))
 
 let files = document.getElementById('files')
   , saveName = document.getElementById('fileName')
+  , soundContainer = document.getElementById('soundContainer')
+  , soundProgressBar = document.getElementById('soundBar')
   , mem = document.getElementById('mem')
   , add = document.getElementById('addCue')
   , cl = document.getElementById('cueList')
@@ -33,6 +35,18 @@ socket.on('files', f=>{
     o.innerHTML = v
     files.appendChild(o)
   })
+})
+
+
+interact(soundProgressBar).resizable({
+  edges: {right: true},
+  onmove: e=>{
+    if (!e.dx) return;
+    let tot = soundContainer.getBoundingClientRect().width
+      , percent = 100 * limit(Math.floor(e.rect.width), tot) / tot
+    soundProgressBar.style.width = percent+'%'
+    console.log(percent)
+  }
 })
 
 

@@ -47,6 +47,36 @@ button:disabled {
 }
 
 
+#son {
+  position: relative;
+}
+
+#soundContainer {
+  padding: 0px;
+  margin: 0px;
+  border: none;
+}
+#soundBar {
+  background-color: #2a26;
+  border: none;
+  padding: 0px;
+  margin: 0px;
+  height: 100px;
+  width: 50%;
+}
+
+#soundMin {
+  position: absolute;
+  top: 10px;
+  left: 0px;
+}
+#soundMax {
+  position: absolute;
+  top: 10px;
+  right: 0px;
+}
+
+
 #orgueP {
   flex-grow: 1;
 }
