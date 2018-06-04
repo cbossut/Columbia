@@ -1,6 +1,6 @@
-let socket = io(window.location.href)
 const factor = 40
 
+let socket = io("http://192.168.1.15:8080")//window.location.href)
 socket.on('connect', ()=>setCo(true))
 socket.on('reconnect', ()=>setCo(true))
 socket.on('disconnect', ()=>setCo(false))
@@ -85,9 +85,9 @@ socket.on('cueList', content => {
       socket.emit('cueChange', {n:this.num, change:{upTime:this.value}})
     }
     el = el.nextElementSibling
-    el.value = v.downTime
     inp = el.children[0]
     inp.num = i
+    inp.value = v.downTime
     inp.onchange = inp.onkeyup = function() {
       socket.emit('cueChange', {n:this.num, change:{downTime:this.value}})
     }
