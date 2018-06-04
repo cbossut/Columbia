@@ -9,17 +9,13 @@ const omx = require('omxplayer-controll')
 let lastTime = 0
   , lastPos = 0
 
-function end() {
-  omx.getPosition((err,pos)=>{console.log('pos',pos-lastPos);lastPos = pos})
-  let time = new Date().getTime()
-  omx.getDuration((err,dur)=>console.log('left', dur/10000-lastPos))
-  console.log('date', time-lastTime)
-  lastTime = time
-}
-
-omx.on('changeStatus', console.log)
+omx.on('changeStatus', s=>{
+  let t = new Date().getTime()
+  console.log(s)
+  omx.playPause()
+  console.log('tim', t-lastTime, 'pos', s.pos-lastPos)
+  lastPos = s.pos
+  lastTime = t
+})
+lastTime = new Date().getTime()
 omx.open(path, opts)
-omx.playPause()
-omx.getStatus(console.log)
-omx.getPosition(console.log)
-omx.on('aboutToFinish', ()=>setInterval(end, 100).unref())

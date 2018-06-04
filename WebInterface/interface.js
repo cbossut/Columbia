@@ -22,10 +22,10 @@ let files = document.getElementById('files')
 document.getElementById('load')
   .onclick = ()=>socket.emit('load', files.value)
 document.getElementById('save')
-.onclick = ()=>{
-  socket.emit('save', saveName.value)
-  socket.emit('refresh')
-}
+  .onclick = ()=>{
+    socket.emit('save', saveName.value)
+    socket.emit('refresh')
+  }
 socket.on('files', f=>{
   files.innerHTML = ''
   f.forEach(v=>{
