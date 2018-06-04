@@ -20,8 +20,12 @@ cl.save = function(path) {
 }
 
 cl.load = function(path) {
-  let parsed = JSON.parse(fs.readFileSync(path))
-  this.content = parsed.map((v,i,a)=>Object.assign(Object.create(cue), v))
+  this.content = JSON.parse(fs.readFileSync(path))
+  this.content.forEach((v,i,a)=>{
+    Object.keys(cue).forEach(k=>{
+      if (!v[k]) v[k] = cue[k]
+    })
+  })
 }
 
 cl.addCue = function(c=cue, n = this.content.length-1, writeState = true) {
