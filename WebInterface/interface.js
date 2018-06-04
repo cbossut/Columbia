@@ -7,7 +7,9 @@ socket.on('disconnect', ()=>setCo(false))
 
 interact('#co').on('tap', ()=>socket.emit('print'))
 
-let mem = document.getElementById('mem')
+let files = document.getElementById('files')
+  , saveName = document.getElementById('fileName')
+  , mem = document.getElementById('mem')
   , add = document.getElementById('addCue')
   , cl = document.getElementById('cueList')
   , cue = document.getElementById('cue')
@@ -15,6 +17,24 @@ let mem = document.getElementById('mem')
   , prog = document.getElementById('progress')
   , selCueIndex = -1
   , playing = false
+
+
+document.getElementById('load')
+  .onclick = ()=>socket.emit('load', files.value)
+document.getElementById('save')
+.onclick = ()=>{
+  socket.emit('save', saveName.value)
+  socket.emit('refresh')
+}
+socket.on('files', f=>{
+  files.innerHTML = ''
+  f.forEach(v=>{
+    let o = document.createElement('option')
+    o.innerHTML = v
+    files.appendChild(o)
+  })
+})
+
 
 mem.onkeyup = ()=>{
   add.disabled = !isMem()
@@ -199,5 +219,6 @@ function limit(val, max=100, min=0) {
 }
 
 function setCo(co) {
+  if (co) socket.emit('refresh')
   document.getElementById('co').style.backgroundColor = co?"green":"red"
 }
