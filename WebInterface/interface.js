@@ -7,22 +7,9 @@ socket.on('disconnect', ()=>setCo(false))
 
 interact('#co').on('tap', ()=>socket.emit('print'))
 
+
 let files = document.getElementById('files')
   , saveName = document.getElementById('fileName')
-  , soundFiles = document.getElementById('soundFiles')
-  , soundContainer = document.getElementById('soundContainer')
-  , soundProgressBar = document.getElementById('soundBar')
-  , soundPos = document.getElementById('soundPos')
-  , mem = document.getElementById('mem')
-  , add = document.getElementById('addCue')
-  , cl = document.getElementById('cueList')
-  , cue = document.getElementById('cue')
-  , fader = document.getElementById('fader')
-  , prog = document.getElementById('progress')
-  , selCueIndex = -1
-  , playing = false
-  , soundDur = -1
-
 
 document.getElementById('load')
   .onclick = ()=>socket.emit('load', files.value)
@@ -35,6 +22,12 @@ socket.on('files', f=>{
   populate(files, f)
 })
 
+
+let soundFiles = document.getElementById('soundFiles')
+  , soundContainer = document.getElementById('soundContainer')
+  , soundProgressBar = document.getElementById('soundBar')
+  , soundPos = document.getElementById('soundPos')
+  , soundDur = -1
 
 socket.on('soundFiles', f=>{
   populate(soundFiles, f)
@@ -59,6 +52,14 @@ interact(soundProgressBar).resizable({
   }
 })
 
+
+let mem = document.getElementById('mem')
+  , add = document.getElementById('addCue')
+  , cl = document.getElementById('cueList')
+  , cue = document.getElementById('cue')
+  , prog = document.getElementById('progress')
+  , selCueIndex = -1
+  , playing = false
 
 mem.onkeyup = ()=>{
   add.disabled = !isMem()
@@ -193,6 +194,7 @@ function nextCue() {
 
 
 let faders = []
+  , fader = document.getElementById('fader')
 socket.on('patch', patch => {
   let panel = document.getElementById('orgueP')
   panel.innerHTML = ''
