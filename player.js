@@ -74,7 +74,7 @@ player.pause = function() {
   }
 }
 
-player.stop = function() {console.log(this.getPos(), this.dur)
+player.stop = function() {
   this.run = false
   this.pos = -1
   this.refTime = this.refPos = 0
@@ -84,7 +84,6 @@ player.stop = function() {console.log(this.getPos(), this.dur)
 
 player.getPos = function() {
   if (!this.refTime) return this.pos
-  console.log('mypos')
   return new Date().getTime() - this.refTime + this.refPos
 }
 
@@ -96,21 +95,10 @@ player.ref = function() {
     clearTimeout(player.finish)
     player.finish = setTimeout(()=>{
       player.stop()
-      console.log("Time's up!!'")
     }, player.dur-player.refPos+500)
   })
 }
 
-omx.on('finish', ()=>{console.log('finish');player.stop();player.debug()})
-
-player.debug = function(s) {
-  if (!s) console.log(this.run, this.paused, this.dur, this.getPos())
-  else {
-    console.log('state', s.status, this.run, this.paused)
-    console.log('pos', s.pos, this.getPos())
-  }
-}
-
-omx.on('changeStatus', s=>{player.debug(s)})
+omx.on('finish', ()=>player.stop())
 
 module.exports = player
