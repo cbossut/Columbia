@@ -3,7 +3,7 @@ const orgue = require("./orgue.js")
     , spawn = require('child_process').spawn
 
 let cl = {
-  soundPath = ''
+  soundPath: ''
 }
   , cue = {
       name: 'Mise'
@@ -54,7 +54,7 @@ cl.applyCue = function(n) {
   this.orgue.state = this.content[n].state
 }
 
-cl.play(pos = 0) {
+cl.play = function(pos = 0) {
   //CF testSpawn
 }
 

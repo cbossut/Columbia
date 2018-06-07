@@ -51,7 +51,7 @@ io.on('connection', sock => {
   sock.on('go', n => cl.go(n, function (ongoing, elapsed) {
     sock.emit('orgueState', cl.orgue.state)
     sock.emit('playStatus', {play:ongoing, time:elapsed/1000})
-  }))
+  })) // TODO poll instead of callback because probably don't need as fast as graduation for interface
   sock.on('stop', () => cl.stop())
   
   sock.on('print', () => cl.print())

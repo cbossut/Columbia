@@ -16,7 +16,7 @@ player = {
   set soundPath(p) {
     this.stop()
     this.path = ''
-    this.dur = 0
+    this.dur = -1
     omx.once('changeStatus', function(s) {
       player.path = p
       player.dur = s.duration/1000
