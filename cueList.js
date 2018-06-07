@@ -1,7 +1,10 @@
 const orgue = require("./orgue.js")
     , fs = require('fs')
+    , spawn = require('child_process').spawn
 
-let cl = {}
+let cl = {
+  soundPath = ''
+}
   , cue = {
       name: 'Mise'
     , state: [0]
@@ -49,6 +52,10 @@ cl.updateCue = function(n) {
 
 cl.applyCue = function(n) {
   this.orgue.state = this.content[n].state
+}
+
+cl.play(pos = 0) {
+  //CF testSpawn
 }
 
 cl.go = function(n = 0, cb = null) {
