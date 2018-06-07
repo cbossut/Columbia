@@ -15,8 +15,14 @@ player = {
   get soundPath() {return this.path},
   set soundPath(p) {
     this.stop()
-    this.path = p
+    this.path = ''
     this.dur = 0
+    omx.once('changeStatus', function(s) {
+      player.path = p
+      player.dur = s.duration/1000
+      player.stop()
+    })
+    omx.open(p, {startVolume: 0})
   },
   run: false,
   pos: -1,
