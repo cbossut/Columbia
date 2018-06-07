@@ -9,8 +9,10 @@ interact('#co').on('tap', ()=>socket.emit('print'))
 
 let files = document.getElementById('files')
   , saveName = document.getElementById('fileName')
+  , soundFiles = document.getElementById('soundFiles')
   , soundContainer = document.getElementById('soundContainer')
   , soundProgressBar = document.getElementById('soundBar')
+  , soundPos = document.getElementById('soundPos')
   , mem = document.getElementById('mem')
   , add = document.getElementById('addCue')
   , cl = document.getElementById('cueList')
@@ -19,6 +21,7 @@ let files = document.getElementById('files')
   , prog = document.getElementById('progress')
   , selCueIndex = -1
   , playing = false
+  , soundDur = -1
 
 
 document.getElementById('load')
@@ -29,23 +32,30 @@ document.getElementById('save')
     socket.emit('refresh')
   }
 socket.on('files', f=>{
-  files.innerHTML = ''
-  f.forEach(v=>{
-    let o = document.createElement('option')
-    o.innerHTML = v
-    files.appendChild(o)
-  })
+  populate(files, f)
 })
 
+
+socket.on('soundFiles', f=>{
+  populate(soundFiles, f)
+})
+document.getElementById('soundLoad')
+  .onclick = ()=>socket.emit('loadSound', soundFiles.value)
+socket.on('soundInfo', i=>{
+  soundDur = i.duration
+  soundProgressBar.style.width = '1px'
+  soundPos.innerHTML = formatTime(0)
+  document.getElementById('soundDur').innerHTML = formatTime(soundDur)
+})
 
 interact(soundProgressBar).resizable({
   edges: {right: true},
   onmove: e=>{
     if (!e.dx) return;
     let tot = soundContainer.getBoundingClientRect().width
-      , percent = 100 * limit(Math.floor(e.rect.width), tot) / tot
-    soundProgressBar.style.width = percent+'%'
-    console.log(percent)
+      , ratio = limit(Math.floor(e.rect.width), tot) / tot
+    soundProgressBar.style.width = ratio ? ratio*100+'%' : '1px'
+    soundPos.innerHTML = formatTime(ratio*soundDur)
   }
 })
 
@@ -232,7 +242,26 @@ function limit(val, max=100, min=0) {
   return val
 }
 
+function formatTime(t) {
+  return [
+    Math.floor(t/60000),
+    ':',
+    ('0'+Math.floor((t%60000)/1000)).slice(-2),
+    '.',
+    ('00'+Math.round(t%1000)).slice(-3)
+  ].join('')
+}
+
 function setCo(co) {
   if (co) socket.emit('refresh')
   document.getElementById('co').style.backgroundColor = co?"green":"red"
+}
+
+function populate(sel, opts) {
+  sel.innerHTML = ''
+  opts.forEach(v=>{
+    let o = document.createElement('option')
+    o.innerHTML = v
+    sel.appendChild(o)
+  })
 }
