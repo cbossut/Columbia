@@ -63,6 +63,7 @@ io.on('connection', sock => {
   sock.on('orgue', (d)=>or.setLevel(d.led, parseInt(d.val)))
   
   
+  let soundInterval = null
   sock.on('loadSound', f => {
     player.soundPath = soundPath + f
     setTimeout(
@@ -70,6 +71,19 @@ io.on('connection', sock => {
       1500 // just to let player get dur ...
     )
   })
+  sock.on('playSound', p=>{
+    if (soundInterval) clearInterval(soundInterval)
+    player.play(p)
+    soundInterval = setInterval(function() {
+      let state = {
+        playing: player.isPlaying(),
+        pos: player.getPos()
+      }
+      if (!state.playing) clearInterval(soundInterval)
+      sock.emit('soundPlayStat', state)
+    }, 40)
+  })
+  sock.on('pauseSound', ()=>player.pause())
 })
 
 app.listen(8080)

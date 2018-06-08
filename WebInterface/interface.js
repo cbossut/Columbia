@@ -24,31 +24,90 @@ socket.on('files', f=>{
 
 
 let soundFiles = document.getElementById('soundFiles')
-  , soundContainer = document.getElementById('soundContainer')
-  , soundProgressBar = document.getElementById('soundBar')
-  , soundPos = document.getElementById('soundPos')
-  , soundDur = -1
+  , playBtn = document.getElementById('soundPlay')
+  , soundTimes = {
+    container: document.getElementById('soundContainer'),
+    posSpan: document.getElementById('soundPos'),
+    posBar: document.getElementById('soundBar'),
+    durSpan: document.getElementById('soundDur'),
+    minSpan: document.getElementById('soundMin'),
+    maxSpan: document.getElementById('soundMax'),
+    l: 0,
+    h: 0,
+    d: -1,
+    p: -1,
+    get min() {return this.l},
+    get max() {return this.h},
+    get dur() {return this.d},
+    get pos() {return this.p},
+    set min(m) {
+      this.l = m
+      this.minSpan.innerHTML = formatTime(m)
+    },
+    set max(m) {
+      this.h = m
+      this.maxSpan.innerHTML = formatTime(m)
+    },
+    set dur(d) {
+      this.d = d
+      this.durSpan.innerHTML = formatTime(d)
+      this.min = 0
+      this.max = d
+      this.pos = 0
+    },
+    set pos(p) {
+      this.p = p
+      this.posSpan.innerHTML = formatTime(p)
+      let percent = limit(100*(p - this.min)/(this.max - this.min))
+      this.posBar.style.width = percent ? percent+'%' : '1px'
+    }
+  }
+  , soundPlaying = false
+  , moveWhilePlaying = false
 
 socket.on('soundFiles', f=>{
   populate(soundFiles, f)
 })
-document.getElementById('soundLoad')
-  .onclick = ()=>socket.emit('loadSound', soundFiles.value)
-socket.on('soundInfo', i=>{
-  soundDur = i.duration
-  soundProgressBar.style.width = '1px'
-  soundPos.innerHTML = formatTime(0)
-  document.getElementById('soundDur').innerHTML = formatTime(soundDur)
+document.getElementById('soundLoad').onclick = ()=>{
+  socket.emit('loadSound', soundFiles.value)
+  playBtn.disabled = false
+}
+playBtn.onclick = ()=>{
+  soundPlaying
+    ? socket.emit('pauseSound')
+  : socket.emit('playSound', soundTimes.pos)
+}
+
+socket.on('soundInfo', i=>soundTimes.dur = i.duration)
+socket.on('soundPlayStat', s=>{
+  if (!moveWhilePlaying) soundTimes.pos = s.pos
+  if (s.playing != soundPlaying) {
+    soundPlaying = s.playing
+    playBtn.innerHTML = soundPlaying ? 'Pause' : 'Lire'
+  }
 })
 
-interact(soundProgressBar).resizable({
+interact(soundTimes.posBar).resizable({
   edges: {right: true},
+  onstart: e=>{
+    if (soundPlaying){
+      socket.emit('pauseSound')
+      moveWhilePlaying = true
+    }
+  },
   onmove: e=>{
     if (!e.dx) return;
-    let tot = soundContainer.getBoundingClientRect().width
+    let tot = soundTimes.container.getBoundingClientRect().width
       , ratio = limit(Math.floor(e.rect.width), tot) / tot
-    soundProgressBar.style.width = ratio ? ratio*100+'%' : '1px'
-    soundPos.innerHTML = formatTime(ratio*soundDur)
+    soundTimes.posBar.style.width = ratio ? ratio*100+'%' : '1px'
+    soundTimes.p = ratio*(soundTimes.max-soundTimes.min)+soundTimes.min
+    soundTimes.posSpan.innerHTML = formatTime(soundTimes.pos)
+  },
+  onend: e=>{
+    if (moveWhilePlaying) {
+      socket.emit('playSound', soundTimes.pos)
+      moveWhilePlaying = false
+    }
   }
 })
 

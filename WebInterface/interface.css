@@ -51,20 +51,32 @@ button:disabled {
   position: relative;
 }
 
-#soundContainer {
+.player {
   padding: 0px;
   margin: 0px;
   border: none;
+}
+#soundContainer {
+  position: relative;
 }
 #soundBar {
   background-color: #2a26;
-  border: none;
-  padding: 0px;
-  margin: 0px;
   height: 100px;
   width: 50%;
 }
+#soundCursor {
+  position: absolute;
+  top: 0px;
+  left: 25%;
+  background-color: #22aa;
+  height: 100%;
+  width: 1px;
+}
 
+.timeText {
+  font-family: monospace;
+  font-size: 1.5em;
+}
 #soundMin {
   position: absolute;
   top: 10px;

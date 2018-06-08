@@ -32,8 +32,11 @@ player = {
   dur: 0
 }
 
+player.isPlaying = function() {return (!this.paused) && this.run}
+
 player.play = function(p = -1) {
   if (!this.path) return;
+  p = Math.round(p)
   if (this.run) {
     if (p >= 0) {
       omx.setPosition(p/10, function(err) {
@@ -60,18 +63,17 @@ player.play = function(p = -1) {
 }
 
 player.pause = function() {
-  if (this.run && !this.paused) {
-    clearTimeout(player.finish)
-    omx.playPause()
-    this.paused = true
-    omx.getPosition(function(err, pos) {
-      player.pos = pos*10 //temporary
-      player.refPos = player.refTime = 0
-      omx.once('changeStatus', s=>{
-        if (s.status == 'Paused') player.pos = s.pos/1000
-      })
+  if (!this.isPlaying()) return;
+  clearTimeout(player.finish)
+  omx.playPause()
+  this.paused = true
+  omx.getPosition(function(err, pos) {
+    player.pos = pos*10 //temporary
+    player.refPos = player.refTime = 0
+    omx.once('changeStatus', s=>{
+      if (s.status == 'Paused') player.pos = s.pos/1000
     })
-  }
+  })
 }
 
 player.stop = function() {

@@ -22,11 +22,15 @@
   <div class="ligne" id="son">
     <select id="soundFiles"></select>
     <button id="soundLoad">Charger</button>
-    <button id="soundPlay">Lire</button>
-    <span id="soundPos">0:00.000</span>/<span id="soundDur">0:00.000</span>
-    <span id="soundMin">0:00.000</span>
-    <span id="soundMax">0:00.000</span>
-    <div id="soundContainer"><div id="soundBar"></div></div>
+    <button id="soundPlay" disabled>Lire</button>
+    <span class="timeText" id="soundPos">0:00.000</span>/
+    <span class="timeText" id="soundDur">0:00.000</span>
+    <span class="timeText" id="soundMin">0:00.000</span>
+    <span class="timeText" id="soundMax">0:00.000</span>
+    <div class="player" id="soundContainer">
+      <div class="player" id="soundBar"></div>
+      <div class="player" id="soundCursor"></div>
+    </div>
   </div>
   
   <div id="flex">
