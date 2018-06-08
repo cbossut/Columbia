@@ -254,15 +254,22 @@ function nextCue() {
 
 let faders = []
   , fader = document.getElementById('fader')
-socket.on('patch', patch => {
-  let panel = document.getElementById('orgueP')
+  , plist = document.getElementById('patchList')
+  , pline = document.getElementById('patchLine')
+  , courbes = ['Linéaire']
+
+socket.on('patch', o => {
+  let patch = o.patch
+    , pcas = o.pcas
+    , panel = document.getElementById('orgueP')
   panel.innerHTML = ''
+  plist.innerHTML = ''
   faders = []
-  for (let i = 0 ; i < patch.length ; i++) {
+  patch.forEach((v,i,a) => {
     let f = fader.cloneNode(true)
     f.removeAttribute('id')
     f.classList.remove('proto')
-    f.firstChild.replaceWith(i+1)
+    f.firstChild.replaceWith(v.name || i+1)
     f.num = i
     f.lastChild.replaceWith(0)
     f.val = 0
@@ -277,7 +284,26 @@ socket.on('patch', patch => {
     })
     panel.appendChild(f)
     faders.push(f)
-  }
+    
+    let line = pline.cloneNode(true)
+    line.removeAttribute('id')
+    line.classList.remove('proto')
+    let el = line.firstElementChild
+    el.innerHTML = i+1
+    el = el.nextElementSibling
+    el.children[0].value = v.name || '_'
+    el = el.nextElementSibling
+    let pca = el.children[0]
+      , led = el.children[1]
+    populate(pca, pcas)
+    pca.selectedIndex = v.pca
+    led.value = v.leds[0] + 1 //TODO multiple ?
+    el = el.nextElementSibling
+    let c = el.children[0]
+    populate(c, courbes)
+    c.selectedIndex = 0
+    plist.appendChild(line)
+  })
 })
 
 interact('.fader').draggable({

@@ -16,7 +16,10 @@ io.on('connection', sock => {
   console.log(sock.id, sock.client.conn.remoteAddress)
   
   sock.emit('cueList', cl.content)
-  sock.emit('patch', cl.orgue.patch)
+  sock.emit('patch', {
+    patch: cl.orgue.patch,
+    pcas: cl.orgue.pcas
+  })
   sock.emit('orgueState', cl.orgue.state)
   
   sock.emit('soundFiles', fs.readdirSync(soundPath))

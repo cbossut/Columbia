@@ -73,7 +73,29 @@
     <div class="panel" id="orgueP">
     </div>
 
-    <div class="panel" id="patchP">PATCH</div>
+    <div class="panel" id="patchP">
+      <table>
+        <thead>
+          <th>Voie</th>
+          <th>Nom</th>
+          <th>Addresse</th>
+          <th>Courbe</th>
+        </thead>
+        <tr class="proto" id="patchLine">
+          <td>0</td>
+          <td><input class="patchName"></td>
+          <td>
+            <select class="pcas"></select>
+            <input class="ledNumber" type="number" min=1 max=16>
+          </td>
+          <td>
+            <select class="courbes"></select>
+          </td>
+        </tr>
+        <tbody id="patchList">
+        </tbody>
+      </table>
+    </div>
     
   </div>
   

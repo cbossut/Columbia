@@ -154,7 +154,18 @@ th, td {
 }
 
 
+.patchName {
+  background-color: inherit;
+  color: inherit;
+  text-align: center;
+  width: 6em;
+}
+.patchName:focus {
+  background-color: darkgreen;
+}
+
 
 .proto {
   display: none;
 }
+
