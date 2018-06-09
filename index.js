@@ -60,6 +60,7 @@ io.on('connection', sock => {
   
   sock.on('orgue', d=>or.setLevel(d.led, parseInt(d.val)))
   
+  sock.on('patchChange', ch=>Object.assign(or.patch[ch.n], ch.new))
   
   let soundInterval = null
   sock.on('loadSound', f => {

@@ -291,13 +291,24 @@ socket.on('patch', o => {
     let el = line.firstElementChild
     el.innerHTML = i+1
     el = el.nextElementSibling
-    el.children[0].value = v.name || '_'
+    let inp = el.children[0]
+    inp.value = v.name || '-'
+    inp.onchange = function() {
+      f.firstChild.replaceWith(this.value)
+      socket.emit('patchChange', {n: i, new: {name: this.value}})
+    }
     el = el.nextElementSibling
     let pca = el.children[0]
       , led = el.children[1]
     populate(pca, pcas)
     pca.selectedIndex = v.pca
+    pca.onchange = function() {
+      socket.emit('patchChange', {n: i, new: {pca: this.selectedIndex}})
+    }
     led.value = v.leds[0] + 1 //TODO multiple ?
+    led.onchange = function() {
+      socket.emit('patchChange', {n: i, new: {leds: [this.value - 1]}})
+    }
     el = el.nextElementSibling
     let c = el.children[0]
     populate(c, courbes)
