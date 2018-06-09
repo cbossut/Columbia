@@ -59,6 +59,11 @@ button:disabled {
 #soundContainer {
   position: relative;
 }
+#soundRepresentation {
+  position: absolute;
+  align-self: center;
+  top: 50%;
+}
 #soundBar {
   background-color: #2a26;
   height: 100px;

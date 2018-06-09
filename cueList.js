@@ -19,11 +19,18 @@ cl.orgue = orgue
 orgue.init()
 
 cl.save = function(path) {
-  fs.writeFileSync(path, JSON.stringify(this.content))
+  fs.writeFileSync(path, JSON.stringify({
+    cueList: this.content,
+    soundPath: this.soundPath,
+    patch: this.orgue.patch
+  }))
 }
 
 cl.load = function(path) {
-  this.content = JSON.parse(fs.readFileSync(path))
+  let l = JSON.parse(fs.readFileSync(path))
+  this.content = l.cueList
+  this.soundPath = l.soundPath
+  this.orgue.patch = l.patch
   this.content.forEach((v,i,a)=>{
     Object.keys(cue).forEach(k=>{
       if (!v[k]) v[k] = cue[k]

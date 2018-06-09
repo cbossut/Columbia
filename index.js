@@ -30,7 +30,13 @@ io.on('connection', sock => {
   })
   sock.on('load', fileName => {
     cl.load(savePath + fileName + '.json')
+    loadSound(sock)
     sock.emit('cueList', cl.content)
+    sock.emit('patch', {
+      patch: cl.orgue.patch,
+      pcas: cl.orgue.pcas
+    })
+    sock.emit('orgueState', cl.orgue.state)
   })
   sock.on('save', fileName => cl.save(savePath + fileName + '.json'))
   sock.on('addCue', (name,n) => {
@@ -64,11 +70,8 @@ io.on('connection', sock => {
   
   let soundInterval = null
   sock.on('loadSound', f => {
-    player.soundPath = soundPath + f
-    setTimeout(
-      ()=>sock.emit('soundInfo', {duration: player.dur}),
-      1500 // just to let player get dur ...
-    )
+    cl.soundPath = soundPath + f
+    loadSound(sock)
   })
   sock.on('playSound', p=>{
     if (soundInterval) clearInterval(soundInterval)
@@ -86,3 +89,11 @@ io.on('connection', sock => {
 })
 
 app.listen(8080)
+
+function loadSound(sock) {
+  player.soundPath = cl.soundPath
+  setTimeout(
+    ()=>sock.emit('soundInfo', {file: player.soundPath, duration: player.dur}),
+    1500 // just to let player get dur ...
+  )
+}
