@@ -27,11 +27,6 @@ io.on('connection', sock => {
   sock.on('refresh', () => {
     let jsons = fs.readdirSync(savePath).filter(v=>v.endsWith('.json'))
     sock.emit('files', jsons.map(v => v.split('.')[0]))
-/*
-    {
-      let t=v.split('/')
-      return t[t.length-1].split('.')[0]
-    }))*/
   })
   sock.on('load', fileName => {
     cl.load(savePath + fileName + '.json')
@@ -63,7 +58,7 @@ io.on('connection', sock => {
   
   sock.on('print', () => cl.print())
   
-  sock.on('orgue', (d)=>or.setLevel(d.led, parseInt(d.val)))
+  sock.on('orgue', d=>or.setLevel(d.led, parseInt(d.val)))
   
   
   let soundInterval = null
