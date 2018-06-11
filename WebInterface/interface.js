@@ -1,6 +1,6 @@
 const factor = 40
 
-let socket = io("http://192.168.1.15:8080")//window.location.href)
+let socket = io(window.location.href)
 socket.on('connect', ()=>setCo(true))
 socket.on('reconnect', ()=>setCo(true))
 socket.on('disconnect', ()=>setCo(false))
