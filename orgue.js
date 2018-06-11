@@ -49,6 +49,4 @@ or.init = function() {
   this.freq = 200
 }
 
-module.exports = {
-  proto: or
-}
+module.exports = or

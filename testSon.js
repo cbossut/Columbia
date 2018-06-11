@@ -4,22 +4,27 @@ const omx = require('omxplayer-controll')
       'disableKeys': true,
       'disableOnScreenDisplay': true
     }
-    , path = './sounds/sweep13.wav'
+    , path = './sounds/test_panoramique.aif'
 
-let lastTime = 0
-  , lastPos = 0
+let startTime
+  , startPos
 
-function end() {
-  omx.getPosition((err,pos)=>{console.log('pos',pos-lastPos);lastPos = pos})
-  let time = new Date().getTime()
-  omx.getDuration((err,dur)=>console.log('left', dur/10000-lastPos))
-  console.log('date', time-lastTime)
-  lastTime = time
-}
-
+omx.once('changeStatus', s=>{
+  startTime = new Date().getTime()
+  startPos = s.pos/1000
+  console.log(s, startTime)
+  setTimeout(()=>{
+    console.log('dring')
+    omx.getPosition(console.log)
+    console.log(new Date().getTime() - startTime + startPos)
+  }, 16410-startPos)
+  setTimeout(()=>{
+    console.log('dring2')
+    omx.playPause()
+    omx.getPosition(console.log)
+    console.log(new Date().getTime() - startTime + startPos)
+  }, 21280-startPos)
+})
 omx.on('changeStatus', console.log)
 omx.open(path, opts)
-omx.playPause()
-omx.getStatus(console.log)
-omx.getPosition(console.log)
-omx.on('aboutToFinish', ()=>setInterval(end, 100).unref())
+//omx.setPosition(100000, console.log )

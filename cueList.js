@@ -1,7 +1,10 @@
 const orgue = require("./orgue.js")
     , fs = require('fs')
+    , spawn = require('child_process').spawn
 
-let cl = {}
+let cl = {
+  soundPath: ''
+}
   , cue = {
       name: 'Mise'
     , state: [0]
@@ -10,24 +13,39 @@ let cl = {}
     , date: -1
     }
 
-cl.content = [Object.assign(Object.create(cue), {state:cue.state.slice()})]
+cl.content = []
 
-//cl.orgue = Object.create(orgue.proto) //should make copy of arrays to prevent modifying proto
-cl.orgue = orgue.proto
+cl.orgue = orgue
+orgue.init()
 
 cl.save = function(path) {
-  fs.writeFileSync(path, JSON.stringify(this.content))
+  fs.writeFileSync(path, JSON.stringify({
+    cueList: this.content,
+    soundPath: this.soundPath,
+    patch: this.orgue.patch
+  }))
 }
 
 cl.load = function(path) {
-  let parsed = JSON.parse(fs.readFileSync(path))
-  this.content = parsed.map((v,i,a)=>Object.assign(Object.create(cue), v))
+  let l = JSON.parse(fs.readFileSync(path))
+  this.content = l.cueList
+  this.soundPath = l.soundPath
+  this.orgue.patch = l.patch
+  this.content.forEach((v,i,a)=>{
+    Object.keys(cue).forEach(k=>{
+      if (!v[k]) v[k] = cue[k]
+    })
+  })
 }
 
-cl.addCue = function(n = this.content.length-1, writeState = true) {
-  let oldCue = this.content[n]||cue
-    , state = writeState ? this.orgue.state : oldCue.state.slice()
-    , newCue = Object.assign(Object.create(cue), oldCue, {name:oldCue.name+'|',state:state})
+cl.addCue = function(c=cue, n = this.content.length-1, writeState = true) {
+  let oldCue = this.content[n]||{}
+    , newCue = {}
+  if (writeState) c.state = this.orgue.state
+  Object.keys(cue).forEach(k=>{
+    newCue[k] = c[k] || oldCue[k] || cue[k]
+  })
+  newCue.state = newCue.state.slice() //Security, just to be sure...
   this.content.splice(n+1, 0, newCue)
 }
 
@@ -43,8 +61,15 @@ cl.applyCue = function(n) {
   this.orgue.state = this.content[n].state
 }
 
+cl.play = function(pos = 0) {
+  //TODO CF testSpawn
+}
+
 cl.go = function(n = 0, cb = null) {
-  if (n < 0 || n >= this.content.length - 1) return;
+  if (n < 0 || n >= this.content.length - 1) {
+    if (cb) cb(false, null)
+    return;
+  }
   this.from = this.content[n].state
   this.to = this.content[++n].state
   this.downLeds = []
@@ -64,7 +89,10 @@ cl.go = function(n = 0, cb = null) {
   let downMs = downDiff == -1 ? 0 : this.content[n].downTime * 1000
     , upMs = upDiff == -1 ? 0 : this.content[n].upTime * 1000
   
-  this.interMs = Math.max(downMs/downDiff, this.orgue.minMsInter, upMs/upDiff)
+  this.interMs = Math.max(
+    this.orgue.minMsInter,
+    Math.min(downMs/downDiff, upMs/upDiff)
+    )
   this.downFrames = Math.round(downMs/this.interMs)
   this.upFrames = Math.round(upMs/this.interMs)
   this.frameCount = 0

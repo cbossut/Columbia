@@ -20,10 +20,14 @@ span {
 }
 
 button {
-  background-color: gray;
+  background-color: dimgrey;
   color: white;
-  border: none;
+  border: 1px solid black;
   font-size: 1em;
+  margin-left: 10px;
+}
+button:disabled {
+  color: darkslategrey;
 }
 
 #flex {
@@ -43,7 +47,54 @@ button {
 }
 
 
-#orgue {
+#son {
+  position: relative;
+}
+
+.player {
+  padding: 0px;
+  margin: 0px;
+  border: none;
+}
+#soundContainer {
+  position: relative;
+}
+#soundRepresentation {
+  position: absolute;
+  align-self: center;
+  bottom: 50%;
+}
+#soundBar {
+  background-color: #2a26;
+  height: 100px;
+  width: 50%;
+}
+#soundCursor {
+  position: absolute;
+  top: 0px;
+  left: 25%;
+  background-color: #22aa;
+  height: 100%;
+  width: 1px;
+}
+
+.timeText {
+  font-family: monospace;
+  font-size: 1.5em;
+}
+#soundMin {
+  position: absolute;
+  top: 10px;
+  left: 0px;
+}
+#soundMax {
+  position: absolute;
+  top: 10px;
+  right: 0px;
+}
+
+
+#orgueP {
   flex-grow: 1;
 }
 
@@ -53,10 +104,11 @@ button {
   width: 2em;
   height: 2em;
   align-content: center;
+  text-align: left;
 }
 
 
-#cue>* {
+#cueP>* {
   float: left;
 }
 
@@ -69,25 +121,26 @@ table {
   border-collapse: collapse;
 }
 
-tr:nth-child(odd) {
+.cueTR:nth-child(odd) {
   background-color: #222;
 }
 
-tr:nth-child(even) {
+.cueTR:nth-child(even) {
   background-color: #444;
 }
 
-tr:hover {
+.cueTR:hover {
   background-color: #666;
 }
 
-tr.sel {
+.cueTR.sel {
   background-color: #888;
   border: 2px solid red;
 }
 
 th, td {
   border: 1px solid purple;
+  white-space: nowrap;
 }
 
 .time {
@@ -96,6 +149,32 @@ th, td {
   color: white;
 }
 
+.progress {
+  display: none;
+  border: none;
+  position: absolute;
+  top: inherit;
+  height: inherit;
+  width: inherit;
+  background-color: #2a26
+}
+
+
+.patchName {
+  background-color: inherit;
+  color: inherit;
+  text-align: center;
+  width: 6em;
+}
+.patchName:focus {
+  background-color: darkgreen;
+}
+.ledNumber {
+  width: 2.5em;
+}
+
+
 .proto {
   display: none;
 }
+
