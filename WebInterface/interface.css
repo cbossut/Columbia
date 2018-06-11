@@ -62,7 +62,7 @@ button:disabled {
 #soundRepresentation {
   position: absolute;
   align-self: center;
-  top: 50%;
+  bottom: 50%;
 }
 #soundBar {
   background-color: #2a26;

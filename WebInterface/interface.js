@@ -70,7 +70,6 @@ socket.on('soundFiles', f=>{
 })
 document.getElementById('soundLoad').onclick = ()=>{
   socket.emit('loadSound', soundFiles.value)
-  playBtn.disabled = false
 }
 playBtn.onclick = ()=>{
   soundPlaying
@@ -79,6 +78,7 @@ playBtn.onclick = ()=>{
 }
 
 socket.on('soundInfo', i=>{
+  playBtn.disabled = false
   soundTimes.dur = i.duration
   document.getElementById('soundRepresentation').innerHTML = i.file
 })

@@ -62,7 +62,7 @@ cl.applyCue = function(n) {
 }
 
 cl.play = function(pos = 0) {
-  //CF testSpawn
+  //TODO CF testSpawn
 }
 
 cl.go = function(n = 0, cb = null) {
