@@ -1,3 +1,16 @@
+/*
+Copyright ou © ou Copr. Clément Bossut, (2018)
+<bossut.clement@gmail.com>
+
+Ce logiciel est un programme informatique servant à écrire et jouer une conduite lumière synchronisée avec du son sur une Raspberry Pi avec PCA8596. 
+
+Ce logiciel est régi par la licence CeCILL soumise au droit français et
+respectant les principes de diffusion des logiciels libres. Vous pouvez
+utiliser, modifier et/ou redistribuer ce programme sous les conditions
+de la licence CeCILL telle que diffusée par le CEA, le CNRS et l'INRIA 
+sur le site "http://www.cecill.info".
+*/
+
 const factor = 40
 
 let socket = io(window.location.href)
