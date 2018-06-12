@@ -35,7 +35,7 @@ player = {
       player.dur = s.duration/1000
       player.stop()
     })
-    omx.open(p, {startVolume: 0})
+    omx.open(p, {startVolume: '0'}) //TODO doesn't mute
   },
   run: false,
   pos: -1,

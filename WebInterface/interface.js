@@ -61,42 +61,42 @@ document.getElementById('play').onclick = function() {
 let soundFiles = document.getElementById('soundFiles')
   , playBtn = document.getElementById('soundPlay')
   , soundTimes = {
-    container: document.getElementById('soundContainer'),
-    posSpan: document.getElementById('soundPos'),
-    posBar: document.getElementById('soundBar'),
-    durSpan: document.getElementById('soundDur'),
-    minSpan: document.getElementById('soundMin'),
-    maxSpan: document.getElementById('soundMax'),
-    l: 0,
-    h: 0,
-    d: -1,
-    p: -1,
-    get min() {return this.l},
-    get max() {return this.h},
-    get dur() {return this.d},
-    get pos() {return this.p},
-    set min(m) {
-      this.l = m
-      this.minSpan.innerHTML = formatTime(m)
-    },
-    set max(m) {
-      this.h = m
-      this.maxSpan.innerHTML = formatTime(m)
-    },
-    set dur(d) {
-      this.d = d
-      this.durSpan.innerHTML = formatTime(d)
-      this.min = 0
-      this.max = d
-      this.pos = 0
-    },
-    set pos(p) {
-      this.p = p
-      this.posSpan.innerHTML = formatTime(p)
-      let percent = limit(100*(p - this.min)/(this.max - this.min))
-      this.posBar.style.width = percent ? percent+'%' : '1px'
+      container: document.getElementById('soundContainer'),
+      posSpan: document.getElementById('soundPos'),
+      posBar: document.getElementById('soundBar'),
+      durSpan: document.getElementById('soundDur'),
+      minSpan: document.getElementById('soundMin'),
+      maxSpan: document.getElementById('soundMax'),
+      l: 0,
+      h: 0,
+      d: -1,
+      p: -1,
+      get min() {return this.l},
+      get max() {return this.h},
+      get dur() {return this.d},
+      get pos() {return this.p},
+      set min(m) {
+        this.l = m
+        this.minSpan.innerHTML = formatTime(m)
+      },
+      set max(m) {
+        this.h = m
+        this.maxSpan.innerHTML = formatTime(m)
+      },
+      set dur(d) {
+        this.d = d
+        this.durSpan.innerHTML = formatTime(d)
+        this.min = 0
+        this.max = d
+        this.pos = 0
+      },
+      set pos(p) {
+        this.p = p
+        this.posSpan.innerHTML = formatTime(p)
+        let percent = limit(100*(p - this.min)/(this.max - this.min))
+        this.posBar.style.width = percent ? percent+'%' : '1px'
+      }
     }
-  }
   , soundPlaying = false
   , moveWhilePlaying = false
 
@@ -232,7 +232,7 @@ socket.on('cueList', content => {
 
 interact('.cueTR')
 .pointerEvents({ignoreFrom: 'input'})
-.on('tap', (e)=>{selCue(e.currentTarget)})
+.on('tap', e=>selCue(e.currentTarget))
 
 document.getElementById('delCue').onclick = ()=>{
   socket.emit('delete', selCueIndex)
@@ -386,7 +386,7 @@ socket.on('orgueState', s => {
 })
 
 function changeFader(f, d) {
-  if (!d) return;
+  if (!d || !f) return;
   f.value = Math.ceil(100*Math.round(factor*limit(f.value + d))/factor)/100
   socket.emit('orgue', {led:f.num, val:f.value*factor})
 }
