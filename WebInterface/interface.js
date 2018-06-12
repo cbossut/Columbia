@@ -380,6 +380,8 @@ socket.on('patch', o => {
 interact('.fader').draggable({
   onmove: e=>changeFader(e.currentTarget, - parseInt(e.dy)/2)
 })
+.pointerEvents()
+.on('tap', e=>selectFader(e.currentTarget))
 
 socket.on('orgueState', s => {
   faders.forEach((v,i,a)=>v.value = Math.ceil(100*s[i]/factor)/100)
@@ -427,6 +429,10 @@ document.body.onkeydown = e => {
     case 'ArrowRight':
       nextFader()
       break;
+    case 'Escape':
+      selFader.classList.remove('sel')
+      selFader = null
+      break;
     case 'Numpad7':
       changeFader(selFader, 1)
       break;
@@ -452,6 +458,12 @@ document.body.onkeydown = e => {
   if (prevent) e.preventDefault()
 }
 
+document.body.onwheel = e => {
+  if (selFader) {
+    changeFader(selFader, -e.deltaY/2)
+    e.preventDefault()
+  }
+}
 
 
 function limit(val, max=100, min=0) {
