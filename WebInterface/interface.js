@@ -35,6 +35,18 @@ socket.on('files', f=>{
   populate(files, f)
 })
 
+document.getElementById('play').onclick = function() {
+  if (this.encours) {
+    this.encours = false
+    this.innerHTML = 'Tester'
+    socket.emit('cut')
+  } else {
+    this.encours = true
+    this.innerHTML = 'STOP'
+    socket.emit('playtest', soundTimes.pos)
+  }
+}
+
 
 let soundFiles = document.getElementById('soundFiles')
   , playBtn = document.getElementById('soundPlay')

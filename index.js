@@ -100,6 +100,9 @@ io.on('connection', sock => {
     }, 40)
   })
   sock.on('pauseSound', ()=>player.pause())
+  
+  sock.on('playtest', pos=>cl.play(pos))
+  sock.on('cut', ()=>cl.cut())
 })
 
 app.listen(8080)

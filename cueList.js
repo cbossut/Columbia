@@ -25,6 +25,7 @@ let cl = {
     , downTime: 10
     , date: -1
     }
+  , omx = null
 
 cl.content = []
 
@@ -75,7 +76,21 @@ cl.applyCue = function(n) {
 }
 
 cl.play = function(pos = 0) {
-  //TODO CF testSpawn
+  if (omx) return;
+  let second = Math.floor(pos/1000)
+  omx = spawn('omxplayer', [this.soundPath, '-Il', second.toString()])
+  omx.stderr.once('data', () => {
+    this.content.forEach((v,i,a)=>{
+      if (v.date != -1) v.timeout = setTimeout(()=>this.go(i), v.date-1000*second)
+    })
+  })
+  omx.on('close', cleanOmx)
+}
+
+cl.cut = function() {
+  if (!omx) return;
+  this.stop()
+  omx.stdin.write('q')
 }
 
 cl.go = function(n = 0, cb = null) {
@@ -167,6 +182,13 @@ cl.print = function() {
     console.log(c.name, "up", c.upTime, "down", c.downTime, c.state)
   }
 }
+
+
+function cleanOmx() {
+  omx = null
+  cl.content.forEach(v=>{clearTimeout(v.timeout);v.timeout = null})
+}
+
 
 module.exports = {
   proto: cl
