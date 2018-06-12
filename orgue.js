@@ -48,6 +48,7 @@ or.setLevel = function(n, val) {
   this.levels[n] = val
   let leds = this.patch[n].leds
     , addr = this.pcas[this.patch[n].pca]
+  val = this.patch[n].exp ? Math.round(mapExp(val, this.patch[n].exp)) : val
   for (let j = 0 ; j < leds.length ; j++) {
     pca.setLed(addr, leds[j], val)
   }
@@ -60,6 +61,10 @@ or.init = function() {
     this.state = s
   })
   this.freq = 200
+}
+
+function mapExp(v, exp) {
+  return Math.pow(v*Math.pow(4095,1/exp)/4095, exp)
 }
 
 module.exports = or

@@ -295,7 +295,6 @@ let faders = []
   , fader = document.getElementById('fader')
   , plist = document.getElementById('patchList')
   , pline = document.getElementById('patchLine')
-  , courbes = ['Linéaire']
 
 socket.on('patch', o => {
   let patch = o.patch
@@ -350,8 +349,10 @@ socket.on('patch', o => {
     }
     el = el.nextElementSibling
     let c = el.children[0]
-    populate(c, courbes)
-    c.selectedIndex = 0
+    c.value = v.exp || 1
+    c.onchange = function() {
+      socket.emit('patchChange', {n: i, new: {exp: this.value}})
+    }
     plist.appendChild(line)
   })
 })
