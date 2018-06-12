@@ -57,6 +57,13 @@ document.getElementById('play').onclick = function() {
   }
 }
 
+document.getElementById('patchShow').onclick = function() {
+  let st = document.getElementById('patchP').style
+  console.log(st.display)
+  if (st.display == 'none') st.display = 'initial'
+  else st.display = 'none'
+}
+
 
 let soundFiles = document.getElementById('soundFiles')
   , playBtn = document.getElementById('soundPlay')
