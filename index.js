@@ -34,6 +34,7 @@ io.on('connection', sock => {
     pcas: cl.orgue.pcas
   })
   sock.emit('orgueState', cl.orgue.state)
+  sock.emit('soundInfo', {file: player.soundPath, duration: player.dur})
   
   sock.emit('soundFiles', fs.readdirSync(soundPath))
   
