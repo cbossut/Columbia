@@ -11,6 +11,16 @@ de la licence CeCILL telle que diffusée par le CEA, le CNRS et l'INRIA
 sur le site "http://www.cecill.info".
 */
 
+//POLYFILL NodeList.forEach for Chrome before 51
+if (window.NodeList && !NodeList.prototype.forEach) {
+  NodeList.prototype.forEach = function (callback, thisArg) {
+    thisArg = thisArg || window;
+    for (var i = 0; i < this.length; i++) {
+      callback.call(thisArg, this[i], i, this);
+    }
+  };
+}
+
 const factor = 40
 
 let socket = io(window.location.href)
@@ -307,9 +317,9 @@ socket.on('patch', o => {
     let f = fader.cloneNode(true)
     f.removeAttribute('id')
     f.classList.remove('proto')
-    f.firstChild.replaceWith(v.name || i+1)
+    f.childNodes[0].textContent = v.name || i+1
     f.num = i
-    f.lastChild.replaceWith(0)
+    f.childNodes[2].textContent = 0
     f.val = 0
     Object.defineProperty(f, 'value', {
       enumerable: true,
@@ -317,7 +327,7 @@ socket.on('patch', o => {
       get: function() {return this.val},
       set: function(v) {
         this.val = v
-        this.lastChild.replaceWith(v)
+        this.childNodes[2].textContent = v
       }
     })
     panel.appendChild(f)
@@ -332,7 +342,7 @@ socket.on('patch', o => {
     let inp = el.children[0]
     inp.value = v.name || '-'
     inp.onchange = function() {
-      f.firstChild.replaceWith(this.value)
+      f.childNodes[0].textContent = this.value
       socket.emit('patchChange', {n: i, new: {name: this.value}})
     }
     el = el.nextElementSibling
