@@ -192,7 +192,18 @@ socket.on('cueList', content => {
       socket.emit('cueChange', {n:this.num, change:{downTime:this.value}})
     }
     el = el.nextElementSibling
-    el.innerHTML = v.date
+    if (v.date == -1) {
+      el.innerHTML = ''
+      let btn = document.createElement('button')
+      btn.innerHTML = 'Marquer'
+      btn.onclick = function() {
+        socket.emit('cueChange', {n:i, change:{date: soundTimes.pos}})
+        el.innerHTML = formatTime(soundTimes.pos)
+      }
+      el.appendChild(btn)
+    } else {
+      el.innerHTML = formatTime(v.date)
+    }
     cl.appendChild(line)
   })
 })
