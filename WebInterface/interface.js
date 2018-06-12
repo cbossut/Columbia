@@ -242,7 +242,8 @@ document.getElementById('upCue').onclick = ()=>{
   socket.emit('update', selCueIndex)
 }
 
-document.getElementById('go').onclick = function() {
+document.getElementById('go').onclick = function () {
+  if (this.disabled) return;
   if (playing) {
     socket.emit('stop')
     stop()
@@ -297,7 +298,15 @@ function unselCue() {
 }
 
 function nextCue() {
-  selCue(document.querySelector('.cueTR.sel').nextElementSibling)
+  let seled = document.querySelector('.cueTR.sel')
+  if (!seled) selCue(cl.firstElementChild)
+  else selCue(seled.nextElementSibling)
+}
+
+function prevCue() {
+  let seled = document.querySelector('.cueTR.sel')
+  if (!seled) selCue(cl.lastElementChild)
+  else selCue(seled.previousElementSibling)
 }
 
 
@@ -305,6 +314,7 @@ let faders = []
   , fader = document.getElementById('fader')
   , plist = document.getElementById('patchList')
   , pline = document.getElementById('patchLine')
+  , selFader = null
 
 socket.on('patch', o => {
   let patch = o.patch
@@ -368,19 +378,79 @@ socket.on('patch', o => {
 })
 
 interact('.fader').draggable({
-  onmove: e=>{
-    if (!e.dy) return;
-    let f = e.currentTarget
-    f.value = limit(f.value - parseInt(e.dy)/2)
-    socket.emit('orgue', {led:f.num, val:f.value*factor})
-  }
+  onmove: e=>changeFader(e.currentTarget, - parseInt(e.dy)/2)
 })
 
 socket.on('orgueState', s => {
   faders.forEach((v,i,a)=>v.value = Math.ceil(100*s[i]/factor)/100)
 })
 
+function changeFader(f, d) {
+  if (!d) return;
+  f.value = Math.ceil(100*Math.round(factor*limit(f.value + d))/factor)/100
+  socket.emit('orgue', {led:f.num, val:f.value*factor})
+}
 
+function selectFader(div) {
+  if (selFader) selFader.classList.remove('sel')
+  if (div) div.classList.add('sel')
+  selFader = div
+}
+
+function nextFader() {
+  if (!selFader) selectFader(faders[0])
+  else selectFader(selFader.nextElementSibling)
+}
+
+function prevFader() {
+  if (!selFader) selectFader(faders[faders.length-1])
+  else selectFader(selFader.previousElementSibling)
+}
+
+
+document.body.onkeydown = e => {
+  let prevent = true
+  switch (e.code) {
+    case 'ArrowDown':
+      if (!e.repeat) nextCue()
+      break;
+    case 'ArrowUp':
+      if (!e.repeat) prevCue()
+      break;
+    case 'Space':
+      if (!e.repeat) document.getElementById('go').onclick()
+      break;
+      
+    case 'ArrowLeft':
+      prevFader()
+      break;
+    case 'ArrowRight':
+      nextFader()
+      break;
+    case 'Numpad7':
+      changeFader(selFader, 1)
+      break;
+    case 'Numpad4':
+      changeFader(selFader, -1)
+      break;
+    case 'Numpad8':
+      changeFader(selFader, .1)
+      break;
+    case 'Numpad5':
+      changeFader(selFader, -.1)
+      break;
+    case 'Numpad9':
+      changeFader(selFader, .02)
+      break;
+    case 'Numpad6':
+      changeFader(selFader, -.02)
+      break;
+      
+    default:
+      prevent = false
+  }
+  if (prevent) e.preventDefault()
+}
 
 
 

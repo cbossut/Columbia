@@ -60,6 +60,11 @@ button:disabled {
 }
 
 
+.sel {
+  border: 2px solid red;
+}
+
+
 #son {
   position: relative;
 }
@@ -148,7 +153,6 @@ table {
 
 .cueTR.sel {
   background-color: #888;
-  border: 2px solid red;
 }
 
 th, td {
