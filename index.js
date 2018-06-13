@@ -48,7 +48,7 @@ process.on('uncaughtException', () => cl.save(autosavePath))
 io.on('connection', sock => {
   console.log(sock.id, sock.client.conn.remoteAddress)
   
-  process.on('uncaughtException', e=>sock.emit('debug', {message:'except', err:e}))
+  process.on('uncaughtException', e=>sock.emit('debug', {message:'except', err:JSON.stringify(e)}))
   
   sock.emit('cueList', cl.content)
   sock.emit('patch', {

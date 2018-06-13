@@ -181,6 +181,7 @@ cl.print = function() {
     let c = this.content[i]
     console.log(c.name, "up", c.upTime, "down", c.downTime, c.state)
   }
+  orgue.patch.forEach((v,i)=>console.log(i, 'addr', v.pca, v.leds, 'exp', v.exp))
 }
 
 
