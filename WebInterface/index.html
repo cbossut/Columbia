@@ -90,28 +90,13 @@ sur le site "http://www.cecill.info".
     <div class="panel" id="orgueP">
     </div>
 
+    
     <div class="panel" id="patchP">
-      <table>
-        <thead>
-          <th>Voie</th>
-          <th>Nom</th>
-          <th>Addresse</th>
-          <th>Courbe</th>
-        </thead>
-        <tr class="proto" id="patchLine">
-          <td>0</td>
-          <td><input class="patchName"></td>
-          <td>
-            <select class="pcas"></select>
-            <input class="ledNumber" type="number" min=1 max=16>
-          </td>
-          <td>
-            <input class="exposantCourbe" type="number" min=.1 max=3 step=.1>
-          </td>
-        </tr>
-        <tbody id="patchList">
-        </tbody>
-      </table>
+      <input id="exposantLeds" type="number" min=.1 max=3 step=.1>
+      <span id="listLeds"></span>
+      <select id="selLeds"></select>
+      <button id="addLed">+</button>
+      <button id="rmLed">-</button>
     </div>
     
   </div>
