@@ -49,7 +49,7 @@ document.getElementById('save')
 socket.on('files', f=>{
   populate(files, f)
 })
-
+/*
 document.getElementById('play').onclick = function() {
   if (this.encours) {
     this.encours = false
@@ -61,7 +61,7 @@ document.getElementById('play').onclick = function() {
     socket.emit('playtest', soundTimes.pos)
   }
 }
-
+*/
 document.getElementById('patchShow').onclick = function() {
   let st = document.getElementById('patchP').style
   if (st.display == 'none') st.display = 'initial'
@@ -159,7 +159,11 @@ interact(soundTimes.posBar).resizable({
     }
   }
 })
-
+/*
+socket.on('testPos', p=>{
+  document.getElementById('testPos').innerHTML = formatTime(p)
+})
+*/
 
 let mem = document.getElementById('mem')
   , add = document.getElementById('addCue')

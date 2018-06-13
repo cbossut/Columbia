@@ -111,20 +111,27 @@ io.on('connection', sock => {
   })
   sock.on('playSound', p=>{
     if (soundInterval) clearInterval(soundInterval)
-    player.play(p)
+    cl.play(p)
     soundInterval = setInterval(function() {
-      let state = {
-        playing: player.isPlaying(),
-        pos: player.getPos()
-      }
-      if (!state.playing) clearInterval(soundInterval)
+      let state = cl.getSoundStat()
       sock.emit('soundPlayStat', state)
+      if (!state.playing) clearInterval(soundInterval)
     }, 40)
   })
-  sock.on('pauseSound', ()=>player.pause())
+  sock.on('pauseSound', ()=>cl.cut())
   
-  sock.on('playtest', pos=>cl.play(pos))
-  sock.on('cut', ()=>cl.cut())
+  /*
+  sock.on('playtest', pos=>{
+    cl.play(pos)
+    soundInterval = setInterval(()=>{console.log(cl.getSoundPos())
+      sock.emit('testPos', cl.getSoundPos())
+    }, 40)
+  })
+  sock.on('cut', ()=>{
+    cl.cut()
+    clearInterval(soundInterval)
+  })
+  */
 })
 
 app.listen(8080)

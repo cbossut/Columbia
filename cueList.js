@@ -26,6 +26,8 @@ let cl = {
     , date: -1
     }
   , omx = null
+  , soundTimeRef = -1
+  , soundPosRef = 0
 
 cl.content = []
 
@@ -78,10 +80,12 @@ cl.applyCue = function(n) {
 cl.play = function(pos = 0) {
   if (omx) return;
   let second = Math.floor(pos/1000)
+  soundPosRef = second*1000
   omx = spawn('omxplayer', [this.soundPath, '-Il', second.toString()])
   omx.stderr.once('data', () => {
+    soundTimeRef = new Date().getTime()
     this.content.forEach((v,i,a)=>{
-      if (v.date != -1) v.timeout = setTimeout(()=>this.go(i), v.date-1000*second)
+      if (v.date != -1) v.timeout = setTimeout(()=>this.go(i-1), v.date-1000*second)
     })
   })
   omx.on('close', cleanOmx)
@@ -91,6 +95,13 @@ cl.cut = function() {
   if (!omx) return;
   this.stop()
   omx.stdin.write('q')
+  soundPosRef = new Date().getTime() - soundTimeRef + soundPosRef
+  soundTimeRef = -1
+}
+
+cl.getSoundStat = function() {
+  if (omx) return {playing: true, pos: new Date().getTime() - soundTimeRef + soundPosRef}
+  return {playing: false, pos: soundPosRef}
 }
 
 cl.go = function(n = 0, cb = null) {
