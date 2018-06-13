@@ -24,9 +24,22 @@ const staticroute = require('static-route')
     , player = require('./player.js')
     , savePath = './data/'
     , soundPath = './sounds/'
+    , autosavePath = savePath + 'autosave.json'
+
+if (fs.existsSync(autosavePath)) {
+  cl.load(autosavePath)
+}
+
+process.on('SIGINT', () => cl.save(autosavePath))
+process.on('SIGUSR1', () => cl.save(autosavePath))
+process.on('SIGUSR2', () => cl.save(autosavePath))
+
+process.on('uncaughtException', () => cl.save(autosavePath))
 
 io.on('connection', sock => {
   console.log(sock.id, sock.client.conn.remoteAddress)
+  
+  process.on('uncaughtException', e=>sock.emit('debug', {message:'except', err:e}))
   
   sock.emit('cueList', cl.content)
   sock.emit('patch', {

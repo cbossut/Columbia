@@ -58,6 +58,11 @@ button:disabled {
   border-radius: 50%;
   background-color: red;
 }
+#debug {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+}
 
 
 .sel {

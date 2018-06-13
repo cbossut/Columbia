@@ -28,6 +28,11 @@ socket.on('connect', ()=>setCo(true))
 socket.on('reconnect', ()=>setCo(true))
 socket.on('disconnect', ()=>setCo(false))
 
+socket.on('debug', d => {
+  document.getElementById('debug').innerHTML = d.message
+  console.log(d)
+})
+
 interact('#co').on('tap', ()=>socket.emit('print'))
 
 
@@ -489,8 +494,12 @@ function formatTime(t) {
   ].join('')
 }
 
+let saveInter = null
 function setCo(co) {
-  if (co) socket.emit('refresh')
+  if (co) {
+    socket.emit('refresh')
+    saveInter = setInterval(()=>socket.emit('save', 'autosave'), 60000)
+  } else clearInterval(saveInter)
   document.getElementById('co').style.backgroundColor = co?"green":"red"
 }
 
