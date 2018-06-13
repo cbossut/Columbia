@@ -30,9 +30,18 @@ if (fs.existsSync(autosavePath)) {
   cl.load(autosavePath)
 }
 
-process.on('SIGINT', () => cl.save(autosavePath))
-process.on('SIGUSR1', () => cl.save(autosavePath))
-process.on('SIGUSR2', () => cl.save(autosavePath))
+process.on('SIGINT', () => {
+  cl.save(autosavePath)
+  process.exit()
+})
+process.on('SIGUSR1', () => {
+  cl.save(autosavePath)
+  process.exit()
+})
+process.on('SIGUSR2', () => {
+  cl.save(autosavePath)
+  process.exit()
+})
 
 process.on('uncaughtException', () => cl.save(autosavePath))
 
