@@ -11,6 +11,11 @@ de la licence CeCILL telle que diffusée par le CEA, le CNRS et l'INRIA
 sur le site "http://www.cecill.info".
 */
 
+* {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 body {
   font-family: sans-serif;
   color: aliceblue;
@@ -88,7 +93,7 @@ button:disabled {
   bottom: 50%;
 }
 #soundBar {
-  background-color: #2a26;
+  background-color: #2a2;
   height: 100px;
   width: 50%;
 }
@@ -182,6 +187,9 @@ th, td {
 }
 
 
+#patchP {
+  display: none;
+}
 .patchName {
   background-color: inherit;
   color: inherit;

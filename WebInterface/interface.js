@@ -64,7 +64,6 @@ document.getElementById('play').onclick = function() {
 
 document.getElementById('patchShow').onclick = function() {
   let st = document.getElementById('patchP').style
-  console.log(st.display)
   if (st.display == 'none') st.display = 'initial'
   else st.display = 'none'
 }
@@ -106,7 +105,7 @@ let soundFiles = document.getElementById('soundFiles')
         this.p = p
         this.posSpan.innerHTML = formatTime(p)
         let percent = limit(100*(p - this.min)/(this.max - this.min))
-        this.posBar.style.width = percent ? percent+'%' : '1px'
+        this.posBar.style.width = percent ? percent+'%' : '3px'
       }
     }
   , soundPlaying = false
@@ -149,7 +148,7 @@ interact(soundTimes.posBar).resizable({
     if (!e.dx) return;
     let tot = soundTimes.container.getBoundingClientRect().width
       , ratio = limit(Math.floor(e.rect.width), tot) / tot
-    soundTimes.posBar.style.width = ratio ? ratio*100+'%' : '1px'
+    soundTimes.posBar.style.width = ratio ? ratio*100+'%' : '3px'
     soundTimes.p = ratio*(soundTimes.max-soundTimes.min)+soundTimes.min
     soundTimes.posSpan.innerHTML = formatTime(soundTimes.pos)
   },
@@ -279,7 +278,7 @@ socket.on('playStatus', o=>{
     stop()
     return;
   }
-  prog.innerHTML = o.time
+  prog.innerHTML = Math.round(o.time*10)/10
 })
 
 
@@ -354,6 +353,12 @@ socket.on('patch', o => {
     })
     panel.appendChild(f)
     faders.push(f)
+    if (i%12 == 11) {
+      panel.appendChild(document.createElement('br'))
+      panel.appendChild(document.createElement('br'))
+      panel.appendChild(document.createElement('br'))
+      panel.appendChild(document.createElement('br'))
+    }
     
     let line = pline.cloneNode(true)
     line.removeAttribute('id')
@@ -432,9 +437,25 @@ document.body.onkeydown = e => {
       if (!e.repeat) prevCue()
       break;
     case 'Space':
-      if (!e.repeat) document.getElementById('go').onclick()
+      if (e.repeat) break;
+      if (playing) {
+        document.getElementById('go').onclick()
+        nextCue()
+      }
+      document.getElementById('go').onclick()
       break;
       
+    case 'KeyP':
+      changeFader(selFader, -100)
+      nextFader()
+      changeFader(selFader, 100)
+      break;
+    case 'KeyI':
+      changeFader(selFader, 100)
+      break;
+    case 'KeyO':
+      changeFader(selFader, -100)
+      break;
     case 'ArrowLeft':
       prevFader()
       break;
@@ -445,22 +466,23 @@ document.body.onkeydown = e => {
       selFader.classList.remove('sel')
       selFader = null
       break;
-    case 'Numpad7':
+      
+    case 'Digit1':
       changeFader(selFader, 1)
       break;
-    case 'Numpad4':
+    case 'KeyQ':
       changeFader(selFader, -1)
       break;
-    case 'Numpad8':
+    case 'Digit2':
       changeFader(selFader, .1)
       break;
-    case 'Numpad5':
+    case 'KeyW':
       changeFader(selFader, -.1)
       break;
-    case 'Numpad9':
+    case 'Digit3':
       changeFader(selFader, .02)
       break;
-    case 'Numpad6':
+    case 'KeyE':
       changeFader(selFader, -.02)
       break;
       
