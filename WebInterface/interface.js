@@ -321,21 +321,21 @@ socket.on('cueList', content => {
       time.cursor.pos = this.valueAsNumber
       socket.emit('cueChange', {n:i, change:{date: this.valueAsNumber}})
     }
+    el = el.nextElementSibling
+    el.children[0].onclick = function() {
+      socket.emit('update', i)
+    }
     soundTimes.container.appendChild(time.cursor)
     cl.appendChild(line)
   })
 })
 
 interact('.cueTR')
-.pointerEvents({ignoreFrom: 'input'})
+.pointerEvents({ignoreFrom: '.nosel'})
 .on('tap', e=>selCue(e.currentTarget))
 
 document.getElementById('delCue').onclick = ()=>{
   socket.emit('delete', selCueIndex)
-}
-
-document.getElementById('upCue').onclick = ()=>{
-  socket.emit('update', selCueIndex)
 }
 
 document.getElementById('go').onclick = function () {
