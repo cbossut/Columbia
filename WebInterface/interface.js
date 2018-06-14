@@ -211,6 +211,11 @@ socket.on('cueList', content => {
     line.removeAttribute('id')
     line.classList.remove('proto')
     let el = line.firstElementChild
+    if (v.comment) el.children[0].value = v.comment
+    el.children[0].onchange = function() {
+      socket.emit('cueChange', {n:i, change:{comment:this.value}})
+    }
+    el = el.nextElementSibling
     el.innerHTML = i+1
     el = el.nextElementSibling
     el.innerHTML = v.name
