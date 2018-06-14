@@ -188,11 +188,6 @@ interact('.cursor').draggable({
     e.currentTarget.pos = ratio*(soundTimes.max-soundTimes.min)+soundTimes.min
   }
 })
-/*
-socket.on('testPos', p=>{
-  document.getElementById('testPos').innerHTML = formatTime(p)
-})
-*/
 
 let mem = document.getElementById('mem')
   , add = document.getElementById('addCue')
@@ -254,6 +249,15 @@ socket.on('cueList', content => {
     let inp = el.children[0]
     inp.num = i
     inp.value = v.upTime
+    /*WIP
+    inp.onclick = function() {console.log('click')
+      this.lastvalue = this.value
+      this.value = ''
+    }
+    inp.onfocusout = function() {console.log('focusout')
+      if (!this.value) this.value = this.lastvalue
+    }
+    */
     inp.onchange = inp.onkeyup = function() {
       socket.emit('cueChange', {n:this.num, change:{upTime:this.value}})
     }
@@ -261,6 +265,15 @@ socket.on('cueList', content => {
     inp = el.children[0]
     inp.num = i
     inp.value = v.downTime
+    /*WIP
+    inp.onclick = function() {
+      this.lastvalue = this.value
+      this.value = ''
+    }
+    inp.onfocusout = function() {
+      if (!this.value) this.value = this.lastvalue
+    }
+    */
     inp.onchange = inp.onkeyup = function() {
       socket.emit('cueChange', {n:this.num, change:{downTime:this.value}})
     }
@@ -586,14 +599,15 @@ function limit(val, max=100, min=0) {
   return val
 }
 
-function formatTime(t) {
-  return [
+function formatTime(t, tab = false) {
+  let tt = [
     Math.floor(t/60000),
     ':',
     ('0'+Math.floor((t%60000)/1000)).slice(-2),
     '.',
     ('00'+Math.round(t%1000)).slice(-3)
-  ].join('')
+  ]
+  return tab ? tt : tt.join('')
 }
 
 let saveInter = null

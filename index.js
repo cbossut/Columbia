@@ -129,19 +129,6 @@ io.on('connection', sock => {
     }, 40)
   })
   sock.on('pauseSound', ()=>cl.cut())
-  
-  /*
-  sock.on('playtest', pos=>{
-    cl.play(pos)
-    soundInterval = setInterval(()=>{console.log(cl.getSoundPos())
-      sock.emit('testPos', cl.getSoundPos())
-    }, 40)
-  })
-  sock.on('cut', ()=>{
-    cl.cut()
-    clearInterval(soundInterval)
-  })
-  */
 })
 
 app.listen(8080)

@@ -196,7 +196,7 @@ cl.stop = function() {
 cl.print = function() {
   for(let i = 0 ; i < this.content.length ; i++) {
     let c = this.content[i]
-    console.log(c.name, "up", c.upTime, "down", c.downTime, "date", c.date, c.state)
+    console.log(c.name, "up", c.upTime, "down", c.downTime, "date", c.date, c.comment, c.state)
   }
   orgue.patch.forEach((v,i)=>console.log(i, 'addr', v.pca, v.leds, 'exp', v.exp))
 }
