@@ -45,6 +45,7 @@ document.getElementById('load')
   .onclick = ()=>socket.emit('load', files.value)
 document.getElementById('save')
   .onclick = ()=>{
+    document.getElementById('co').style.backgroundColor = 'blue'
     socket.emit('save', saveName.value)
     socket.emit('refresh')
   }
@@ -594,6 +595,9 @@ document.body.onwheel = e => {
 }
 
 
+socket.on('endSave', ()=>document.getElementById('co').style.backgroundColor = 'green')
+
+
 function limit(val, max=100, min=0) {
   if (val < min) val = min
   else if (val > max) val = max
@@ -615,7 +619,12 @@ let saveInter = null
 function setCo(co) {
   if (co) {
     socket.emit('refresh')
-    saveInter = setInterval(()=>socket.emit('save', 'autosave'), 60000)
+    saveInter = setInterval(()=>{
+      document.getElementById('co').style.backgroundColor = 'blue'
+      socket.emit('save', 'autosave')
+      document.getElementById('co').style.backgroundColor = 'blue'
+      socket.emit('save', new Date().getTime().toString())
+    }, 60000)
   } else clearInterval(saveInter)
   document.getElementById('co').style.backgroundColor = co?"green":"red"
 }

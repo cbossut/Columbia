@@ -84,7 +84,10 @@ io.on('connection', sock => {
     })
     sock.emit('orgueState', cl.orgue.state)
   })
-  sock.on('save', fileName => cl.save(savePath + fileName + '.json'))
+  sock.on('save', fileName => {
+    cl.save(savePath + fileName + '.json')
+    sock.emit('endSave')
+  })
   sock.on('addCue', (name,n) => {
     cl.addCue({name:name},n)
     sock.emit('cueList', cl.content) //TODO should not update full cueList
