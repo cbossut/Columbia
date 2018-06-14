@@ -34,6 +34,12 @@ cl.content = []
 cl.orgue = orgue
 orgue.init()
 
+cl.new = function() {
+  this.soundPath = ''
+  this.content = []
+  this.orgue.init()
+}
+
 cl.save = function(path) {
   fs.writeFileSync(path, JSON.stringify({
     cueList: this.content,

@@ -50,6 +50,16 @@ io.on('connection', sock => {
   
   //process.on('uncaughtException', e=>sock.emit('debug', {message:'except', err:JSON.stringify(e)}))
   
+  sock.on('new', ()=>{
+    cl.new()
+    sock.emit('cueList', cl.content)
+    sock.emit('patch', {
+      patch: cl.orgue.patch,
+      pcas: cl.orgue.pcas
+    })
+    sock.emit('orgueState', cl.orgue.state)
+  })
+  
   sock.emit('cueList', cl.content)
   sock.emit('patch', {
     patch: cl.orgue.patch,

@@ -30,15 +30,6 @@ or.pcas = pca.getAddresses()
 or.patch = []
 or.levels = []
 
-or.pcas.forEach((v,j,a)=>{
-  for (let i = 0 ; i < 16 ; i++) {
-    or.patch.push({
-      pca: j,
-      leds: [i]
-    })
-    or.levels.push(0)
-  }
-})
 
 or.setLevel = function(n, val) {
   if (!this.patch[n]) return;
@@ -56,9 +47,20 @@ or.setLevel = function(n, val) {
 
 or.init = function() {
   pca.init(()=>{
+    this.pcas = pca.getAddresses()
     let s = this.levels
     this.levels = []
     this.state = s
+    this.patch = []
+    this.pcas.forEach((v,j,a)=>{
+      for (let i = 0 ; i < 16 ; i++) {
+        this.patch.push({
+          pca: j,
+          leds: [i]
+        })
+        this.levels.push(0)
+      }
+    })
   })
   this.freq = 200
 }

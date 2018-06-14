@@ -36,6 +36,8 @@ socket.on('debug', d => {
 interact('#co').on('tap', ()=>socket.emit('print'))
 
 
+document.getElementById('newFile').onclick = ()=>socket.emit('new')
+
 let files = document.getElementById('files')
   , saveName = document.getElementById('fileName')
 
@@ -78,13 +80,16 @@ let soundFiles = document.getElementById('soundFiles')
       durSpan: document.getElementById('soundDur'),
       minSpan: document.getElementById('soundMin'),
       maxSpan: document.getElementById('soundMax'),
+      cursor: document.getElementById('soundCursor'),
+      cursors: [],
       l: 0,
       h: 0,
       d: -1,
       p: -1,
-      updateDraw: function() {
+      updateDraw: function(cursors = false) {
         let percent = limit(100*(this.pos - this.min)/(this.max - this.min))
         this.posBar.style.width = percent ? percent+'%' : '3px'
+        if (cursors) this.cursors.forEach(v=>v.pos = v.pos)
       },
       get min() {return this.l},
       get max() {return this.h},
@@ -94,13 +99,13 @@ let soundFiles = document.getElementById('soundFiles')
         m = limit(m, this.max)
         this.l = m
         this.minSpan.innerHTML = formatTime(m)
-        this.updateDraw()
+        this.updateDraw(true)
       },
       set max(m) {
         m = limit(m, this.dur, this.min)
         this.h = m
         this.maxSpan.innerHTML = formatTime(m)
-        this.updateDraw()
+        this.updateDraw(true)
       },
       set dur(d) {
         this.d = d
