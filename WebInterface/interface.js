@@ -208,12 +208,12 @@ mem.onkeyup = ()=>{
 
 add.onclick = ()=>{
   let c = cl.firstElementChild
-  while(c && beforeMem(c.children[1].innerHTML)) c = c.nextElementSibling
+  while(c && beforeMem(c.children[2].innerHTML)) c = c.nextElementSibling
   
   socket.emit(
     'addCue',
     mem.value,
-    c ? parseInt(c.firstElementChild.innerHTML)-2 : cl.children.length-1
+    c ? parseInt(c.children[1].innerHTML)-2 : cl.children.length-1
   )
   
   mem.value = ''
