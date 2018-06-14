@@ -82,17 +82,25 @@ let soundFiles = document.getElementById('soundFiles')
       h: 0,
       d: -1,
       p: -1,
+      updateDraw: function() {
+        let percent = limit(100*(this.pos - this.min)/(this.max - this.min))
+        this.posBar.style.width = percent ? percent+'%' : '3px'
+      },
       get min() {return this.l},
       get max() {return this.h},
       get dur() {return this.d},
       get pos() {return this.p},
       set min(m) {
+        m = limit(m, this.max)
         this.l = m
         this.minSpan.innerHTML = formatTime(m)
+        this.updateDraw()
       },
       set max(m) {
+        m = limit(m, this.dur, this.min)
         this.h = m
         this.maxSpan.innerHTML = formatTime(m)
+        this.updateDraw()
       },
       set dur(d) {
         this.d = d
@@ -104,8 +112,7 @@ let soundFiles = document.getElementById('soundFiles')
       set pos(p) {
         this.p = p
         this.posSpan.innerHTML = formatTime(p)
-        let percent = limit(100*(p - this.min)/(this.max - this.min))
-        this.posBar.style.width = percent ? percent+'%' : '3px'
+        this.updateDraw()
       }
     }
   , soundPlaying = false
@@ -158,6 +165,13 @@ interact(soundTimes.posBar).resizable({
       moveWhilePlaying = false
     }
   }
+})
+
+interact(soundTimes.minSpan).draggable({
+  onmove: e=>soundTimes.min -= 1000*e.dy
+})
+interact(soundTimes.maxSpan).draggable({
+  onmove: e=>soundTimes.max -= 1000*e.dy
 })
 /*
 socket.on('testPos', p=>{
