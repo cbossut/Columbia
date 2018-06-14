@@ -185,10 +185,7 @@ interact('.cursor').draggable({
     if (!e.dx) return;
     let tot = soundTimes.container.getBoundingClientRect().width
       , ratio = limit(Math.floor(e.currentTarget.offsetLeft+e.dx), tot) / tot
-    e.currentTarget.style.left = ratio*100+'%'
-    document.getElementById('debug').innerHTML = formatTime(
-      ratio*(soundTimes.max-soundTimes.min)+soundTimes.min
-    )
+    e.currentTarget.pos = ratio*(soundTimes.max-soundTimes.min)+soundTimes.min
   }
 })
 /*
@@ -238,6 +235,8 @@ function beforeMem(newMem) {
 socket.on('cueList', content => {
   cl.innerHTML = ''
   unselCue()
+  soundTimes.cursors.forEach(v=>v.remove())
+  soundTimes.cursors = []
   content.forEach((v,i,a) => {
     let line = cue.cloneNode(true)
     line.removeAttribute('id')
@@ -268,21 +267,46 @@ socket.on('cueList', content => {
     el = el.nextElementSibling
     let btn = el.children[1]
       , time = el.children[0]
+    time.cursor = soundTimes.cursor.cloneNode(true)
+    soundTimes.cursors.push(time.cursor)
+    time.cursor.removeAttribute('id')
+    time.cursor.classList.remove('proto')
+    time.cursor.children[0].innerHTML = v.name
+    time.cursor.time = time
+    Object.defineProperty(time.cursor, 'pos', {
+      enumerable: true,
+      configurable: true,
+      get: function() {return this.p},
+      set: function(p) {
+        this.p = p
+        this.time.valueAsNumber = p
+        if (p < soundTimes.min || p > soundTimes.max) {
+          this.style.display = 'none'
+        } else {
+          this.style.display = 'initial'
+          let percent = limit(100*(p - soundTimes.min)/(soundTimes.max - soundTimes.min))
+          this.style.left = percent+'%'
+        }
+      }
+    })
     if (v.date == -1) {
       time.style.display = 'none'
+      time.cursor.style.display = 'none'
       btn.onclick = function() {
         socket.emit('cueChange', {n:i, change:{date: soundTimes.pos}})
         time.style.display = 'initial'
         btn.style.display = 'none'
-        time.valueAsNumber = soundTimes.pos
+        time.cursor.pos = soundTimes.pos
       }
     } else {
       btn.style.display = 'none'
-      time.valueAsNumber = v.date
+      time.cursor.pos = v.date
     }
     time.onchange = function() {
-      socket.emit('cueChange', {n:i, change:{date: time.valueAsNumber}})
+      time.cursor.pos = this.valueAsNumber
+      socket.emit('cueChange', {n:i, change:{date: this.valueAsNumber}})
     }
+    soundTimes.container.appendChild(time.cursor)
     cl.appendChild(line)
   })
 })
