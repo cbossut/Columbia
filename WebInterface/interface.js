@@ -305,6 +305,7 @@ socket.on('cueList', content => {
     if (v.date == -1) {
       time.style.display = 'none'
       time.cursor.style.display = 'none'
+      time.cursor.pos = v.date
       btn.onclick = function() {
         socket.emit('cueChange', {n:i, change:{date: soundTimes.pos}})
         time.style.display = 'initial'
@@ -374,7 +375,7 @@ function selCue(trNode) {
   document.querySelectorAll('.cueTR.sel')
     .forEach(v=>v.classList.remove('sel'))
   trNode.classList.add('sel')
-  selCueIndex = parseInt(trNode.firstElementChild.innerHTML) - 1
+  selCueIndex = parseInt(trNode.children[1].innerHTML) - 1
   
   socket.emit('apply', selCueIndex)
   

@@ -66,8 +66,8 @@ cl.addCue = function(c=cue, n = this.content.length-1, writeState = true) {
   Object.keys(cue).forEach(k=>{
     newCue[k] = c[k] || cue[k]
   })
-  if (writeState) c.state = this.orgue.state.slice()
-  else c.state = oldCue.state.slice()
+  if (writeState) newCue.state = this.orgue.state.slice()
+  else newCue.state = oldCue.state.slice()
   this.content.splice(n+1, 0, newCue)
 }
 
