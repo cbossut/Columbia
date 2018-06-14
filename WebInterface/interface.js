@@ -173,6 +173,19 @@ interact(soundTimes.minSpan).draggable({
 interact(soundTimes.maxSpan).draggable({
   onmove: e=>soundTimes.max -= 1000*e.dy
 })
+
+interact('.cursor').draggable({
+  allowFrom: '.cursorHandle',
+  onmove: e=>{
+    if (!e.dx) return;
+    let tot = soundTimes.container.getBoundingClientRect().width
+      , ratio = limit(Math.floor(e.currentTarget.offsetLeft+e.dx), tot) / tot
+    e.currentTarget.style.left = ratio*100+'%'
+    document.getElementById('debug').innerHTML = formatTime(
+      ratio*(soundTimes.max-soundTimes.min)+soundTimes.min
+    )
+  }
+})
 /*
 socket.on('testPos', p=>{
   document.getElementById('testPos').innerHTML = formatTime(p)
