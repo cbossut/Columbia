@@ -424,16 +424,29 @@ function selectFader(div) {
 
 function nextFader() {
   if (!selFader) selectFader(faders[0])
-  else selectFader(selFader.nextElementSibling)
+  else {
+    let prox = selFader.nextElementSibling
+    while(prox && prox.nodeName == 'BR'){
+      prox = prox.nextElementSibling
+    }
+    selectFader(prox)
+  }
 }
 
 function prevFader() {
   if (!selFader) selectFader(faders[faders.length-1])
-  else selectFader(selFader.previousElementSibling)
+  else {
+    let prox = selFader.previousElementSibling
+    while(prox && prox.nodeName == 'BR'){
+      prox = prox.previousElementSibling
+    }
+    selectFader(prox)
+  }
 }
 
 
 document.body.onkeydown = e => {
+  if (e.target.nodeName == 'INPUT') return;
   let prevent = true
   switch (e.code) {
     case 'ArrowDown':
