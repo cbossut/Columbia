@@ -57,11 +57,11 @@ cl.load = function(path) {
 cl.addCue = function(c=cue, n = this.content.length-1, writeState = true) {
   let oldCue = this.content[n]||{}
     , newCue = {}
-  if (writeState) c.state = this.orgue.state
   Object.keys(cue).forEach(k=>{
-    newCue[k] = c[k] || oldCue[k] || cue[k]
+    newCue[k] = c[k] || cue[k]
   })
-  newCue.state = newCue.state.slice() //Security, just to be sure...
+  if (writeState) c.state = this.orgue.state.slice()
+  else c.state = oldCue.state.slice()
   this.content.splice(n+1, 0, newCue)
 }
 
