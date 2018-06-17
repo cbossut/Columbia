@@ -159,6 +159,10 @@ button:disabled {
   float: left;
 }
 
+#selAllFader {
+  float: right;
+}
+
 #mem {
   width: 6ch;
 }

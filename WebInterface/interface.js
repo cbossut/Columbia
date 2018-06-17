@@ -409,10 +409,12 @@ function prevCue() {
 }
 
 
+document.getElementById('selAllFader').onclick = selAllFaderOn
+
+
 let faders = []
   , ledList = []
   , fader = document.getElementById('fader')
-  , selFader = null
 
 socket.on('patch', o => {
   let patch = o.patch
@@ -495,16 +497,25 @@ function changeFader(f, d) {
   socket.emit('orgue', {led:f.num, val:f.value*factor})
 }
 
+function changeSelFaders(d) {
+  if (!d) return;
+  document.querySelectorAll('.fader.sel').forEach(v=>changeFader(v, d))
+}
+
 function selectFader(div) {
-  if (selFader) selFader.classList.remove('sel')
+  unselectFader()
   if (div) div.classList.add('sel')
-  selFader = div
+}
+
+function unselectFader() {
+  document.querySelectorAll('.fader.sel').forEach(v=>v.classList.remove('sel'))
 }
 
 function nextFader() {
-  if (!selFader) selectFader(faders[0])
+  let seled = document.querySelector('.fader.sel')
+  if (!seled) selectFader(faders[0])
   else {
-    let prox = selFader.nextElementSibling
+    let prox = seled.nextElementSibling
     while(prox && prox.nodeName == 'BR'){
       prox = prox.nextElementSibling
     }
@@ -513,14 +524,20 @@ function nextFader() {
 }
 
 function prevFader() {
-  if (!selFader) selectFader(faders[faders.length-1])
+  let seled = document.querySelector('.fader.sel')
+  if (!seled) selectFader(faders[faders.length-1])
   else {
-    let prox = selFader.previousElementSibling
+    let prox = seled.previousElementSibling
     while(prox && prox.nodeName == 'BR'){
       prox = prox.previousElementSibling
     }
     selectFader(prox)
   }
+}
+
+function selAllFaderOn() {
+  unselectFader()
+  faders.forEach(v=>{if (v.value) v.classList.add('sel')})
 }
 
 
@@ -544,15 +561,15 @@ document.body.onkeydown = e => {
       break;
       
     case 'KeyP':
-      changeFader(selFader, -100)
+      changeSelFaders(-100)
       nextFader()
-      changeFader(selFader, 100)
+      changeSelFaders(100)
       break;
     case 'KeyI':
-      changeFader(selFader, 100)
+      changeSelFaders(100)
       break;
     case 'KeyO':
-      changeFader(selFader, -100)
+      changeSelFaders(-100)
       break;
     case 'ArrowLeft':
       prevFader()
@@ -561,27 +578,26 @@ document.body.onkeydown = e => {
       nextFader()
       break;
     case 'Escape':
-      selFader.classList.remove('sel')
-      selFader = null
+      unselectFader()
       break;
       
     case 'Digit1':
-      changeFader(selFader, 1)
+      changeSelFaders(1)
       break;
     case 'KeyQ':
-      changeFader(selFader, -1)
+      changeSelFaders(-1)
       break;
     case 'Digit2':
-      changeFader(selFader, .1)
+      changeSelFaders(.1)
       break;
     case 'KeyW':
-      changeFader(selFader, -.1)
+      changeSelFaders(-.1)
       break;
     case 'Digit3':
-      changeFader(selFader, .02)
+      changeSelFaders(.02)
       break;
     case 'KeyE':
-      changeFader(selFader, -.02)
+      changeSelFaders(-.02)
       break;
       
     default:
@@ -591,8 +607,8 @@ document.body.onkeydown = e => {
 }
 
 document.body.onwheel = e => {
-  if (selFader) {
-    changeFader(selFader, -e.deltaY/2)
+  if (document.querySelector('.fader.sel')) {
+    changeSelFaders(-e.deltaY/2)
     e.preventDefault()
   }
 }
