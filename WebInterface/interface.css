@@ -87,6 +87,7 @@ button:disabled {
 #soundContainer {
   position: relative;
   margin-top: 1.5em;
+  background-color: #262;
 }
 #soundRepresentation {
   position: absolute;

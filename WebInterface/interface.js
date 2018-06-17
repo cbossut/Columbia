@@ -21,6 +21,8 @@ if (window.NodeList && !NodeList.prototype.forEach) {
   };
 }
 
+//TODO Remove all call to firstElement, lastElement, children[i] because a change in html breaks it all
+
 const factor = 40
 
 let socket = io(window.location.href)
@@ -619,6 +621,7 @@ function formatTime(t, tab = false) {
 let saveInter = null
 function setCo(co) {
   if (co) {
+    clearInterval(saveInter)
     socket.emit('refresh')
     saveInter = setInterval(()=>{
       document.getElementById('co').style.backgroundColor = 'blue'

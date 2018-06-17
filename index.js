@@ -19,7 +19,7 @@ const staticroute = require('static-route')
         tryfiles:["index.html"]
       }))
     , io = require('socket.io')(app)
-    , cl = Object.create(require("./cueList.js").proto)
+    , cl = require("./cueList.js")
     , or = cl.orgue
     , player = require('./player.js')
     , savePath = './data/'
@@ -60,13 +60,13 @@ io.on('connection', sock => {
     sock.emit('orgueState', cl.orgue.state)
   })
   
+  loadSound(sock)
   sock.emit('cueList', cl.content)
   sock.emit('patch', {
     patch: cl.orgue.patch,
     pcas: cl.orgue.pcas
   })
   sock.emit('orgueState', cl.orgue.state)
-  sock.emit('soundInfo', {file: player.soundPath, duration: player.dur})
   
   sock.emit('soundFiles', fs.readdirSync(soundPath))
   
@@ -141,7 +141,9 @@ app.listen(8080)
 function loadSound(sock) {
   player.soundPath = cl.soundPath
   setTimeout(
-    ()=>sock.emit('soundInfo', {file: player.soundPath, duration: player.dur}),
-    1500 // just to let player get dur ...
+    ()=>{
+      sock.emit('soundInfo', {file: player.soundPath, duration: player.dur})
+      sock.emit('soundPlayStat', {playing:false, pos:0})
+    }, 1500 // just to let player get dur ...
   )
 }

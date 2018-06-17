@@ -45,7 +45,7 @@ or.setLevel = function(n, val) {
   }
 }
 
-or.init = function() {
+or.init = function(p) {
   pca.init(()=>{
     this.pcas = pca.getAddresses()
     let s = this.levels
@@ -60,6 +60,12 @@ or.init = function() {
         })
         this.levels.push(0)
       }
+    })
+    //TODO ne charge que les 'exp' sur un patch droit !!!
+    this.patch.forEach((v,i,a)=>{
+      Object.keys(p[i]).forEach(k=>{
+        if (!v[k]) v[k] = p[i][k]
+      })
     })
   })
   this.freq = 200

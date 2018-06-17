@@ -16,7 +16,9 @@ const orgue = require("./orgue.js")
     , spawn = require('child_process').spawn
 
 let cl = {
-  soundPath: ''
+  soundPath: '',
+  content: [],
+  orgue: orgue
 }
   , cue = {
       name: 'Mise'
@@ -28,11 +30,6 @@ let cl = {
   , omx = null
   , soundTimeRef = -1
   , soundPosRef = 0
-
-cl.content = []
-
-cl.orgue = orgue
-orgue.init()
 
 cl.new = function() {
   this.soundPath = ''
@@ -50,9 +47,10 @@ cl.save = function(path) {
 
 cl.load = function(path) {
   let l = JSON.parse(fs.readFileSync(path))
+  this.orgue.init(l.patch)
+  this.orgue.patch = l.patch //TODO crap first set for interface then reseted by pca.init(cb)
   this.content = l.cueList
   this.soundPath = l.soundPath
-  this.orgue.patch = l.patch
   this.content.forEach((v,i,a)=>{
     Object.keys(cue).forEach(k=>{
       if (!v[k]) v[k] = cue[k]
@@ -202,7 +200,7 @@ cl.print = function() {
     let c = this.content[i]
     console.log(c.name, "up", c.upTime, "down", c.downTime, "date", c.date, c.comment, c.state)
   }
-  orgue.patch.forEach((v,i)=>console.log(i, 'addr', v.pca, v.leds, 'exp', v.exp))
+  this.orgue.patch.forEach((v,i)=>console.log(i, 'addr', v.pca, v.leds, 'exp', v.exp))
 }
 
 
@@ -213,6 +211,4 @@ function cleanOmx() {
 }
 
 
-module.exports = {
-  proto: cl
-}
+module.exports = cl
