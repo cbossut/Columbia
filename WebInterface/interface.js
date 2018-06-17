@@ -409,9 +409,6 @@ function prevCue() {
 }
 
 
-document.getElementById('selAllFader').onclick = selAllFaderOn
-
-
 let faders = []
   , ledList = []
   , fader = document.getElementById('fader')
@@ -486,6 +483,13 @@ interact('.fader').draggable({
 })
 .pointerEvents()
 .on('tap', e=>selectFader(e.currentTarget))
+
+interact('#selAllFader')
+.on('tap', selAllFaderOn)
+.draggable({
+  onstart: selAllFaderOn,
+  onmove: e=>changeSelFaders(- parseInt(e.dy)/2)
+})
 
 socket.on('orgueState', s => {
   faders.forEach((v,i,a)=>v.value = Math.ceil(100*s[i]/factor)/100)
