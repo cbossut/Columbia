@@ -638,18 +638,29 @@ function formatTime(t, tab = false) {
   return tab ? tt : tt.join('')
 }
 
-let saveInter = null
+let saveInter = []
 function setCo(co) {
+  saveInter.forEach(clearInterval)
+  saveInter = []
   if (co) {
-    clearInterval(saveInter)
     socket.emit('refresh')
-    saveInter = setInterval(()=>{
+    saveInter.push(setInterval(()=>{
       document.getElementById('co').style.backgroundColor = 'blue'
       socket.emit('save', 'autosave')
+    }, 60000))
+    saveInter.push(setInterval(()=>{
+      let d = new Date()
+        , name = [
+          d.getFullYear(),
+          d.getMonth(),
+          d.getDate(),
+          d.getHours(),
+          d.getMinutes()
+        ].join('-')
       document.getElementById('co').style.backgroundColor = 'blue'
-      socket.emit('save', new Date().getTime().toString())
-    }, 60000)
-  } else clearInterval(saveInter)
+      socket.emit('save', name)
+    }, 300000))
+  }
   document.getElementById('co').style.backgroundColor = co?"green":"red"
 }
 
