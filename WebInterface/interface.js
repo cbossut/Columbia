@@ -187,7 +187,8 @@ interact('.cursor').draggable({
     let tot = soundTimes.container.getBoundingClientRect().width
       , ratio = limit(Math.floor(e.currentTarget.offsetLeft+e.dx), tot) / tot
     e.currentTarget.pos = ratio*(soundTimes.max-soundTimes.min)+soundTimes.min
-  }
+  },
+  onend: e=>e.currentTarget.time.onchange()
 })
 
 let mem = document.getElementById('mem')

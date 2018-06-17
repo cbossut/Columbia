@@ -124,7 +124,9 @@ io.on('connection', sock => {
   })
   sock.on('playSound', p=>{
     if (soundInterval) clearInterval(soundInterval)
-    cl.play(p)
+    cl.play(p, function (ongoing, elapsed) {
+      sock.emit('orgueState', cl.orgue.state)
+    })
     soundInterval = setInterval(function() {
       let state = cl.getSoundStat()
       sock.emit('soundPlayStat', state)

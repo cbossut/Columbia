@@ -83,15 +83,18 @@ cl.applyCue = function(n) {
   this.orgue.state = this.content[n].state
 }
 
-cl.play = function(pos = 0) {
+let playTimeouts = []
+cl.play = function(pos = 0, cb = null) {
   if (omx) return;
   let second = Math.floor(pos/1000)
   soundPosRef = second*1000
+  playTimeouts = []
+  this.applyCue(0)
   omx = spawn('omxplayer', [this.soundPath, '-Il', second.toString()])
   omx.stderr.once('data', () => {
     soundTimeRef = new Date().getTime()
     this.content.forEach((v,i,a)=>{
-      if (v.date != -1) v.timeout = setTimeout(()=>this.go(i-1), v.date-1000*second)
+      if (v.date != -1 && v.date >= pos) playTimeouts[i] = setTimeout(()=>this.go(i-1, cb), v.date-1000*second)
     })
   })
   omx.on('close', cleanOmx)
@@ -115,6 +118,7 @@ cl.go = function(n = 0, cb = null) {
     if (cb) cb(false, null)
     return;
   }
+  this.stop()
   this.from = this.content[n].state
   this.to = this.content[++n].state
   this.downLeds = []
@@ -204,7 +208,8 @@ cl.print = function() {
 
 function cleanOmx() {
   omx = null
-  cl.content.forEach(v=>{clearTimeout(v.timeout);v.timeout = null})
+  playTimeouts.forEach(v=>clearTimeout(v))
+  playTimeouts = []
 }
 
 
