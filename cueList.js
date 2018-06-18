@@ -87,13 +87,22 @@ cl.play = function(pos = 0, cb = null) {
   let second = Math.floor(pos/1000)
   soundPosRef = second*1000
   playTimeouts = []
-  this.applyCue(0)
+  
+  let lastDateIndex = 0
+  for(let i = 0 ; i < this.content.length ; i++) {
+    if (this.content[i].date > pos) break;
+    if (this.content[i].date != -1) lastDateIndex = i
+  }
+  this.applyCue(lastDateIndex)
+  let offset = soundPosRef - this.content[lastDateIndex].date
+  
   omx = spawn('omxplayer', [this.soundPath, '-Il', second.toString()])
   omx.stderr.once('data', () => {
     soundTimeRef = new Date().getTime()
     this.content.forEach((v,i,a)=>{
       if (v.date != -1 && v.date >= pos) playTimeouts[i] = setTimeout(()=>this.go(i-1, cb), v.date-1000*second)
     })
+    this.go(lastDateIndex-1, cb, offset)
   })
   omx.on('close', cleanOmx)
 }
@@ -111,7 +120,7 @@ cl.getSoundStat = function() {
   return {playing: false, pos: soundPosRef}
 }
 
-cl.go = function(n = 0, cb = null) {
+cl.go = function(n = 0, cb = null, offset = 0) {
   if (n < 0 || n >= this.content.length - 1) {
     if (cb) cb(false, null)
     return;
@@ -149,7 +158,7 @@ cl.go = function(n = 0, cb = null) {
   if (!this.upFrames) this.upLeds.forEach(v => start[v] = this.to[v])
   
   this.orgue.state = start
-  this.nextFrame = new Date().getTime()
+  this.nextFrame = new Date().getTime() - offset
   this.timeOut = setTimeout(()=>{this.inter(cb)}, this.interMs)
 }
 
