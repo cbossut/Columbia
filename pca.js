@@ -18,12 +18,15 @@ const i2c = require('i2c-bus')
     , ALLCALLADDR = 112
 
 let pca = {}
+  , addrs = bus.scanSync(64,111)
+
 
 pca.getAddresses = function() {
-  return bus.scanSync(64,111)
+  return addrs
 }
 
 pca.init = function(cb) {
+  if (!addrs.length) {console.log('no pcas !!!'); cb(); return;}
   bus.sendByteSync(0,6) // Software Reset
   setTimeout(()=>{
     bus.writeByteSync(ALLCALLADDR,0,0b00100001) //out of sleep and autoincrement
@@ -34,6 +37,7 @@ pca.init = function(cb) {
 
 pca.setLed = function(addr, n, val) {
   if (n < 0 || n > 15) return;
+  if (addrs.indexOf(addr) == -1) {console.log('no addr', addr, n, val); return;}
   if (val <= 0) bus.writeByteSync(addr, LED0ON+3+n*4, 16)
   else bus.writeWordSync(addr, LED0ON+2+n*4, val)
 }
