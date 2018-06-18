@@ -383,6 +383,10 @@ function selCue(trNode) {
   
   socket.emit('apply', selCueIndex)
   
+  if (soundTimes.cursors[selCueIndex].pos != -1) {
+    soundTimes.pos = soundTimes.cursors[selCueIndex].pos
+  }
+  
   document.querySelectorAll('.cueAct')
     .forEach(v=>v.disabled = false)
 }
