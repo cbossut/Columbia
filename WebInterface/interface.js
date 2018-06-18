@@ -166,6 +166,12 @@ interact(soundTimes.posBar).resizable({
     soundTimes.posBar.style.width = ratio ? ratio*100+'%' : '3px'
     soundTimes.p = ratio*(soundTimes.max-soundTimes.min)+soundTimes.min
     soundTimes.posSpan.innerHTML = formatTime(soundTimes.pos)
+    let precCursor = null
+      , i = 0
+    do {
+      if (soundTimes.cursors[i].pos != -1) precCursor = soundTimes.cursors[i]
+    } while (++i < soundTimes.cursors.length && soundTimes.cursors[i].pos <= soundTimes.pos)
+    if (precCursor) selCue(precCursor.time.parentElement.parentElement, false)
   },
   onend: e=>{
     if (moveWhilePlaying) {
@@ -381,7 +387,7 @@ socket.on('playStatus', o=>{
 })
 
 
-function selCue(trNode) {
+function selCue(trNode, setPos = true) {
   if (!trNode) {
     unselCue()
     return;
@@ -394,7 +400,7 @@ function selCue(trNode) {
   
   socket.emit('apply', selCueIndex)
   
-  if (soundTimes.cursors[selCueIndex].pos != -1) {
+  if (setPos && soundTimes.cursors[selCueIndex].pos != -1) {
     soundTimes.pos = soundTimes.cursors[selCueIndex].pos
   }
   
