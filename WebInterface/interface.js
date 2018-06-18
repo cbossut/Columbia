@@ -252,6 +252,15 @@ socket.on('cueList', content => {
     el = el.nextElementSibling
     let inp = el.children[0]
     inp.num = i
+    inp.value = ''
+    inp.onchange = inp.onkeyup = function() {
+      this.parentElement.nextElementSibling.firstElementChild.value = this.value
+      this.parentElement.nextElementSibling.nextElementSibling.firstElementChild.value = this.value
+      socket.emit('cueChange', {n:this.num, change:{upTime:this.value, downTime:this.value}})
+    }
+    el = el.nextElementSibling
+    inp = el.children[0]
+    inp.num = i
     inp.value = v.upTime
     /*WIP
     inp.onclick = function() {console.log('click')
@@ -263,6 +272,7 @@ socket.on('cueList', content => {
     }
     */
     inp.onchange = inp.onkeyup = function() {
+      this.parentElement.previousElementSibling.firstElementChild.value = ''
       socket.emit('cueChange', {n:this.num, change:{upTime:this.value}})
     }
     el = el.nextElementSibling
@@ -279,6 +289,7 @@ socket.on('cueList', content => {
     }
     */
     inp.onchange = inp.onkeyup = function() {
+      this.parentElement.previousElementSibling.previousElementSibling.firstElementChild.value = ''
       socket.emit('cueChange', {n:this.num, change:{downTime:this.value}})
     }
     el = el.nextElementSibling
