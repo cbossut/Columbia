@@ -20,6 +20,7 @@ body {
   font-family: sans-serif;
   color: aliceblue;
   background-color: black;
+  max-height: 100vh;
 }
 
 h1 {
@@ -168,8 +169,18 @@ button:disabled {
 }
 
 table {
+  clear: both;
   margin: 10px;
   border-collapse: collapse;
+}
+
+.scroller {
+  clear: both;
+  border: none;
+  margin: 5px;
+  padding: 0px;
+  max-height: 50vh;
+  overflow-y: scroll;
 }
 
 .cueTR:nth-child(odd) {
