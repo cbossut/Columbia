@@ -72,6 +72,7 @@ document.getElementById('patchShow').onclick = function() {
   if (st.display == 'none') st.display = 'initial'
   else st.display = 'none'
 }
+document.getElementById('exit').onclick = ()=>socket.emit('exit')
 
 
 let soundFiles = document.getElementById('soundFiles')

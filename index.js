@@ -50,6 +50,11 @@ io.on('connection', sock => {
   
   //process.on('uncaughtException', e=>sock.emit('debug', {message:'except', err:JSON.stringify(e)}))
   
+  sock.on('exit', () => {
+    cl.save(autosavePath)
+    process.exit()
+  })
+  
   sock.on('new', ()=>{
     cl.new()
     sock.emit('cueList', cl.content)
