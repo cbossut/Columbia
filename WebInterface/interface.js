@@ -257,6 +257,10 @@ socket.on('cueList', content => {
     el = el.nextElementSibling
     el.innerHTML = v.name
     el = el.nextElementSibling
+    el.children[0].onclick = function() {
+      socket.emit('update', i)
+    }
+    el = el.nextElementSibling
     let inp = el.children[0]
     inp.num = i
     inp.value = ''
@@ -341,10 +345,6 @@ socket.on('cueList', content => {
     time.onchange = function() {
       time.cursor.pos = this.valueAsNumber
       socket.emit('cueChange', {n:i, change:{date: this.valueAsNumber}})
-    }
-    el = el.nextElementSibling
-    el.children[0].onclick = function() {
-      socket.emit('update', i)
     }
     soundTimes.container.appendChild(time.cursor)
     cl.appendChild(line)

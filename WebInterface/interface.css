@@ -204,6 +204,10 @@ th, td {
   white-space: nowrap;
 }
 
+.redBack {
+  background-color: darkred;
+}
+
 .time {
   width: 8ch;
   background-color: black;

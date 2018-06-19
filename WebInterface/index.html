@@ -79,16 +79,17 @@ sur le site "http://www.cecill.info".
           <th>Nom</th>
           <th>Seq</th>
           <th>Mem</th>
+          <th>Modifier</th>
           <th>Durées</th>
           <th>Montée<div class="progress" id="upProgress"></div></th>
           <th>Descente<div class="progress" id="downProgress"></div></th>
           <th>Date</th>
-          <th>Mod</th>
         </thead>
         <tr class="proto cueTR" id="cue">
           <td><input></td>
           <td>0</td>
           <td>0</td>
+          <td class="redBack"><button class="nosel">Mod</button></td>
           <td><input class="time nosel" type="number" min=0 step=0.1 value=10></td>
           <td><input class="time nosel" type="number" min=0 step=0.1 value=10></td>
           <td><input class="time nosel" type="number" min=0 step=0.1 value=10></td>
@@ -96,7 +97,6 @@ sur le site "http://www.cecill.info".
             <input class="nosel" type="time" step=.001>
             <button class="nosel">Marquer</button>
           </td>
-          <td><button class="nosel">Mod</button></td>
         </tr>
         <tbody id="cueList">
         </tbody>
