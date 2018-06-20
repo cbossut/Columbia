@@ -75,6 +75,10 @@ button:disabled {
   border: 2px solid red;
 }
 
+button.sel {
+  background-color: #2a2;
+}
+
 
 #son {
   position: relative;

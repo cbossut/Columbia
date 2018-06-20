@@ -258,7 +258,13 @@ socket.on('cueList', content => {
     el.innerHTML = v.name
     el = el.nextElementSibling
     el.children[0].onclick = function() {
-      socket.emit('update', i)
+      if (this.classList.contains('sel')) {
+        socket.emit('update', i)
+        this.classList.remove('sel')
+      } else {
+        this.classList.add('sel')
+        setTimeout(()=>this.classList.remove('sel'), 5000)
+      }
     }
     el = el.nextElementSibling
     let inp = el.children[0]
