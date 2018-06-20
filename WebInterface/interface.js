@@ -312,6 +312,7 @@ socket.on('cueList', content => {
     el = el.nextElementSibling
     let btn = el.children[1]
       , time = el.children[0]
+    line.timeElement = time
     time.cursor = soundTimes.cursor.cloneNode(true)
     soundTimes.cursors.push(time.cursor)
     time.cursor.removeAttribute('id')
@@ -359,7 +360,13 @@ socket.on('cueList', content => {
 
 interact('.cueTR')
 .pointerEvents({ignoreFrom: '.nosel'})
-.on('tap', e=>selCue(e.currentTarget))
+.on('tap', e=>{
+  if (e.ctrlKey) {
+    addSelCue(e.currentTarget)
+  } else {
+    selCue(e.currentTarget)
+  }
+})
 
 document.getElementById('delCue').onclick = ()=>{
   socket.emit('delete', selCueIndex)
@@ -415,6 +422,12 @@ function selCue(trNode, setPos = true) {
     .forEach(v=>v.disabled = false)
 }
 
+function addSelCue(trNode) {
+  trNode.classList.add('sel')
+  selCueIndex = -1
+  document.querySelectorAll('.cueAct').forEach(v=>v.disabled=true)
+}
+
 function unselCue() {
   document.querySelectorAll('.cueTR.sel')
     .forEach(v=>v.classList.remove('sel'))
@@ -434,6 +447,13 @@ function prevCue() {
   let seled = document.querySelector('.cueTR.sel')
   if (!seled) selCue(cl.lastElementChild)
   else selCue(seled.previousElementSibling)
+}
+
+function changeSelTimes(d) {
+  document.querySelectorAll('.cueTR.sel').forEach(v=>{
+    v.timeElement.valueAsNumber += d
+    v.timeElement.onchange()
+  })
 }
 
 
@@ -590,6 +610,19 @@ document.body.onkeydown = e => {
         nextCue()
       }
       document.getElementById('go').onclick()
+      break;
+      
+    case 'Digit5':
+      changeSelTimes(1000)
+      break;
+    case 'KeyT':
+      changeSelTimes(-1000)
+      break;
+    case 'Digit6':
+      changeSelTimes(1)
+      break;
+    case 'KeyY':
+      changeSelTimes(-1)
       break;
       
     case 'KeyP':
