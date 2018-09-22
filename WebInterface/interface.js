@@ -25,7 +25,7 @@ if (window.NodeList && !NodeList.prototype.forEach) {
 
 const factor = 40
 
-let socket = io(window.location.href)
+let socket = io("http://192.168.1.16:8080")
 socket.on('connect', ()=>setCo(true))
 socket.on('reconnect', ()=>setCo(true))
 socket.on('disconnect', ()=>setCo(false))
@@ -458,19 +458,18 @@ function changeSelTimes(d) {
 
 
 let faders = []
-  , ledList = []
   , fader = document.getElementById('fader')
+  , plist = document.getElementById('patchList')
+  , pline = document.getElementById('patchLine')
+  , selFader = null
 
 socket.on('patch', o => {
   let patch = o.patch
     , pcas = o.pcas
     , panel = document.getElementById('orgueP')
-    , spanList = document.getElementById('listLeds')
-    , selLeds = document.getElementById('selLeds')
-    , expInput = document.getElementById('exposantLeds')
   panel.innerHTML = ''
+  plist.innerHTML = ''
   faders = []
-  ledList = []
   patch.forEach((v,i,a) => {
     let f = fader.cloneNode(true)
     f.removeAttribute('id')
@@ -497,33 +496,38 @@ socket.on('patch', o => {
       panel.appendChild(document.createElement('br'))
     }
     
-    //CRAPPY
-    if (v.exp) {
-      ledList.push(i+1)
-      expInput.value = v.exp
+    let line = pline.cloneNode(true)
+    line.removeAttribute('id')
+    line.classList.remove('proto')
+    let el = line.firstElementChild
+    el.innerHTML = i+1
+    el = el.nextElementSibling
+    let inp = el.children[0]
+    inp.value = v.name || '-'
+    inp.onchange = function() {
+      f.childNodes[0].textContent = this.value
+      socket.emit('patchChange', {n: i, new: {name: this.value}})
     }
+    el = el.nextElementSibling
+    let pca = el.children[0]
+      , led = el.children[1]
+    populate(pca, pcas)
+    pca.selectedIndex = v.pca
+    pca.onchange = function() {
+      socket.emit('patchChange', {n: i, new: {pca: this.selectedIndex}})
+    }
+    led.value = v.leds[0] + 1 //TODO multiple ?
+    led.onchange = function() {
+      socket.emit('patchChange', {n: i, new: {leds: [this.value - 1]}})
+    }
+    el = el.nextElementSibling
+    let c = el.children[0]
+    c.value = v.exp || 1
+    c.onchange = function() {
+      socket.emit('patchChange', {n: i, new: {exp: this.value}})
+    }
+    plist.appendChild(line)
   })
-  
-  spanList.innerHTML = ledList
-  populate(selLeds, patch.map((v,i)=>i+1))
-  document.getElementById('addLed').onclick = ()=>{
-    let ledVue = parseInt(selLeds.value)
-    if (ledList.indexOf(ledVue) != -1) return;
-    ledList.push(ledVue)
-    spanList.innerHTML = ledList
-    socket.emit('patchChange', {n:ledVue - 1,new:{exp:expInput.value}})
-  }
-  document.getElementById('rmLed').onclick = ()=>{
-    let ledVue = parseInt(selLeds.value)
-      , ind = ledList.indexOf(ledVue)
-    if (ind == -1) return;
-    ledList.splice(ind,1)
-    spanList.innerHTML = ledList
-    socket.emit('patchChange', {n:ledVue - 1,new:{exp:null}})
-  }
-  expInput.onchange = function() {
-    ledList.forEach(v=>socket.emit('patchChange', {n:v-1,new:{exp:this.value}}))
-  }
 })
 
 interact('.fader').draggable({
