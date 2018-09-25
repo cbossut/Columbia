@@ -23,26 +23,29 @@ const staticroute = require('static-route')
     , io = require('socket.io')(app)
     , cl = require("./cueList.js")
     , or = cl.orgue
-    , player = require('./player.js')
+    , player = require('./player.js') // Player is only loaded to get sound info for interface
     , savePath = './data/'
     , soundPath = './sounds/'
     , autosavePath = savePath + 'autosave.json'
 
+let soundInterval = null
 if (fs.existsSync(autosavePath)) {
   cl.load(autosavePath)
 }
 
-process.on('SIGINT', () => {
+function terminate() {
   cl.save(autosavePath)
   process.exit()
+}
+
+process.on('SIGINT', () => {
+  terminate()
 })
 process.on('SIGUSR1', () => {
-  cl.save(autosavePath)
-  process.exit()
+  terminate()
 })
 process.on('SIGUSR2', () => {
-  cl.save(autosavePath)
-  process.exit()
+  terminate()
 })
 
 //process.on('uncaughtException', () => cl.save(autosavePath))
@@ -53,8 +56,7 @@ io.on('connection', sock => {
   //process.on('uncaughtException', e=>sock.emit('debug', {message:'except', err:JSON.stringify(e)}))
   
   sock.on('exit', () => {
-    cl.save(autosavePath)
-    process.exit()
+    terminate()
   })
   
   sock.on('new', ()=>{
@@ -112,10 +114,12 @@ io.on('connection', sock => {
     sock.emit('orgueState', cl.orgue.state)
   })
   
-  sock.on('go', n => cl.go(n, function (ongoing, elapsed) {
-    sock.emit('orgueState', cl.orgue.state)
-    sock.emit('playStatus', {play:ongoing, time:elapsed/1000})
-  })) // TODO poll instead of callback because probably don't need as fast as graduation for interface
+  sock.on('go', n => {
+    cl.go(n, function (ongoing, elapsed) {
+      sock.emit('orgueState', cl.orgue.state)
+      sock.emit('playStatus', {play:ongoing, time:elapsed/1000})
+    }) // TODO poll instead of callback because probably don't need as fast as graduation for interface
+  })
   sock.on('stop', () => cl.stop())
   
   sock.on('print', () => cl.print())
@@ -124,22 +128,12 @@ io.on('connection', sock => {
   
   sock.on('patchChange', ch=>Object.assign(or.patch[ch.n], ch.new))
   
-  let soundInterval = null
+  soundInterval = null
   sock.on('loadSound', f => {
     cl.soundPath = soundPath + f
     loadSound(sock)
   })
-  sock.on('playSound', p=>{
-    if (soundInterval) clearInterval(soundInterval)
-    cl.play(p, function (ongoing, elapsed) {
-      sock.emit('orgueState', cl.orgue.state)
-    })
-    soundInterval = setInterval(function() {
-      let state = cl.getSoundStat()
-      sock.emit('soundPlayStat', state)
-      if (!state.playing) clearInterval(soundInterval)
-    }, 40)
-  })
+  sock.on('playSound', p=>playInterfaced(p, sock))
   sock.on('pauseSound', ()=>cl.cut())
 })
 
@@ -153,4 +147,18 @@ function loadSound(sock) {
       sock.emit('soundPlayStat', {playing:false, pos:0})
     }, 1500 // just to let player get dur ...
   )
+}
+
+function playInterfaced(pos, sock) {
+  if (soundInterval) clearInterval(soundInterval)
+  cl.play(pos, function (ongoing, elapsed) {
+    sock.emit('orgueState', cl.orgue.state)
+  })
+  soundInterval = setInterval(function() {
+    let state = cl.getSoundStat()
+    sock.emit('soundPlayStat', state)
+    if (!state.playing) {
+      clearInterval(soundInterval)
+    }
+  }, 40)
 }
