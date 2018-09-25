@@ -11,6 +11,8 @@ de la licence CeCILL telle que diffusée par le CEA, le CNRS et l'INRIA
 sur le site "http://www.cecill.info".
 */
 
+process.chdir(__dirname) // Run in the module folder if started from elsewhere
+
 const staticroute = require('static-route')
     , fs = require('fs')
     , app = require('http').createServer(staticroute({
