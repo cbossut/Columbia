@@ -22,8 +22,8 @@ const staticroute = require('static-route')
       }))
     , io = require('socket.io')(app)
     , Gpio = require('onoff').Gpio
-    , gpioStart = new Gpio(3, 'in', 'falling', {debounceTimeout: 30}) //TODO gpio 14
-    , gpioDebug = new Gpio(2, 'in', 'both', {debounceTimeout: 100}) //TODO gpio 4
+    , gpioStart = new Gpio(14, 'in', 'falling', {debounceTimeout: 30})
+    , gpioDebug = new Gpio(4, 'in', 'both', {debounceTimeout: 100})
     , gpioLed = new Gpio(15, 'out')
     , cl = require("./cueList.js")
     , or = cl.orgue
