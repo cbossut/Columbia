@@ -21,20 +21,26 @@ const staticroute = require('static-route')
         tryfiles:["index.html"]
       }))
     , io = require('socket.io')(app)
+    , Gpio = require('onoff').Gpio
+    , gpioStart = new Gpio(3, 'in', 'falling', {debounceTimeout: 30}) //TODO gpio 14
+    , gpioDebug = new Gpio(2, 'in', 'both', {debounceTimeout: 100}) //TODO gpio 4
+    , gpioLed = new Gpio(15, 'out')
     , cl = require("./cueList.js")
     , or = cl.orgue
     , player = require('./player.js') // Player is only loaded to get sound info for interface
     , savePath = './data/'
     , soundPath = './sounds/'
     , autosavePath = savePath + 'autosave.json'
-
+    , conduitePath = './conduite.json'
 let soundInterval = null
-if (fs.existsSync(autosavePath)) {
-  cl.load(autosavePath)
-}
+  , interfaced = false
 
 function terminate() {
   cl.save(autosavePath)
+  gpioStart.unexport()
+  gpioDebug.unexport()
+  gpioLed.writeSync(0)
+  gpioLed.unexport()
   process.exit()
 }
 
@@ -50,10 +56,46 @@ process.on('SIGUSR2', () => {
 
 //process.on('uncaughtException', () => cl.save(autosavePath))
 
+if (fs.existsSync(conduitePath)) {
+  cl.load(conduitePath)
+} else if (fs.existsSync(autosavePath)) {
+  cl.load(autosavePath)
+}
+
+gpioLed.writeSync(1)
+
+gpioStart.watch((err, value) => {
+  if (err) {
+    console.error(err)
+    terminate()
+  }
+  
+  if (!interfaced) {
+    gpioLed.writeSync(0)
+    cl.play(0, function (ongoing, elapsed) {
+      if (!ongoing) gpioLed.writeSync(1)
+    })
+  }
+})
+
 io.on('connection', sock => {
+  
   console.log(sock.id, sock.client.conn.remoteAddress)
   
   //process.on('uncaughtException', e=>sock.emit('debug', {message:'except', err:JSON.stringify(e)}))
+  
+  interfaced = true
+  
+  sock.on('disconnect', ()=>{
+    interfaced = false
+    cl.cut()
+    gpioLed.writeSync(1)
+  })
+  
+  gpioStart.watch((err, value) => {
+    if (cl.getSoundStat().playing) cl.cut()
+    playInterfaced(0, sock)
+  })
   
   sock.on('exit', () => {
     terminate()
@@ -150,6 +192,8 @@ function loadSound(sock) {
 }
 
 function playInterfaced(pos, sock) {
+  gpioLed.writeSync(0)
+  
   if (soundInterval) clearInterval(soundInterval)
   cl.play(pos, function (ongoing, elapsed) {
     sock.emit('orgueState', cl.orgue.state)
@@ -159,6 +203,7 @@ function playInterfaced(pos, sock) {
     sock.emit('soundPlayStat', state)
     if (!state.playing) {
       clearInterval(soundInterval)
+      gpioLed.writeSync(1)
     }
   }, 40)
 }
