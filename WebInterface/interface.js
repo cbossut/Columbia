@@ -25,7 +25,7 @@ if (window.NodeList && !NodeList.prototype.forEach) {
 
 const factor = 40
 
-let socket = io("http://192.168.1.16:8080")
+let socket = io(window.location.href)
 socket.on('connect', ()=>setCo(true))
 socket.on('reconnect', ()=>setCo(true))
 socket.on('disconnect', ()=>setCo(false))
