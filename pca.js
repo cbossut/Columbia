@@ -26,6 +26,7 @@ pca.getAddresses = function() {
 }
 
 pca.init = function(cb) {
+  // WARNING ! the callback is called instantly if no pcas, which is not the same as with pcas (20ms)
   if (!addrs.length) {console.log('no pcas !!!'); cb(); return;}
   bus.sendByteSync(0,6) // Software Reset
   setTimeout(()=>{

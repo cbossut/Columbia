@@ -48,7 +48,8 @@ cl.save = function(path) {
 cl.load = function(path) {
   let l = JSON.parse(fs.readFileSync(path))
   this.orgue.init(l.patch)
-  this.orgue.patch = l.patch //TODO crap first set for interface then reseted by pca.init(cb)
+  //TODO crap first set for interface then reseted by pca.init(cb) 20ms after (timeout)
+  this.orgue.patch = l.patch
   this.content = l.cueList
   this.soundPath = l.soundPath
   this.content.forEach((v,i,a)=>{

@@ -35,6 +35,9 @@ const staticroute = require('static-route')
 let soundInterval = null
   , interfaced = false
 
+console.log("<-----start----->")
+console.error("<-----start----->")
+
 function terminate() {
   cl.save(autosavePath)
   gpioStart.unexport()

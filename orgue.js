@@ -46,7 +46,7 @@ or.setLevel = function(n, val) {
 }
 
 or.init = function(p) {
-  pca.init(()=>{
+  pca.init(()=>{ // WARNING ! callback called after 20ms
     this.pcas = pca.getAddresses()
     let s = this.levels
     this.levels = []
