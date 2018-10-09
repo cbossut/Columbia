@@ -42,7 +42,7 @@ cl.save = function(path) {
     cueList: this.content,
     soundPath: this.soundPath,
     patch: this.orgue.patch
-  }))
+  }, null, 2))
 }
 
 cl.load = function(path) {
