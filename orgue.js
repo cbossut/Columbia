@@ -61,10 +61,9 @@ or.init = function(p) {
         this.levels.push(0)
       }
     })
-    //TODO ne charge que les 'exp' sur un patch droit !!!
     if (p) this.patch.forEach((v,i,a)=>{
       if (p[i]) Object.keys(p[i]).forEach(k=>{
-        if (!v[k]) v[k] = p[i][k]
+        v[k] = p[i][k]
       })
     })
   })
