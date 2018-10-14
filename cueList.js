@@ -27,7 +27,7 @@ let cl = {
     , downTime: 10
     , date: -1
     }
-  , omx = null
+  , player = null
   , soundTimeRef = -1
   , soundPosRef = 0
 
@@ -84,7 +84,7 @@ cl.applyCue = function(n) {
 
 let playTimeouts = []
 cl.play = function(pos = 0, cb = null) {
-  if (omx) return;
+  if (player) return;
   let second = Math.floor(pos/1000)
   soundPosRef = second*1000
   playTimeouts = []
@@ -97,27 +97,30 @@ cl.play = function(pos = 0, cb = null) {
   this.applyCue(lastDateIndex)
   let offset = soundPosRef - this.content[lastDateIndex].date
   
-  omx = spawn('omxplayer', [this.soundPath, '-Il', second.toString()])
-  omx.stderr.once('data', () => {
+  if (second) player = spawn('omxplayer', [this.soundPath, '-Il', second.toString()])
+  else player = spawn('aplay', ['-Dhw:CARD=XDA2', this.soundPath, '-v'])
+  player.stderr.once('data', () => {
     soundTimeRef = new Date().getTime()
     this.content.forEach((v,i,a)=>{
       if (v.date != -1 && v.date >= pos) playTimeouts[i] = setTimeout(()=>this.go(i-1, cb), v.date-1000*second)
     })
     this.go(lastDateIndex-1, cb, offset)
   })
-  omx.on('close', cleanOmx)
+  player.on('close', cleanPlayer)
 }
 
 cl.cut = function() {
-  if (!omx) return;
+  if (!player) return;
   this.stop()
-  omx.stdin.write('q')
+  player.stdin.write(' ')
+  player.stdin.write('q')
+  player.kill('SIGINT')
   soundPosRef = new Date().getTime() - soundTimeRef + soundPosRef
   soundTimeRef = -1
 }
 
 cl.getSoundStat = function() {
-  if (omx) return {playing: true, pos: new Date().getTime() - soundTimeRef + soundPosRef}
+  if (player) return {playing: true, pos: new Date().getTime() - soundTimeRef + soundPosRef}
   return {playing: false, pos: soundPosRef}
 }
 
@@ -214,8 +217,8 @@ cl.print = function() {
 }
 
 
-function cleanOmx() {
-  omx = null
+function cleanPlayer() {
+  player = null
   playTimeouts.forEach(v=>clearTimeout(v))
   playTimeouts = []
 }

@@ -30,6 +30,7 @@ const staticroute = require('static-route')
     , player = require('./player.js') // Player is only loaded to get sound info for interface
     , savePath = './data/'
     , soundPath = './sounds/'
+    , soundExtensionFilter = '.wav'
     , autosavePath = savePath + 'autosave.json'
     , conduitePath = './conduite.json'
 let soundInterval = null
@@ -122,7 +123,7 @@ io.on('connection', sock => {
   })
   sock.emit('orgueState', cl.orgue.state)
   
-  sock.emit('soundFiles', fs.readdirSync(soundPath))
+  sock.emit('soundFiles', fs.readdirSync(soundPath).filter(v=>v.endsWith(soundExtensionFilter)))
   
   sock.on('refresh', () => {
     let jsons = fs.readdirSync(savePath).filter(v=>v.endsWith('.json'))
@@ -185,10 +186,11 @@ io.on('connection', sock => {
 app.listen(8080)
 
 function loadSound(sock) {
+  let good = cl.soundPath.endsWith(soundExtensionFilter)
   player.soundPath = cl.soundPath
   setTimeout(
     ()=>{
-      sock.emit('soundInfo', {file: player.soundPath, duration: player.dur})
+      sock.emit('soundInfo', {file: player.soundPath, duration: player.dur, error: !good})
       sock.emit('soundPlayStat', {playing:false, pos:0})
     }, 1500 // just to let player get dur ...
   )

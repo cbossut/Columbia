@@ -142,7 +142,9 @@ playBtn.onclick = ()=>{
 socket.on('soundInfo', i=>{
   playBtn.disabled = false
   soundTimes.dur = i.duration
-  document.getElementById('soundRepresentation').innerHTML = i.file
+  let soundRep = document.getElementById('soundRepresentation')
+  soundRep.innerHTML = i.file
+  soundRep.style.color = i.error ? 'red' : ''
 })
 socket.on('soundPlayStat', s=>{
   if (!moveWhilePlaying) soundTimes.pos = s.pos
