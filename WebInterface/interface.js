@@ -23,9 +23,12 @@ if (window.NodeList && !NodeList.prototype.forEach) {
 
 //TODO Remove all call to firstElement, lastElement, children[i] because a change in html breaks it all
 
-const factor = 40
+const factor = 40 // 1 point du jeu d'orgue = factor points de PCA
 
-let socket = io(window.location.href)
+let socket = io()
+if (!socket.connected) {
+  socket = io('http://' + prompt('Address', '10.3.14.15') + ':8080')
+}
 socket.on('connect', ()=>setCo(true))
 socket.on('reconnect', ()=>setCo(true))
 socket.on('disconnect', ()=>setCo(false))
@@ -40,11 +43,17 @@ interact('#co').on('tap', ()=>socket.emit('print'))
 
 document.getElementById('newFile').onclick = ()=>socket.emit('new')
 
+/******************************************* PROD *****************/
+
 let files = document.getElementById('files')
   , saveName = document.getElementById('fileName')
 
 document.getElementById('load')
   .onclick = ()=>socket.emit('load', files.value)
+
+/******************************************* GENERAL *****************/
+
+document.getElementById('newFile').onclick = ()=>socket.emit('new')
 document.getElementById('save')
   .onclick = ()=>{
     document.getElementById('co').style.backgroundColor = 'blue'
@@ -74,6 +83,7 @@ document.getElementById('patchShow').onclick = function() {
 }
 document.getElementById('exit').onclick = ()=>socket.emit('exit')
 
+/******************************************* SOUNDBAR *****************/
 
 let soundFiles = document.getElementById('soundFiles')
   , playBtn = document.getElementById('soundPlay')
@@ -239,6 +249,8 @@ function beforeMem(newMem) {
   for(i = 0 ; o[i] == n[i] && o[i] ; i++);
   return ! (n[i] > o[i])
 }
+
+/******************************************* CUELIST *****************/
 
 socket.on('cueList', content => {
   cl.innerHTML = ''
@@ -458,6 +470,7 @@ function changeSelTimes(d) {
   })
 }
 
+/******************************************* ORGUE (&PATCH) *****************/
 
 let faders = []
   , fader = document.getElementById('fader')
@@ -598,6 +611,7 @@ function selAllFaderOn() {
   faders.forEach(v=>{if (v.value) v.classList.add('sel')})
 }
 
+/******************************************* CLAVIER *****************/
 
 document.body.onkeydown = e => {
   if (e.target.nodeName == 'INPUT') return;
@@ -687,6 +701,7 @@ document.body.onwheel = e => {
 
 socket.on('endSave', ()=>document.getElementById('co').style.backgroundColor = 'green')
 
+/******************************************* MISC *****************/
 
 function limit(val, max=100, min=0) {
   if (val < min) val = min
