@@ -32,7 +32,18 @@ const staticroute = require('static-route')
     , soundPath = './sounds/'
     , soundExtensionFilter = '.wav'
     , autosavePath = savePath + 'autosave.json'
-    , conduitePath = './conduite.json'
+    , configPath = './config.json'
+    , config = {
+      conduite: './conduite.json',
+      mise: {
+        circuits: [],
+        valeurs: []
+      },
+      fadeOff: 30,
+      fadeOn: 30,
+      startDelay: 30,
+      compte: [] // Nombre d'appuis gpio par lancement de l'appli
+    }
 let soundInterval = null
   , interfaced = false
 
@@ -40,6 +51,7 @@ console.log("<-----start----->")
 console.error("<-----start----->")
 
 function terminate() {
+  fs.writeFileSync(configPath, JSON.stringify(config, null, 2))
   cl.save(autosavePath)
   gpioStart.unexport()
   gpioDebug.unexport()
@@ -60,11 +72,11 @@ process.on('SIGUSR2', () => {
 
 //process.on('uncaughtException', () => cl.save(autosavePath))
 
-if (fs.existsSync(conduitePath)) {
-  cl.load(conduitePath)
-} else if (fs.existsSync(autosavePath)) {
-  cl.load(autosavePath)
+if (fs.existsSync(configPath)) {
+  config = JSON.parse(fs.readFileSync(configPath))
 }
+cl.load(config.conduite) // init PCA
+config.compte.unshift(0)
 
 gpioLed.writeSync(1)
 
@@ -75,6 +87,7 @@ gpioStart.watch((err, value) => {
   }
   
   if (!interfaced) {
+    config.compte[0]++
     gpioLed.writeSync(0)
     cl.play(0, function (ongoing, elapsed) {
       if (!ongoing) gpioLed.writeSync(1)
