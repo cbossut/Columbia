@@ -1,23 +1,23 @@
-###Titre
+## Titre
 Nom de la conduite précédemment chargée. * = modification non sauvegardée
 
-###Indicateur d'état
+## Indicateur d'état
 En haut à droite, un gros rond. Vert, c'est bon, rouge c'est déconnecté, bleu sauvegarde en cours. S'il reste bleu, il y a probablement un problème, tenter d'actualiser la page.
 
-###Ligne Général
+## Ligne Général
 Menu déroulant listant les conduites présentes en mémoire.
 Bouton charger pour charger.
 Bouton choisir comme conduite pour modifier la conduite qui se charge automatiquement au démarrage.
 Bouton éditer pour ouvrir/fermer les éléments permettant de modifier la conduite actuelle.
 
-###Ligne Édition
+## Ligne Édition
 Bouton nouveau pour démarrer une nouvelle conduite vide.
 Bouton sauvegarder pour sauver la conduite actuelle sous le nom entré dans le champ juste à gauche.
 En cas d'édition, il y a aussi une sauvegarde automatique toutes les minutes sous le nom 'autosave', ainsi qu'une copie de sauvegarde toute les 5 minutes nommé de la date inexacte du système.
 Bouton patch pour faire apparaître/disparaître la zone d'édition du patch (qu'il faut sauvegarder aussi).
 Bouton quitter pour fermer l'application (qu'il faudra relancer en ligne de commande).
 
-###Ligne Son
+## Ligne Son
 Menu déroulant des pistes son disponibles.
 Bouton charger pour charger la piste son sélectionnée sur la conduite actuelle.
 Bouton lire pour lancer la lecture de la conduite depuis le curseur de lecture.
@@ -28,7 +28,7 @@ Sur la barre sont représentés :
 Le curseur de lecture, par la délimitation vert clair / vert foncé, cliquer-glissable pour changer la position de lecture (y compris en cours de lecture).
 Les dates des mémoires associées à leur numéro, cliquer-glissable pour modifier leur date.
 
-###Panneau Conduite
+## Panneau Conduite
 Bouton ajouter pour ajouter une mémoire portant le numéro entré dans le champ juste à gauche. Elle viendra s'insérer dans l'ordre croissant parmi les mémoires existantes. Pour insérer entre deux mémoires consécutives, la notation x.y peut être utilisée (voire x.y.z).
 Bouton supprimer pour effacer de la conduite la mémoire sélectionnée au-dessous.
 Bouton GO pour lancer la conduite (sans le son) à partir de la mémoire sélectionnée au-dessous.
@@ -45,18 +45,18 @@ Date de déclenchement de la transition vers la mémoire.
 
 Pour sélectionner une mémoire, cliquer dessus (ailleurs que sur un bouton ou dans un champ éditable).
 
-###Panneau Jeu d'Orgue
+## Panneau Jeu d'Orgue
 Chaque case représente un circuit, avec son numéro et sa valeur actuelle en %.
 Cliquer-glisser verticalement pour changer la valeur.
 
-###Panneau Patch
+## Panneau Patch
 Pour chaque circuit :
 Voie, le numéro du circuit, permettant de l'identifier dans le jeu d'orgue.
 Nom, aide à l'organisation, aucune influence sur l'exécution.
 Addresse, addresse physique (I2C) de la carte PCA et numéro du circuit sur cette carte.
 Courbe, valeur d'exposant de la courbe associée au circuit.
 
-###Raccourcis clavier
+## Raccourcis clavier
 Flèches haut/bas : sélection de la mémoire précédente/suivante.
 Barre Espace : bouton GO, ou si lecture déjà en cours, sauter à la mémoire suivante.
 Touches 5/T : Augmenter/diminuer la date de la mémoire sélectionnée de 1mn.
