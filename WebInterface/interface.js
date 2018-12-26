@@ -43,8 +43,14 @@ interact('#co').on('tap', ()=>socket.emit('print'))
 let edit = false
   , edited = false
   , filename = ''
+editMode(false)
 
-document.getElementById('newFile').onclick = ()=>socket.emit('new')
+function editMode(e) {
+  edit = e
+  document.getElementById('general').style.display = edit ? null : 'none'
+  document.getElementById('cueP').style.display = edit ? null : 'none'
+  document.getElementById('patchP').style.display = edit ? 'none' : null
+}
 
 /******************************************* TITRE *****************/
 
@@ -56,6 +62,10 @@ function updateTitle() {
 
 let files = document.getElementById('files')
   , saveName = document.getElementById('fileName')
+
+socket.on('files', f=>{
+  populate(files, f)
+})
 
 document.getElementById('load')
   .onclick = ()=>{
@@ -83,10 +93,7 @@ document.getElementById('save')
     filename = saveName
     updateTitle()
     socket.emit('refresh')
-  }
-socket.on('files', f=>{
-  populate(files, f)
-})
+}
 /*
 document.getElementById('play').onclick = function() {
   if (this.encours) {
@@ -795,10 +802,10 @@ function setCo(co) {
         let d = new Date()
           , name = [
             d.getFullYear(),
-          d.getMonth(),
-          d.getDate(),
-          d.getHours(),
-          d.getMinutes()
+            d.getMonth(),
+            d.getDate(),
+            d.getHours(),
+            d.getMinutes()
           ].join('-')
         document.getElementById('co').style.backgroundColor = 'blue'
         socket.emit('save', name)
