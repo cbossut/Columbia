@@ -13,6 +13,21 @@ sur le site "http://www.cecill.info".
 
 process.chdir(__dirname) // Run in the module folder if started from elsewhere
 
+/*
+TODO : amender le précédent commit (séparer mise fade in out de config file)
+
+Quand interfacé, play de l'interface lance juste la conduite, play gpio lance les fades mise
+Sinon, gpio lance le cycle complet (Mise - fade out - start delay - conduite - fade in - mise)
+
+config.json va être un fichier général contenant le nom de la conduite à charger,
+et les infos diverses de timing, lumière d'ambiance, autres ? compteur ? avec dates ?
+
+trapèze date high low et adresse PCA
+
+GPIO dispo :
+2.3.4.14.15.17.18.27.22.23.24
+*/
+
 const staticroute = require('static-route')
     , fs = require('fs')
     , app = require('http').createServer(staticroute({
@@ -23,7 +38,7 @@ const staticroute = require('static-route')
     , io = require('socket.io')(app)
     , Gpio = require('onoff').Gpio
     , gpioStart = new Gpio(14, 'in', 'falling', {debounceTimeout: 30})
-    , gpioDebug = new Gpio(4, 'in', 'both', {debounceTimeout: 100})
+    , gpioOff = new Gpio(4, 'in', 'both', {debounceTimeout: 30}) // Clignote la led un peu, puis passer la led en power led ? (celle brute sur la carte)
     , gpioLed = new Gpio(15, 'out')
     , cl = require("./cueList.js")
     , or = cl.orgue
@@ -54,7 +69,7 @@ function terminate() {
   fs.writeFileSync(configPath, JSON.stringify(config, null, 2))
   cl.save(autosavePath)
   gpioStart.unexport()
-  gpioDebug.unexport()
+  gpioOff.unexport()
   gpioLed.writeSync(0)
   gpioLed.unexport()
   process.exit()
@@ -225,3 +240,21 @@ function playInterfaced(pos, sock) {
     }
   }, 40)
 }
+
+/*
+function fadeMise(t = 0) { // check closure function ou => ?
+  let grad = 1/(time*miseFPS)
+    , state = 0
+    , inter = null
+    , fade = () => {
+      if (state >= 1) {
+        clearInterval(inter)
+        sendMise(up ? config.mise.valeurs : Array(config.mise.valeurs).fill(0))
+      } else {
+        sendMise(config.mise.valeurs.map(v => v*(up ? state : 1-state)))
+        state += grad
+      }
+    }
+  inter = setInterval(fade, 1000/miseFPS)
+}
+*/

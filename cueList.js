@@ -23,8 +23,8 @@ let cl = {
   , cue = {
       name: 'Mise'
     , state: [0]
-    , upTime: 10
-    , downTime: 10
+    , upTime: 10 // s
+    , downTime: 10 // s
     , date: -1
     }
   , player = null

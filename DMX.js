@@ -25,7 +25,7 @@ module.exports.write = function(data, start = 1) {
   if (start > 0) {
     data = Array(start).fill(0).concat(data)
   }
-  console.log(data)
+  //DEBUG console.log(data)
   let packetLength = [data.length & 0xFF, (data.length >> 8) & 0xFF]
   DMX.write(packetStart.concat(packetLength, data, packetEnd))
 }

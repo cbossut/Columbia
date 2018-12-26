@@ -212,6 +212,8 @@ interact('.cursor').draggable({
   onend: e=>e.currentTarget.time.onchange()
 })
 
+/******************************************* CUELIST *****************/
+
 let mem = document.getElementById('mem')
   , add = document.getElementById('addCue')
   , cl = document.getElementById('cueList')
@@ -249,8 +251,6 @@ function beforeMem(newMem) {
   for(i = 0 ; o[i] == n[i] && o[i] ; i++);
   return ! (n[i] > o[i])
 }
-
-/******************************************* CUELIST *****************/
 
 socket.on('cueList', content => {
   cl.innerHTML = ''
@@ -720,6 +720,7 @@ function formatTime(t, tab = false) {
   return tab ? tt : tt.join('')
 }
 
+// Autosave toutes les minutes, copie de sauvegarde toutes les 5 minutes
 let saveInter = []
 function setCo(co) {
   saveInter.forEach(clearInterval)
