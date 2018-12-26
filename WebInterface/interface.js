@@ -40,8 +40,17 @@ socket.on('debug', d => {
 
 interact('#co').on('tap', ()=>socket.emit('print'))
 
+let edit = false
+  , edited = false
+  , filename = ''
 
 document.getElementById('newFile').onclick = ()=>socket.emit('new')
+
+/******************************************* TITRE *****************/
+
+function updateTitle() {
+  document.getElementById('titre').textContent = "Interface from RPi : "+filename+edited?'*':''
+}
 
 /******************************************* PROD *****************/
 
@@ -49,15 +58,30 @@ let files = document.getElementById('files')
   , saveName = document.getElementById('fileName')
 
 document.getElementById('load')
-  .onclick = ()=>socket.emit('load', files.value)
+  .onclick = ()=>{
+    socket.emit('load', files.value)
+    filename = files.value
+    edited = false
+    updateTitle()
+  }
+
+document.getElementById('edit')
+  .onclick = ()=>editMode(!edit)
 
 /******************************************* GENERAL *****************/
 
-document.getElementById('newFile').onclick = ()=>socket.emit('new')
+document.getElementById('newFile').onclick = ()=>{
+  socket.emit('new')
+  filename = ''
+  edited = false
+  updateTitle()
+}
 document.getElementById('save')
   .onclick = ()=>{
     document.getElementById('co').style.backgroundColor = 'blue'
     socket.emit('save', saveName.value)
+    filename = saveName
+    updateTitle()
     socket.emit('refresh')
   }
 socket.on('files', f=>{
@@ -142,6 +166,8 @@ socket.on('soundFiles', f=>{
 })
 document.getElementById('soundLoad').onclick = ()=>{
   socket.emit('loadSound', soundFiles.value)
+  edited = true
+  updateTitle()
 }
 playBtn.onclick = ()=>{
   soundPlaying
@@ -238,6 +264,9 @@ add.onclick = ()=>{
   
   mem.value = ''
   add.disabled = true
+  
+  edited = true
+  updateTitle()
 }
 
 function isMem() {
@@ -265,6 +294,8 @@ socket.on('cueList', content => {
     if (v.comment) el.children[0].value = v.comment
     el.children[0].onchange = function() {
       socket.emit('cueChange', {n:i, change:{comment:this.value}})
+      edited = true
+      updateTitle()
     }
     el = el.nextElementSibling
     el.innerHTML = i+1
@@ -274,6 +305,8 @@ socket.on('cueList', content => {
     el.children[0].onclick = function() {
       if (this.classList.contains('sel')) {
         socket.emit('update', i)
+        edited = true
+        updateTitle()
         this.classList.remove('sel')
       } else {
         this.classList.add('sel')
@@ -288,6 +321,8 @@ socket.on('cueList', content => {
       this.parentElement.nextElementSibling.firstElementChild.value = this.value
       this.parentElement.nextElementSibling.nextElementSibling.firstElementChild.value = this.value
       socket.emit('cueChange', {n:this.num, change:{upTime:this.value, downTime:this.value}})
+      edited = true
+      updateTitle()
     }
     el = el.nextElementSibling
     inp = el.children[0]
@@ -305,6 +340,8 @@ socket.on('cueList', content => {
     inp.onchange = inp.onkeyup = function() {
       this.parentElement.previousElementSibling.firstElementChild.value = ''
       socket.emit('cueChange', {n:this.num, change:{upTime:this.value}})
+      edited = true
+      updateTitle()
     }
     el = el.nextElementSibling
     inp = el.children[0]
@@ -322,6 +359,8 @@ socket.on('cueList', content => {
     inp.onchange = inp.onkeyup = function() {
       this.parentElement.previousElementSibling.previousElementSibling.firstElementChild.value = ''
       socket.emit('cueChange', {n:this.num, change:{downTime:this.value}})
+      edited = true
+      updateTitle()
     }
     el = el.nextElementSibling
     let btn = el.children[1]
@@ -355,6 +394,8 @@ socket.on('cueList', content => {
       time.cursor.pos = v.date
       btn.onclick = function() {
         socket.emit('cueChange', {n:i, change:{date: soundTimes.pos}})
+        edited = true
+        updateTitle()
         time.style.display = 'initial'
         btn.style.display = 'none'
         time.cursor.pos = soundTimes.pos
@@ -366,6 +407,8 @@ socket.on('cueList', content => {
     time.onchange = function() {
       time.cursor.pos = this.valueAsNumber
       socket.emit('cueChange', {n:i, change:{date: this.valueAsNumber}})
+      edited = true
+      updateTitle()
     }
     soundTimes.container.appendChild(time.cursor)
     cl.appendChild(line)
@@ -384,6 +427,8 @@ interact('.cueTR')
 
 document.getElementById('delCue').onclick = ()=>{
   socket.emit('delete', selCueIndex)
+  edited = true
+  updateTitle()
 }
 
 document.getElementById('go').onclick = function () {
@@ -522,6 +567,8 @@ socket.on('patch', o => {
     inp.onchange = function() {
       f.childNodes[0].textContent = this.value
       socket.emit('patchChange', {n: i, new: {name: this.value}})
+      edited = true
+      updateTitle()
     }
     el = el.nextElementSibling
     let pca = el.children[0]
@@ -530,16 +577,22 @@ socket.on('patch', o => {
     pca.selectedIndex = v.pca
     pca.onchange = function() {
       socket.emit('patchChange', {n: i, new: {pca: this.selectedIndex}})
+      edited = true
+      updateTitle()
     }
     led.value = v.leds[0] + 1 //TODO multiple ?
     led.onchange = function() {
       socket.emit('patchChange', {n: i, new: {leds: [this.value - 1]}})
+      edited = true
+      updateTitle()
     }
     el = el.nextElementSibling
     let c = el.children[0]
     c.value = v.exp || 1
     c.onchange = function() {
       socket.emit('patchChange', {n: i, new: {exp: this.value}})
+      edited = true
+      updateTitle()
     }
     plist.appendChild(line)
   })
@@ -699,7 +752,11 @@ document.body.onwheel = e => {
 }
 
 
-socket.on('endSave', ()=>document.getElementById('co').style.backgroundColor = 'green')
+socket.on('endSave', ()=>{
+  document.getElementById('co').style.backgroundColor = 'green'
+  edited = false
+  updateTitle()
+})
 
 /******************************************* MISC *****************/
 
@@ -728,20 +785,26 @@ function setCo(co) {
   if (co) {
     socket.emit('refresh')
     saveInter.push(setInterval(()=>{
-      document.getElementById('co').style.backgroundColor = 'blue'
-      socket.emit('save', 'autosave')
+      if (edited) {
+        document.getElementById('co').style.backgroundColor = 'blue'
+        socket.emit('save', 'autosave')
+      }
     }, 60000))
     saveInter.push(setInterval(()=>{
-      let d = new Date()
-        , name = [
-          d.getFullYear(),
+      if (edited) {
+        let d = new Date()
+          , name = [
+            d.getFullYear(),
           d.getMonth(),
           d.getDate(),
           d.getHours(),
           d.getMinutes()
-        ].join('-')
-      document.getElementById('co').style.backgroundColor = 'blue'
-      socket.emit('save', name)
+          ].join('-')
+        document.getElementById('co').style.backgroundColor = 'blue'
+        socket.emit('save', name)
+        filename = name
+        updateTitle()
+      }
     }, 300000))
   }
   document.getElementById('co').style.backgroundColor = co?"green":"red"
