@@ -2,12 +2,12 @@
 Copyright ou © ou Copr. Clément Bossut, (2018)
 <bossut.clement@gmail.com>
 
-Ce logiciel est un programme informatique servant à écrire et jouer une conduite lumière synchronisée avec du son sur une Raspberry Pi avec PCA8596. 
+Ce logiciel est un programme informatique servant à écrire et jouer une conduite lumière synchronisée avec du son sur une Raspberry Pi avec PCA8596.
 
 Ce logiciel est régi par la licence CeCILL soumise au droit français et
 respectant les principes de diffusion des logiciels libres. Vous pouvez
 utiliser, modifier et/ou redistribuer ce programme sous les conditions
-de la licence CeCILL telle que diffusée par le CEA, le CNRS et l'INRIA 
+de la licence CeCILL telle que diffusée par le CEA, le CNRS et l'INRIA
 sur le site "http://www.cecill.info".
 */
 
@@ -43,24 +43,36 @@ const staticroute = require('static-route')
     , cl = require("./cueList.js")
     , or = cl.orgue
     , player = require('./player.js') // Player is only loaded to get sound info for interface
+    , PCA = require('./pca.js') // Inited by cl.load
+    , DMX = require('./DMX.js')
     , savePath = './data/'
     , soundPath = './sounds/'
     , soundExtensionFilter = '.wav'
     , autosavePath = savePath + 'autosave.json'
     , configPath = './config.json'
-    , config = {
-      conduite: './conduite.json',
-      mise: {
-        circuits: [],
-        valeurs: []
-      },
-      fadeOff: 30,
-      fadeOn: 30,
-      startDelay: 30,
-      compte: [] // Nombre d'appuis gpio par lancement de l'appli
-    }
+    , miseFPS = 40
 let soundInterval = null
   , interfaced = false
+// if not interfaced, gpio button starts sequence with no information back
+// else it starts like the interface play button was clicked
+  , config = {
+    conduite: './conduite.json',
+    DMXaddrs: 24, // sends all values from chanel 1 to DMXaddrs, for lame gradators
+    protoMise:
+      {
+        circuit: {mode: 'PCA/DMX', addr: 65, n:15},
+        vHigh: 100, // %
+        vLow: 0, // %
+        tOff: 2, // s from launch
+        tOn: 268, // s from launch
+        dOff: 30, // s fade out time
+        dOn: 30, // s fade in time
+      },
+    mise: [],
+    startDelay: 0, // s start time from launch
+    compte: [] // Nombre d'appuis gpio par lancement de l'appli
+  }
+  , launched = false
 
 console.log("<-----start----->")
 console.error("<-----start----->")
@@ -68,6 +80,7 @@ console.error("<-----start----->")
 function terminate() {
   fs.writeFileSync(configPath, JSON.stringify(config, null, 2))
   cl.save(autosavePath)
+  DMX.close()
   gpioStart.unexport()
   gpioOff.unexport()
   gpioLed.writeSync(0)
@@ -100,39 +113,35 @@ gpioStart.watch((err, value) => {
     console.error(err)
     terminate()
   }
-  
+
   if (!interfaced) {
     config.compte[0]++
     gpioLed.writeSync(0)
-    cl.play(0, function (ongoing, elapsed) {
-      if (!ongoing) gpioLed.writeSync(1)
-    })
-  }
+    launch()
+  }/* else {
+    if (cl.getSoundStat().playing) cl.cut()
+    playInterfaced(0, sock)
+  }*/
 })
 
 io.on('connection', sock => {
-  
+
   console.log(sock.id, sock.client.conn.remoteAddress)
-  
+
   //process.on('uncaughtException', e=>sock.emit('debug', {message:'except', err:JSON.stringify(e)}))
-  
+
   interfaced = true
-  
+
   sock.on('disconnect', ()=>{
     interfaced = false
     cl.cut()
     gpioLed.writeSync(1)
   })
-  
-  gpioStart.watch((err, value) => {
-    if (cl.getSoundStat().playing) cl.cut()
-    playInterfaced(0, sock)
-  })
-  
+
   sock.on('exit', () => {
     terminate()
   })
-  
+
   sock.on('new', ()=>{
     cl.new()
     sock.emit('cueList', cl.content)
@@ -142,7 +151,7 @@ io.on('connection', sock => {
     })
     sock.emit('orgueState', cl.orgue.state)
   })
-  
+
   loadSound(sock)
   sock.emit('cueList', cl.content)
   sock.emit('patch', {
@@ -150,9 +159,9 @@ io.on('connection', sock => {
     pcas: cl.orgue.pcas
   })
   sock.emit('orgueState', cl.orgue.state)
-  
+
   sock.emit('soundFiles', fs.readdirSync(soundPath).filter(v=>v.endsWith(soundExtensionFilter)))
-  
+
   sock.on('refresh', () => {
     let jsons = fs.readdirSync(savePath).filter(v=>v.endsWith('.json'))
     sock.emit('files', jsons.map(v => v.split('.')[0]))
@@ -187,7 +196,7 @@ io.on('connection', sock => {
     cl.applyCue(n)
     sock.emit('orgueState', cl.orgue.state)
   })
-  
+
   sock.on('go', n => {
     cl.go(n, function (ongoing, elapsed) {
       sock.emit('orgueState', cl.orgue.state)
@@ -195,13 +204,13 @@ io.on('connection', sock => {
     }) // TODO poll instead of callback because probably don't need as fast as graduation for interface
   })
   sock.on('stop', () => cl.stop())
-  
+
   sock.on('print', () => cl.print())
-  
+
   sock.on('orgue', d=>or.setLevel(d.led, parseInt(d.val)))
-  
+
   sock.on('patchChange', ch=>Object.assign(or.patch[ch.n], ch.new))
-  
+
   soundInterval = null
   sock.on('loadSound', f => {
     cl.soundPath = soundPath + f
@@ -226,7 +235,7 @@ function loadSound(sock) {
 
 function playInterfaced(pos, sock) {
   gpioLed.writeSync(0)
-  
+
   if (soundInterval) clearInterval(soundInterval)
   cl.play(pos, function (ongoing, elapsed) {
     sock.emit('orgueState', cl.orgue.state)
@@ -241,6 +250,62 @@ function playInterfaced(pos, sock) {
   }, 40)
 }
 
+function launch() {
+  if (launched) return;
+
+  launched = true
+  sendMise()
+  setTimeout(() => {cl.play()}, config.startDelay/1000)
+}
+
+function sendMise(t = 0) { // en s depuis launch
+  let DMXvals = []
+    , dNext = 0.001 // en s
+    , allEnded = true
+  for (let i in config.mise) {
+    with(config.mise[i]){
+      if (circuit) {
+        let v // en %
+          , ended = false
+        if (t <= tOff) {
+          v = vHigh
+          dNext = Math.min(dNext, tOff - t)
+        }
+        else if (t - tOff < dOff) {
+          v = vLow + (vHigh - vLow) * (t - tOff) / dOff
+          dNext = Math.min(dNext, 1/miseFPS)
+        }
+        else if (t <= tOn) {
+          v = vLow
+          dNext = Math.min(dNext, tOn - t)
+        }
+        else if (t - tOn < dOn) {
+          v = vLow + (vHigh - vLow) * (1 - (t - tOn) / dOn)
+          dNext = Math.min(dNext, 1/miseFPS)
+        }
+        else {
+          v = vHigh
+          ended = true
+        }
+
+        if (!ended) allEnded = false
+
+        if (circuit.mode == 'PCA') {
+          v = Math.floor(v * 40.96)
+          PCA.setLed(circuit.addr, circuit.n, v)
+        } else if (circuit.mode == 'DMX') {
+          v = Math.floor(v * 2.55)
+          DMXvals[circuit.addr] = v
+        }
+      }
+    }
+  }
+  if (DMXvals.length) {
+    DMX.write(DMXvals.map(v=>v?v:0))
+  }
+  if (!allEnded) setTimeout(()=>sendMise(t + dNext), dNext/1000)
+  else gpioLed.writeSync(1)
+}
 /*
 function fadeMise(t = 0) { // check closure function ou => ?
   let grad = 1/(time*miseFPS)
