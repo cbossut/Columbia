@@ -135,11 +135,23 @@ io.on('connection', sock => {
   sock.on('disconnect', ()=>{
     interfaced = false
     cl.cut()
+    cl.load(config.conduite)
     gpioLed.writeSync(1)
   })
 
   sock.on('exit', () => {
     terminate()
+  })
+
+  let tmpPath = config.conduite.split('/')
+  if (tmpPath.slice(0,-1).join('/') + '/' != savePath)
+    sock.emit('fileName', config.conduite)
+  else
+    sock.emit('fileName', tmpPath[tmpPath.length - 1].split('.')[0])
+
+  sock.on('conduiteChange', fileName => {
+    config.conduite = savePath + fileName + '.json'
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2))
   })
 
   sock.on('new', ()=>{

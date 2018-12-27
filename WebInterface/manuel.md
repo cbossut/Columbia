@@ -11,7 +11,7 @@ Menu déroulant listant les conduites présentes en mémoire.
 
 Bouton charger pour charger.
 
-Bouton choisir comme conduite pour modifier la conduite qui se charge automatiquement au démarrage.
+Bouton choisir comme conduite pour définir la conduite actuelle à charger automatiquement au démarrage.
 
 Bouton éditer pour ouvrir/fermer les éléments permettant de modifier la conduite actuelle.
 

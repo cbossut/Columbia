@@ -2,12 +2,12 @@
 Copyright ou © ou Copr. Clément Bossut, (2018)
 <bossut.clement@gmail.com>
 
-Ce logiciel est un programme informatique servant à écrire et jouer une conduite lumière synchronisée avec du son sur une Raspberry Pi avec PCA8596. 
+Ce logiciel est un programme informatique servant à écrire et jouer une conduite lumière synchronisée avec du son sur une Raspberry Pi avec PCA8596.
 
 Ce logiciel est régi par la licence CeCILL soumise au droit français et
 respectant les principes de diffusion des logiciels libres. Vous pouvez
 utiliser, modifier et/ou redistribuer ce programme sous les conditions
-de la licence CeCILL telle que diffusée par le CEA, le CNRS et l'INRIA 
+de la licence CeCILL telle que diffusée par le CEA, le CNRS et l'INRIA
 sur le site "http://www.cecill.info".
 */
 
@@ -58,6 +58,11 @@ function updateTitle() {
   document.getElementById('titre').textContent = "Interface from RPi : "+filename+edited?'*':''
 }
 
+sock.on('fileName', f=>{
+  fileName = f
+  updateTitle
+})
+
 /******************************************* PROD *****************/
 
 let files = document.getElementById('files')
@@ -73,7 +78,10 @@ document.getElementById('load')
     filename = files.value
     edited = false
     updateTitle()
-  }
+}
+
+document.getElementById('choose')
+  .onclick = ()=>sock.emit('conduiteChange', filename)
 
 document.getElementById('edit')
   .onclick = ()=>editMode(!edit)
@@ -262,16 +270,16 @@ mem.onkeyup = ()=>{
 add.onclick = ()=>{
   let c = cl.firstElementChild
   while(c && beforeMem(c.children[2].innerHTML)) c = c.nextElementSibling
-  
+
   socket.emit(
     'addCue',
     mem.value,
     c ? parseInt(c.children[1].innerHTML)-2 : cl.children.length-1
   )
-  
+
   mem.value = ''
   add.disabled = true
-  
+
   edited = true
   updateTitle()
 }
@@ -472,18 +480,18 @@ function selCue(trNode, setPos = true) {
     unselCue()
     return;
   }
-  
+
   document.querySelectorAll('.cueTR.sel')
     .forEach(v=>v.classList.remove('sel'))
   trNode.classList.add('sel')
   selCueIndex = parseInt(trNode.children[1].innerHTML) - 1
-  
+
   socket.emit('apply', selCueIndex)
-  
+
   if (setPos && soundTimes.cursors[selCueIndex].pos != -1) {
     soundTimes.pos = soundTimes.cursors[selCueIndex].pos
   }
-  
+
   document.querySelectorAll('.cueAct')
     .forEach(v=>v.disabled = false)
 }
@@ -498,7 +506,7 @@ function unselCue() {
   document.querySelectorAll('.cueTR.sel')
     .forEach(v=>v.classList.remove('sel'))
   selCueIndex = -1
-  
+
   document.querySelectorAll('.cueAct')
     .forEach(v=>v.disabled = true)
 }
@@ -562,7 +570,7 @@ socket.on('patch', o => {
       panel.appendChild(document.createElement('br'))
       panel.appendChild(document.createElement('br'))
     }
-    
+
     let line = pline.cloneNode(true)
     line.removeAttribute('id')
     line.classList.remove('proto')
@@ -691,7 +699,7 @@ document.body.onkeydown = e => {
       }
       document.getElementById('go').onclick()
       break;
-      
+
     case 'Digit5':
       changeSelTimes(1000)
       break;
@@ -704,7 +712,7 @@ document.body.onkeydown = e => {
     case 'KeyY':
       changeSelTimes(-1)
       break;
-      
+
     case 'KeyP':
       changeSelFaders(-100)
       nextFader()
@@ -725,7 +733,7 @@ document.body.onkeydown = e => {
     case 'Escape':
       unselectFader()
       break;
-      
+
     case 'Digit1':
       changeSelFaders(1)
       break;
@@ -744,7 +752,7 @@ document.body.onkeydown = e => {
     case 'KeyE':
       changeSelFaders(-.02)
       break;
-      
+
     default:
       prevent = false
   }
