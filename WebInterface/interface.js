@@ -58,7 +58,7 @@ function updateTitle() {
   document.getElementById('titre').textContent = "Interface from RPi : "+filename+edited?'*':''
 }
 
-sock.on('fileName', f=>{
+socket.on('fileName', f=>{
   fileName = f
   updateTitle
 })
