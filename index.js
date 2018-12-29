@@ -219,7 +219,7 @@ io.on('connection', sock => {
 
   sock.on('print', () => cl.print())
 
-  sock.on('orgue', d=>or.setLevel(d.led, parseInt(d.val)))
+  sock.on('orgue', d=>or.setLevel(d.led, parseInt(d.val, 10)))
 
   sock.on('patchChange', ch=>Object.assign(or.patch[ch.n], ch.new))
 
