@@ -60,7 +60,7 @@ let soundInterval = null
     DMXaddrs: 24, // sends all values from chanel 1 to DMXaddrs, for lame gradators
     protoMise:
       {
-        circuit: {mode: 'PCA/DMX', addr: 65, n:15},
+        circuit: {mode: 'PCA/DMX/Orgue', addr: 65, n:15},
         vHigh: 100, // %
         vLow: 0, // %
         tOff: 2, // s from launch
@@ -308,6 +308,9 @@ function sendMise(t = 0) { // en s depuis launch
         } else if (circuit.mode == 'DMX') {
           v = Math.floor(v * 2.55)
           DMXvals[circuit.addr] = v
+        } else if (circuit.mode == 'Orgue') {
+          v = Math.floor(v * 40) // TODO 40 = dépendance à l'interface factor
+          or.setLevel(circuit.addr, v)
         }
       }
     }
