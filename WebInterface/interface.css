@@ -71,6 +71,11 @@ button:disabled {
 }
 
 
+.adroite {
+  float: right;
+}
+
+
 .sel {
   border: 2px solid red;
 }
@@ -162,10 +167,6 @@ button.sel {
 
 #cueP>* {
   float: left;
-}
-
-#selAllFader {
-  float: right;
 }
 
 #mem {
