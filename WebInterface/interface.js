@@ -43,6 +43,7 @@ interact('#co').on('tap', ()=>socket.emit('print'))
 let edit = false
   , edited = false
   , filename = ''
+  , leCompteur
 editMode(false)
 
 function editMode(e) {
@@ -50,6 +51,8 @@ function editMode(e) {
   document.getElementById('general').style.display = edit ? null : 'none'
   document.getElementById('cueP').style.display = edit ? null : 'none'
   document.getElementById('patchP').style.display = edit ? 'none' : null
+  document.getElementById('miseP').style.display = edit ? 'none' : null
+  document.getElementById('DMXP').style.display = edit ? 'none' : null
 }
 
 /******************************************* TITRE *****************/
@@ -529,6 +532,51 @@ function changeSelTimes(d) {
     v.timeElement.onchange()
   })
 }
+
+/******************************************* MISE *****************/
+
+let startDelay = document.getElementById('startDelay')
+  , addMise = document.getElementById('addMise')
+  , delMise = document.getElementById('delMise')
+  , miseLine = document.getElementById('miseLine')
+  , miseBody = document.getElementById('miseBody')
+
+startDelay.onchange = function() {
+  socket.emit('configChange', {startDelay: this.value})
+}
+
+addMise.onclick = () => socket.emit('addMise')
+addMise.onclick = () => socket.emit('delMise')
+
+function updateMise(m) {
+//TODO cf patch
+}
+
+socket.on('mise', updateMise)
+
+/******************************************* DMX *****************/
+
+let maxDMX = document.getElementById('maxDMX')
+
+function manageDMXfaders() {
+//TODO cf orgue
+}
+
+maxDMX.onchange = function() {
+  socket.emit('configChange', {DMXaddrs: this.value})
+  manageDMXfaders()
+}
+
+/******************************************* CONFIG *****************/
+
+socket.on('config', c => {
+  //TODO c.conduite ? ajout au titre a priori
+  startDelay.value = c.startDelay
+  maxDMX.value = c.DMXaddrs
+  leCompteur = c.compte
+  updateMise(c.mise)
+  manageDMXfaders()
+})
 
 /******************************************* ORGUE (&PATCH) *****************/
 
