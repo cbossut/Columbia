@@ -561,7 +561,34 @@ socket.on('mise', updateMise)
 let maxDMX = document.getElementById('maxDMX')
 
 function manageDMXfaders() {
-//TODO cf orgue
+  let panel = document.getElementById('DMXP')
+    , faders = panel.getElementsByClassName('fader')
+    , n = faders.length
+
+  if (maxDMX.valueAsNumber < n) {
+    for (var i = n - 1 ; i >= maxDMX.valueAsNumber ; i--) {
+      panel.removeChild(faders[i])
+    }
+  } else if (maxDMX.valueAsNumber > n) {
+    let fader = document.getElementById('fader')
+    for (var i = 0 ; i < maxDMX.valueAsNumber - n ; i++) {
+      let f = fader.cloneNode(true) // TODO copy-paste from patch ...
+      f.removeAttribute('id')
+      f.classList.remove('proto')
+      f.childNodes[0].textContent = f.num = n + i + 1
+      f.childNodes[2].textContent = f.val = 0
+      Object.defineProperty(f, 'value', {
+        enumerable: true,
+        configurable: true,
+        get: function() {return this.val},
+        set: function(v) {
+          this.val = v
+          this.childNodes[2].textContent = v
+        }
+      })
+      panel.appendChild(f)
+    }
+  }
 }
 
 maxDMX.onchange = function() {
