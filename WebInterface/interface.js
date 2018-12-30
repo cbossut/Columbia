@@ -27,7 +27,9 @@ const factor = 40 // 1 point du jeu d'orgue = factor points de PCA
 
 let socket = io()
 if (!socket.connected) {
-  socket = io('http://' + prompt('Address', '10.3.14.15') + ':8080')
+  let addr = prompt('Address', '10.3.14.15')
+  if (addr) socket = io('http://' + addr + ':8080')
+  else socket.disconnect()
 }
 socket.on('connect', ()=>setCo(true))
 socket.on('reconnect', ()=>setCo(true))
@@ -542,7 +544,7 @@ let startDelay = document.getElementById('startDelay')
   , miseBody = document.getElementById('miseBody')
 
 startDelay.onchange = function() {
-  socket.emit('configChange', {startDelay: this.value})
+  socket.emit('configChange', {startDelay: this.valueAsNumber})
 }
 
 addMise.onclick = () => socket.emit('addMise')
@@ -563,7 +565,7 @@ function manageDMXfaders() {
 }
 
 maxDMX.onchange = function() {
-  socket.emit('configChange', {DMXaddrs: this.value})
+  socket.emit('configChange', {DMXaddrs: this.valueAsNumber})
   manageDMXfaders()
 }
 
@@ -571,8 +573,8 @@ maxDMX.onchange = function() {
 
 socket.on('config', c => {
   //TODO c.conduite ? ajout au titre a priori
-  startDelay.value = c.startDelay
-  maxDMX.value = c.DMXaddrs
+  startDelay.valueAsNumber = c.startDelay
+  maxDMX.valueAsNumber = c.DMXaddrs
   leCompteur = c.compte
   updateMise(c.mise)
   manageDMXfaders()
@@ -661,7 +663,7 @@ socket.on('patch', o => {
   })
 })
 
-interact('.fader').draggable({
+interact('.fader').draggable({ // TODO organize ? it's for orgue & DMX
   onmove: e=>changeFader(e.currentTarget, - parseInt(e.dy)/2)
 })
 .pointerEvents()
@@ -710,7 +712,7 @@ function nextFader() {
   }
 }
 
-function prevFader() {
+function prevFader() { // TODO bug if DMX fader selected, selects maxDMX
   let seled = document.querySelector('.fader.sel')
   if (!seled) selectFader(faders[faders.length-1])
   else {
