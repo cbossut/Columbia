@@ -149,9 +149,28 @@ io.on('connection', sock => {
   else
     sock.emit('fileName', tmpPath[tmpPath.length - 1].split('.')[0])
 
+  sock.emit('config', config)
+
   sock.on('conduiteChange', fileName => {
     config.conduite = savePath + fileName + '.json'
     fs.writeFileSync(configPath, JSON.stringify(config, null, 2))
+  })
+  sock.on('configChange', ch => {
+    Object.assign(config, ch)
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2))
+  })
+  sock.on('addMise', () => {
+    let newMise = Object.create(config.protoMise)
+    newMise.circuit = Object.create(config.protoMise.circuit)
+    config.mise.push(newMise)
+    sock.emit('mise', config.mise)
+  })
+  sock.on('delMise', () => {
+    config.mise.pop()
+    sock.emit('mise', config.mise)
+  })
+  sock.on('miseChange', ch => {
+    Object.assign(config.mise[ch.n], ch.new)
   })
 
   sock.on('new', ()=>{
