@@ -542,6 +542,7 @@ let startDelay = document.getElementById('startDelay')
   , delMise = document.getElementById('delMise')
   , miseLine = document.getElementById('miseLine')
   , miseBody = document.getElementById('miseBody')
+  , addrOptions = ['DMX', 'Orgue', 'PCA']
 
 startDelay.onchange = function() {
   socket.emit('configChange', {startDelay: this.valueAsNumber})
@@ -551,7 +552,94 @@ addMise.onclick = () => socket.emit('addMise')
 addMise.onclick = () => socket.emit('delMise')
 
 function updateMise(m) {
-//TODO cf patch
+  miseBody.innerHTML = ''
+  m.forEach((v,i,a)=> {
+    let line = miseLine.cloneNode(true)
+    line.removeAttribute('id')
+    line.classList.remove('proto')
+
+    let el = line.firstElementChild
+      , type = el.children[0]
+      , addr = el.children[1]
+    type.selectedIndex = addrOptions.indexOf(v.circuit.mode)
+    addr.valueAsNumber = v.circuit.addr
+    type.onchange = function() {
+      addr.onchange = function() {
+        socket.emit(
+          'miseChange',
+          {n:i, new:{circuit:{addr:this.valueAsNumber}}}
+        )
+      }
+      switch(this.selectedIndex) {
+        case 0:
+          addr.max = document.getElementById('maxDMX').value
+          addr.classList.add('DMXchannelBox')
+          break;
+        case 1:
+          addr.max = document.getElementById('orgueP').children[length - 1].num
+          addr.classList.remove('DMXchannelBox')
+          break;
+        case 2:
+          addr.max = 16
+          addr.classList.remove('DMXchannelBox')
+          addr.onchange = function() {
+            socket.emit(
+              'miseChange',
+              {n:i, new:{circuit:{addr:this.valueAsNumber-1}}}
+            )
+          }
+          break;
+      }
+      socket.emit(
+        'miseChange',
+        {n:i, new:{circuit:{mode:addrOptions[this.selectedIndex]}}}
+      )
+    }
+
+    el = el.nextElementSibling
+    let inp = el.children[0]
+    inp.valueAsNumber = v.vHigh
+    inp.onchange = function() {
+      socket.emit('miseChange', {n:i, new:{vHigh:this.valueAsNumber}})
+    }
+
+    el = el.nextElementSibling
+    inp = el.children[0]
+    inp.valueAsNumber = v.vLow
+    inp.onchange = function() {
+      socket.emit('miseChange', {n:i, new:{vLow:this.valueAsNumber}})
+    }
+
+    el = el.nextElementSibling
+    inp = el.children[0]
+    inp.valueAsNumber = v.tOff
+    inp.onchange = function() {
+      socket.emit('miseChange', {n:i, new:{tOff:this.valueAsNumber}})
+    }
+
+    el = el.nextElementSibling
+    inp = el.children[0]
+    inp.valueAsNumber = v.dOff
+    inp.onchange = function() {
+      socket.emit('miseChange', {n:i, new:{dOff:this.valueAsNumber}})
+    }
+
+    el = el.nextElementSibling
+    inp = el.children[0]
+    inp.valueAsNumber = v.tOn
+    inp.onchange = function() {
+      socket.emit('miseChange', {n:i, new:{tOn:this.valueAsNumber}})
+    }
+
+    el = el.nextElementSibling
+    inp = el.children[0]
+    inp.valueAsNumber = v.dOn
+    inp.onchange = function() {
+      socket.emit('miseChange', {n:i, new:{dOn:this.valueAsNumber}})
+    }
+
+    miseBody.appendChild(line)
+  })
 }
 
 socket.on('mise', updateMise)
@@ -564,17 +652,22 @@ function manageDMXfaders() {
   let panel = document.getElementById('DMXP')
     , faders = panel.getElementsByClassName('fader')
     , n = faders.length
+    , channelBoxes = document.querySelectorAll('.DMXchannelBox')
+    , val = maxDMX.valueAsNumber
 
-  if (maxDMX.valueAsNumber < n) {
-    for (var i = n - 1 ; i >= maxDMX.valueAsNumber ; i--) {
+  channelBoxes.forEach(v => v.max = val)
+
+  if (val < n) {
+    for (var i = n - 1 ; i >= val ; i--) {
       panel.removeChild(faders[i])
     }
-  } else if (maxDMX.valueAsNumber > n) {
+  } else if (val > n) {
     let fader = document.getElementById('fader')
-    for (var i = 0 ; i < maxDMX.valueAsNumber - n ; i++) {
+    for (var i = 0 ; i < val - n ; i++) {
       let f = fader.cloneNode(true) // TODO copy-paste from patch ...
       f.removeAttribute('id')
       f.classList.remove('proto')
+      f.classList.add('DMX')
       f.childNodes[0].textContent = f.num = n + i + 1
       f.childNodes[2].textContent = f.val = 0
       Object.defineProperty(f, 'value', {
