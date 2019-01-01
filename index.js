@@ -337,7 +337,7 @@ function sendMise(t = 0) { // en s depuis launch
   if (DMXvals.length) {
     DMX.write(DMXvals.map(v=>v?v:0))
   }
-  if (!allEnded) setTimeout(()=>sendMise(t + dNext), dNext/1000)
+  if (!allEnded) setTimeout(()=>sendMise(t + dNext), dNext*1000)
   else gpioLed.writeSync(1)
 }
 /*
