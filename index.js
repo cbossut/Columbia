@@ -173,6 +173,16 @@ io.on('connection', sock => {
     Object.assign(config.mise[ch.n], ch.new)
   })
 
+  let DMXinter = undefined
+    , DMXorgue = []
+  sock.on('orgue', obj => {
+    DMXorgue[obj.channel] = Math.floor(obj.val * 2.55)
+    if (!DMXinter) setTimeout(()=>{
+      DMX.write(DMXorgue.map(v=>v?v:0))
+      DMXinter = undefined
+    }, 1000/miseFPS)
+  })
+
   sock.on('new', ()=>{
     cl.new()
     sock.emit('cueList', cl.content)

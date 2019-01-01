@@ -709,8 +709,13 @@ socket.on('orgueState', s => {
 
 function changeFader(f, d) {
   if (!d || !f) return;
-  f.value = Math.ceil(100*Math.round(factor*limit(f.value + d))/factor)/100
-  socket.emit('orgue', {led:f.num, val:f.value*factor})
+  if (f.classList.contains('DMX')) {
+    f.value = limit(f.value + d)
+    socket.emit('DMX', {channel:f.num, val:f.value})
+  } else {
+    f.value = Math.ceil(100*Math.round(factor*limit(f.value + d))/factor)/100
+    socket.emit('orgue', {led:f.num, val:f.value*factor})
+  }
 }
 
 function changeSelFaders(d) {
