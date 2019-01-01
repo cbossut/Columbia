@@ -599,7 +599,7 @@ maxDMX.onchange = function() {
 /******************************************* CONFIG *****************/
 
 socket.on('config', c => {
-  //TODO c.conduite ? ajout au titre a priori
+  document.getElementById('conduite').innerHTML = c.conduite
   startDelay.valueAsNumber = c.startDelay
   maxDMX.valueAsNumber = c.DMXaddrs
   leCompteur = c.compte
