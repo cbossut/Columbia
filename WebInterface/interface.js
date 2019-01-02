@@ -42,7 +42,8 @@ socket.on('debug', d => {
 
 interact('#co').on('tap', ()=>socket.emit('print'))
 
-let edit = false
+let faders = []
+  , edit = false
   , edited = false
   , filename = ''
   , leCompteur
@@ -60,12 +61,12 @@ function editMode(e) {
 /******************************************* TITRE *****************/
 
 function updateTitle() {
-  document.getElementById('titre').textContent = "Interface from RPi : "+filename+edited?'*':''
+  document.getElementById('titre').textContent = "Interface from RPi : "+filename+(edited?'*':'')
 }
 
 socket.on('fileName', f=>{
-  fileName = f
-  updateTitle
+  filename = f
+  updateTitle()
 })
 
 /******************************************* PROD *****************/
@@ -86,7 +87,7 @@ document.getElementById('load')
 }
 
 document.getElementById('choose')
-  .onclick = ()=>sock.emit('conduiteChange', filename)
+  .onclick = ()=>socket.emit('conduiteChange', filename)
 
 document.getElementById('edit')
   .onclick = ()=>editMode(!edit)
@@ -103,7 +104,7 @@ document.getElementById('save')
   .onclick = ()=>{
     document.getElementById('co').style.backgroundColor = 'blue'
     socket.emit('save', saveName.value)
-    filename = saveName
+    filename = saveName.value
     updateTitle()
     socket.emit('refresh')
 }
@@ -549,7 +550,7 @@ startDelay.onchange = function() {
 }
 
 addMise.onclick = () => socket.emit('addMise')
-addMise.onclick = () => socket.emit('delMise')
+delMise.onclick = () => socket.emit('delMise')
 
 function updateMise(m) {
   miseBody.innerHTML = ''
@@ -576,7 +577,7 @@ function updateMise(m) {
           addr.classList.add('DMXchannelBox')
           break;
         case 1:
-          addr.max = document.getElementById('orgueP').children[length - 1].num
+          addr.max = faders.length
           addr.classList.remove('DMXchannelBox')
           break;
         case 2:
@@ -595,6 +596,7 @@ function updateMise(m) {
         {n:i, new:{circuit:{mode:addrOptions[this.selectedIndex]}}}
       )
     }
+    type.onchange()
 
     el = el.nextElementSibling
     let inp = el.children[0]
@@ -696,14 +698,13 @@ socket.on('config', c => {
   startDelay.valueAsNumber = c.startDelay
   maxDMX.valueAsNumber = c.DMXaddrs
   leCompteur = c.compte
-  updateMise(c.mise)
   manageDMXfaders()
+  updateMise(c.mise)
 })
 
 /******************************************* ORGUE (&PATCH) *****************/
 
-let faders = []
-  , fader = document.getElementById('fader')
+let fader = document.getElementById('fader')
   , plist = document.getElementById('patchList')
   , pline = document.getElementById('patchLine')
   , selFader = null

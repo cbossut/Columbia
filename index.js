@@ -60,7 +60,7 @@ let soundInterval = null
     DMXaddrs: 24, // sends all values from chanel 1 to DMXaddrs, for lame gradators
     protoMise:
       {
-        circuit: {mode: 'PCA/DMX/Orgue', addr: 65, n:15},
+        circuit: {mode: 'PCA/DMX/Orgue', addr: 65, n:15}, // addr counting from 1
         vHigh: 100, // %
         vLow: 0, // %
         tOff: 2, // s from launch
@@ -149,19 +149,17 @@ io.on('connection', sock => {
   else
     sock.emit('fileName', tmpPath[tmpPath.length - 1].split('.')[0])
 
-  sock.emit('config', config)
-
   sock.on('conduiteChange', fileName => {
     config.conduite = savePath + fileName + '.json'
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2))
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2)) // TODO pourquoi écrire tout de suite ?
+    sock.emit('config', config) // TODO juste pour actualier le nom
   })
   sock.on('configChange', ch => {
     Object.assign(config, ch)
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2))
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2)) // TODO pourquoi écrire tout de suite ?
   })
   sock.on('addMise', () => {
-    let newMise = Object.create(config.protoMise)
-    newMise.circuit = Object.create(config.protoMise.circuit)
+    let newMise = JSON.parse(JSON.stringify(config.protoMise))
     config.mise.push(newMise)
     sock.emit('mise', config.mise)
   })
@@ -170,6 +168,10 @@ io.on('connection', sock => {
     sock.emit('mise', config.mise)
   })
   sock.on('miseChange', ch => {
+    if (ch.new.hasOwnProperty('circuit')) {
+      Object.assign(config.mise[ch.n].circuit, ch.new.circuit)
+      delete ch.new.circuit
+    }
     Object.assign(config.mise[ch.n], ch.new)
   })
 
@@ -202,6 +204,8 @@ io.on('connection', sock => {
   sock.emit('orgueState', cl.orgue.state)
 
   sock.emit('soundFiles', fs.readdirSync(soundPath).filter(v=>v.endsWith(soundExtensionFilter)))
+
+  sock.emit('config', config)
 
   sock.on('refresh', () => {
     let jsons = fs.readdirSync(savePath).filter(v=>v.endsWith('.json'))
