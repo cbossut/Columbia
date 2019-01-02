@@ -583,12 +583,6 @@ function updateMise(m) {
         case 2:
           addr.max = 16
           addr.classList.remove('DMXchannelBox')
-          addr.onchange = function() {
-            socket.emit(
-              'miseChange',
-              {n:i, new:{circuit:{addr:this.valueAsNumber-1}}}
-            )
-          }
           break;
       }
       socket.emit(

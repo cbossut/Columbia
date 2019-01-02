@@ -337,13 +337,13 @@ function sendMise(t = 0) { // en s depuis launch
 
         if (circuit.mode == 'PCA') {
           v = Math.floor(v * 40.96)
-          PCA.setLed(circuit.addr, circuit.n, v)
+          PCA.setLed(circuit.addr, circuit.n - 1, v)
         } else if (circuit.mode == 'DMX') {
           v = Math.floor(v * 2.55)
           DMXvals[circuit.addr] = v
         } else if (circuit.mode == 'Orgue') {
           v = Math.floor(v * 40) // TODO 40 = dépendance à l'interface factor
-          or.setLevel(circuit.addr, v)
+          or.setLevel(circuit.addr - 1, v)
         }
       }
     }
