@@ -114,7 +114,7 @@ gpioStart.watch((err, value) => {
     terminate()
   }
 
-  if (!interfaced) {
+  if (!interfaced && value) { // TODO falling ? rising ? both ? cf new
     config.compte[0]++
     gpioLed.writeSync(0)
     launch()
