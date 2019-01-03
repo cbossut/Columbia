@@ -179,10 +179,10 @@ io.on('connection', sock => {
 
   let DMXinter = undefined
     , DMXorgue = []
-  sock.on('orgue', obj => {
-    DMXorgue[obj.channel] = Math.floor(obj.val * 2.55)
+  sock.on('DMX', obj => {
+    DMXorgue[obj.channel - 1] = Math.floor(obj.val * 2.55)
     if (!DMXinter) setTimeout(()=>{
-      DMX.write(DMXorgue.map(v=>v?v:0))
+      DMX.write(formatDMX(DMXorgue, config.DMXaddrs))
       DMXinter = undefined
     }, 1000/miseFPS)
   })
@@ -343,7 +343,7 @@ function sendMise(t = 0) { // en s depuis launch
           PCA.setLed(circuit.addr, circuit.n - 1, v)
         } else if (circuit.mode == 'DMX') {
           v = Math.floor(v * 2.55)
-          DMXvals[circuit.addr] = v
+          DMXvals[circuit.addr - 1] = v
         } else if (circuit.mode == 'Orgue') {
           v = Math.floor(v * 40) // TODO 40 = dépendance à l'interface factor
           or.setLevel(circuit.addr - 1, v)
@@ -352,11 +352,18 @@ function sendMise(t = 0) { // en s depuis launch
     }
   }
   if (DMXvals.length) {
-    DMX.write(DMXvals.map(v=>v?v:0))
+    DMX.write(formatDMX(DMXvals, config.DMXaddrs))
   }
   if (!allEnded) miseTimeout = setTimeout(()=>sendMise(t + dNext), dNext*1000)
   else gpioLed.writeSync(1)
 }
+
+function formatDMX(data, nAddr) {
+  for (let i = 0 ; i < nAddr ; i++) {
+    data[i] = data[i] || 0
+  }
+  return data
+  }
 /*
 function fadeMise(t = 0) { // check closure function ou => ?
   let grad = 1/(time*miseFPS)
