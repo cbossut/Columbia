@@ -174,6 +174,8 @@ io.on('connection', sock => {
     }
     Object.assign(config.mise[ch.n], ch.new)
   })
+  sock.on('testMise', sendMise)
+  sock.on('stopMise', () => clearTimeout(miseTimeout))
 
   let DMXinter = undefined
     , DMXorgue = []
@@ -303,6 +305,7 @@ function launch() {
   setTimeout(() => {cl.play()}, config.startDelay/1000)
 }
 
+let miseTimeout
 function sendMise(t = 0) { // en s depuis launch
   let DMXvals = []
     , dNext = 0.001 // en s
@@ -351,7 +354,7 @@ function sendMise(t = 0) { // en s depuis launch
   if (DMXvals.length) {
     DMX.write(DMXvals.map(v=>v?v:0))
   }
-  if (!allEnded) setTimeout(()=>sendMise(t + dNext), dNext*1000)
+  if (!allEnded) miseTimeout = setTimeout(()=>sendMise(t + dNext), dNext*1000)
   else gpioLed.writeSync(1)
 }
 /*

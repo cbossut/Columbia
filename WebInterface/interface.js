@@ -539,6 +539,9 @@ function changeSelTimes(d) {
 /******************************************* MISE *****************/
 
 let startDelay = document.getElementById('startDelay')
+  , testMise = document.getElementById('testMise')
+  , testDelay = document.getElementById('testDelay')
+  , stopMise = document.getElementById('stopMise')
   , addMise = document.getElementById('addMise')
   , delMise = document.getElementById('delMise')
   , miseLine = document.getElementById('miseLine')
@@ -549,6 +552,8 @@ startDelay.onchange = function() {
   socket.emit('configChange', {startDelay: this.valueAsNumber})
 }
 
+testMise.onclick = () => socket.emit('testMise', testDelay.valueAsNumber)
+stopMise.onclick = () => socket.emit('stopMise')
 addMise.onclick = () => socket.emit('addMise')
 delMise.onclick = () => socket.emit('delMise')
 
