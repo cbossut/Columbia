@@ -308,27 +308,27 @@ function launch() {
 let miseTimeout
 function sendMise(t = 0) { // en s depuis launch
   let DMXvals = []
-    , dNext = 0.001 // en s
+    , dNext = Number.POSITIVE_INFINITY // en s
     , allEnded = true
   for (let i in config.mise) {
     with(config.mise[i]){
       if (circuit) {
         let v // en %
           , ended = false
-        if (t <= tOff) {
+        if (t < tOff) {
           v = vHigh
           dNext = Math.min(dNext, tOff - t)
         }
         else if (t - tOff < dOff) {
-          v = vLow + (vHigh - vLow) * (t - tOff) / dOff
+          v = vHigh - (vHigh - vLow) * (t - tOff) / dOff
           dNext = Math.min(dNext, 1/miseFPS)
         }
-        else if (t <= tOn) {
+        else if (t < tOn) {
           v = vLow
           dNext = Math.min(dNext, tOn - t)
         }
         else if (t - tOn < dOn) {
-          v = vLow + (vHigh - vLow) * (1 - (t - tOn) / dOn)
+          v = vLow + (vHigh - vLow) * (t - tOn) / dOn
           dNext = Math.min(dNext, 1/miseFPS)
         }
         else {
