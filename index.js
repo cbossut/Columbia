@@ -38,7 +38,7 @@ const staticroute = require('static-route')
     , io = require('socket.io')(app)
     , Gpio = require('onoff').Gpio
     , gpioStart = new Gpio(14, 'in', 'falling', {debounceTimeout: 30})
-    , gpioOff = new Gpio(4, 'in', 'both', {debounceTimeout: 30}) // Clignote la led un peu, puis passer la led en power led ? (celle brute sur la carte)
+    , gpioOff = new Gpio(24, 'in', 'falling', {debounceTimeout: 30}) // TODO Clignote la led un peu, puis passer la led en power led ? (celle brute sur la carte)
     , gpioLed = new Gpio(15, 'out')
     , cl = require("./cueList.js")
     , or = cl.orgue
@@ -74,10 +74,13 @@ let soundInterval = null
   }
   , launched = false
 
+new Gpio(23, 'out').writeSync(1) // Running indicator for power relays
+
 console.log("<-----start----->")
 console.error("<-----start----->")
 
 function terminate() {
+  console.log('terminate')
   fs.writeFileSync(configPath, JSON.stringify(config, null, 2))
   cl.save(autosavePath)
   DMX.close()
@@ -87,6 +90,11 @@ function terminate() {
   gpioLed.unexport()
   process.exit()
 }
+
+gpioOff.watch((err, value) => {
+  console.log("Turning off !")
+  require('child_process').exec('sudo halt')
+})
 
 process.on('SIGINT', () => {
   terminate()
