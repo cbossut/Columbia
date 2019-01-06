@@ -33,6 +33,12 @@ Oter le blanc en fin des fichiers wav
 
 8- default pullup 9+ default pulldown
 gpio5 pour jumper wifi, 6ème rangée en partant de l'usb
+
+ATTENTION !!!! pour l'instant cuisine tourne sur mise, mais pour les oscillations des panneaux d'affichage, elles se font alors que la conduite n'est pas lancée, comment faire. Lancé à la fin de la mise de durée infinie et capteur cut et relance ?
+
+Check cuisine t très grand, peut-être boucler sur pgcm des durées totales de chaque param
+
+TODO copie versions finales des conduites, sur mon ordi et par mail à techniquelena
 */
 
 const staticroute = require('static-route')
@@ -332,6 +338,7 @@ let miseTimeout
 
 if (isCuisine) cuisine = require('./cuisine.js')
 
+// TODO cuisine pourrait être un mode, comme DMX, l'addresse étant l'index dans params, et la valeur un subMaster du scenario
 function sendMise(t = 0) { // en s depuis launch
   let DMXvals = []
     , dNext = isCuisine ? 1/miseFPS : Number.POSITIVE_INFINITY // en s

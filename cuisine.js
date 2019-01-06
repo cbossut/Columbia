@@ -11,6 +11,21 @@ de la licence CeCILL telle que diffusée par le CEA, le CNRS et l'INRIA
 sur le site "http://www.cecill.info".
 */
 
+/* PATCH cuisine
+1:niche
+2:cuisine
+3:plafond centre
+4:plafond pano
+5:table in
+6:presse
+7:table out
+8:piou
+9:plafond loge
+10:diapo
+*/
+
+// TODO random valeur const et durée pour diapo
+
 process.chdir(__dirname)
 
 const /*DMX = require('./DMX.js')
@@ -30,7 +45,9 @@ let params = JSON.parse(fs.readFileSync('./cuisine.json')) // TODO shouldn't loa
 module.exports.update = function(t) {
   let res = []
   for (let i in params) {
-    res[params[i].channel - 1] = scenario(t, params[i].scenario)
+    for (let j in params[i].channels) {
+      res[params[i].channels[j] - 1] = Math.floor(scenario(t, params[i].scenario)*2.55) // same as mise DMX
+    }
   }
   return res
 }
