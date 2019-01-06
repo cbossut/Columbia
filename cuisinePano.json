@@ -1,32 +1,26 @@
 [
   {
-    "channel": 4,
+    "channels": [3],
     "scenario": [
       {
-        "d": 10,
+        "d": 0.25,
         "func": "const",
-        "args": [0]
+        "args": [30]
       },
       {
-        "d": 30,
-        "func": "loop",
-        "args": [[
-          {
-            "d": 2,
-            "func": "line",
-            "args": [20, 2]
-          },
-          {
-            "d": 5,
-            "func": "line",
-            "args": [2, 20]
-          },
-          {
-            "d": 3,
-            "func": "const",
-            "args": [20]
-          }
-        ]]
+        "d": 1.5,
+        "func": "line",
+        "args": [30, 100]
+      },
+      {
+        "d": 0.5,
+        "func": "const",
+        "args": [100]
+      },
+      {
+        "d": 1.5,
+        "func": "line",
+        "args": [100, 30]
       }
     ]
   }
