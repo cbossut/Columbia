@@ -1,0 +1,34 @@
+[
+  {
+    "channel": 1,
+    "scenario": [
+      {
+        "d": 10,
+        "func": "const",
+        "args": [0]
+      },
+      {
+        "d": 10,
+        "func": "loop",
+        "n": 3,
+        "args": [[
+          {
+            "d": 2,
+            "func": "line",
+            "args": [20, 2]
+          },
+          {
+            "d": 5,
+            "func": "line",
+            "args": [2, 20]
+          },
+          {
+            "d": 3,
+            "func": "const",
+            "args": [20]
+          }
+        ]]
+      }
+    ]
+  }
+]
