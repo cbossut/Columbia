@@ -540,7 +540,7 @@ function changeSelTimes(d) {
 
 let cuisine = document.getElementById('cuisine')
 
-socket.on('cuisine', () => cuisine.disabled = false)
+socket.on('cuisine', b => cuisine.disabled = !b)
 cuisine.onclick = () => socket.emit('reloadCuisine')
 
 let startDelay = document.getElementById('startDelay')

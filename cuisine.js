@@ -30,7 +30,7 @@ let params = JSON.parse(fs.readFileSync('./cuisine.json')) // TODO shouldn't loa
 module.exports.update = function(t) {
   let res = []
   for (let i in params) {
-    res[params[i].channel] = scenario(t, params[i].scenario)
+    res[params[i].channel - 1] = scenario(t, params[i].scenario)
   }
   return res
 }

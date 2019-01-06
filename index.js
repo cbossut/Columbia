@@ -52,13 +52,12 @@ const staticroute = require('static-route')
     , player = require('./player.js') // Player is only loaded to get sound info for interface
     , PCA = require('./pca.js') // Inited by cl.load
     , DMX = require('./DMX.js')
-    , cuisine = null
-    , cuisinePath = './cuisine.json'
     , savePath = './data/'
     , soundPath = './sounds/'
     , soundExtensionFilter = '.wav'
     , autosavePath = savePath + 'autosave.json'
     , configPath = './config.json'
+    , cuisinePath = './cuisine.json'
     , miseFPS = 40
 let soundInterval = null
   , interfaced = false
@@ -82,6 +81,7 @@ let soundInterval = null
     compte: [] // Nombre d'appuis gpio par lancement de l'appli
   }
   , launched = false
+  , cuisine = null
 
 new Gpio(23, 'out').writeSync(1) // Running indicator for power relays
 
@@ -378,7 +378,9 @@ function sendMise(t = 0) { // en s depuis launch
     }
   }
 
-  if (isCuisine) cuisine.update(t).forEach((v,i,a) => DMXvals[i] = Math.max(DMXvals[i], v))
+  if (isCuisine) {
+    cuisine.update(t).forEach((v,i,a) => DMXvals[i] = Math.max(DMXvals[i], v) || v)
+  }
 
   if (DMXvals.length) {
     DMX.write(formatDMX(DMXvals, config.DMXaddrs))
