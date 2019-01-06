@@ -23,7 +23,7 @@ const /*DMX = require('./DMX.js')
         const: (p, val) => val
       , line: (p, start, end) => start + p*(end - start)
       , sinus: (p, med, amp, n) => Math.sin(p*n*2*Math.PI)*amp+med
-      , loop: function(p, s) {return scenario(p%1*this.d, s)}
+      , loop: function(p, s) {return scenario(p*this.d, s)}
       }
 
 module.exports.update = function(t) {
@@ -38,11 +38,10 @@ module.exports.params = params
 
 function scenario(t, s) {
   let i = 0
-  while (s[i] && (s[i].func == 'loop' ? t > (s[i].d*s[i].n) : t > s[i].d)) {
-    t -= s[i].d//'loop' ? t > (s[i].d*s[i].n) : t > s[i].d
+  while (s[i] && t > s[i].d) {
+    t -= s[i].d
     i = (i+1) % s.length
   }
-  //if (s[i].func == 'loop') s[i].m = 0
   return funcs[s[i].func].apply(s[i], [t/s[i].d].concat(s[i].args))
 }
 
