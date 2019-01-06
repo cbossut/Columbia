@@ -16,8 +16,7 @@ process.chdir(__dirname)
 const /*DMX = require('./DMX.js')
     , Gpio = require('onoff').Gpio
     , */fs = require('fs')
-    , params = JSON.parse(fs.readFileSync('./cuisine.json'))
-    , FPS = 40
+//    , FPS = 40
     , funcs =
       {
         const: (p, val) => val
@@ -25,6 +24,8 @@ const /*DMX = require('./DMX.js')
       , sinus: (p, med, amp, n) => Math.sin(p*n*2*Math.PI)*amp+med
       , loop: function(p, s) {return scenario(p*this.d, s)}
       }
+
+let params = JSON.parse(fs.readFileSync('./cuisine.json')) // TODO shouldn't load by default, nor hardCode path, see load
 
 module.exports.update = function(t) {
   let res = []
@@ -34,7 +35,9 @@ module.exports.update = function(t) {
   return res
 }
 
-module.exports.params = params
+module.exports.load = function(path) {
+  params = JSON.parse(fs.readFileSync(path))
+}
 
 function scenario(t, s) {
   let i = 0

@@ -538,6 +538,11 @@ function changeSelTimes(d) {
 
 /******************************************* MISE *****************/
 
+let cuisine = document.getElementById('cuisine')
+
+socket.on('cuisine', () => cuisine.disabled = false)
+cuisine.onclick = () => socket.emit('reloadCuisine')
+
 let startDelay = document.getElementById('startDelay')
   , testMise = document.getElementById('testMise')
   , testDelay = document.getElementById('testDelay')

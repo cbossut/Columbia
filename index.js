@@ -31,8 +31,6 @@ Voir à pouvoir remplacer tout paramètre fixe par un random avec min max et pé
 
 Oter le blanc en fin des fichiers wav
 
-Charger cuisine.js si cuisine.json existe, auquel cas, ajouter cuisine update dans sendMise
-
 8- default pullup 9+ default pulldown
 gpio5 pour jumper wifi, 6ème rangée en partant de l'usb
 */
@@ -54,6 +52,8 @@ const staticroute = require('static-route')
     , player = require('./player.js') // Player is only loaded to get sound info for interface
     , PCA = require('./pca.js') // Inited by cl.load
     , DMX = require('./DMX.js')
+    , cuisine = null
+    , cuisinePath = './cuisine.json'
     , savePath = './data/'
     , soundPath = './sounds/'
     , soundExtensionFilter = '.wav'
@@ -284,6 +284,9 @@ io.on('connection', sock => {
   })
   sock.on('playSound', p=>playInterfaced(p, sock))
   sock.on('pauseSound', ()=>cl.cut())
+
+  sock.emit('cuisine', fs.existsSync(cuisinePath))
+  sock.on('reloadCuisine', () => cuisine ? cuisine.load(cuisinePath) : console.error('NO CUISINE !'))
 })
 
 app.listen(8080)
@@ -325,9 +328,13 @@ function launch() {
 }
 
 let miseTimeout
+  , isCuisine = fs.existsSync(cuisinePath)
+
+if (isCuisine) cuisine = require('./cuisine.js')
+
 function sendMise(t = 0) { // en s depuis launch
   let DMXvals = []
-    , dNext = Number.POSITIVE_INFINITY // en s
+    , dNext = isCuisine ? 1/miseFPS : Number.POSITIVE_INFINITY // en s
     , allEnded = true
   for (let i in config.mise) {
     with(config.mise[i]){
@@ -370,6 +377,9 @@ function sendMise(t = 0) { // en s depuis launch
       }
     }
   }
+
+  if (isCuisine) cuisine.update(t).forEach((v,i,a) => DMXvals[i] = Math.max(DMXvals[i], v))
+
   if (DMXvals.length) {
     DMX.write(formatDMX(DMXvals, config.DMXaddrs))
   }
