@@ -14,18 +14,27 @@ sur le site "http://www.cecill.info".
 process.chdir(__dirname) // Run in the module folder if started from elsewhere
 
 /*
-TODO : amender le précédent commit (séparer mise fade in out de config file)
-
-Quand interfacé, play de l'interface lance juste la conduite, play gpio lance les fades mise
-Sinon, gpio lance le cycle complet (Mise - fade out - start delay - conduite - fade in - mise)
-
-config.json va être un fichier général contenant le nom de la conduite à charger,
-et les infos diverses de timing, lumière d'ambiance, autres ? compteur ? avec dates ?
-
 trapèze date high low et adresse PCA
 
 GPIO dispo :
 2.3.4.14.15.17.18.27.22.23.24
+
+Mise doit être envoyée état de départ au départ ! Pas seulement à l'appui du capteur (avant launch)
+
+Sauvegarde régulières de la mise en cas de coupure de courant
+
+Capteurs = très prioritaire
+
+cuisine :
+chaque canal est une fonction du temps écrite soit en dur dans cuisine.js soir en configurable dans cuisine.json, à voir comment une fonction de stringify
+Voir à pouvoir remplacer tout paramètre fixe par un random avec min max et période, y compris la période randomisée ?
+
+Oter le blanc en fin des fichiers wav
+
+Charger cuisine.js si cuisine.json existe, auquel cas, ajouter cuisine update dans sendMise
+
+8- default pullup 9+ default pulldown
+gpio5 pour jumper wifi, 6ème rangée en partant de l'usb
 */
 
 const staticroute = require('static-route')
@@ -80,7 +89,8 @@ console.log("<-----start----->")
 console.error("<-----start----->")
 
 function terminate() {
-  console.log('terminate')
+  console.log('<---terminate--->')
+  console.error('<---terminate--->')
   fs.writeFileSync(configPath, JSON.stringify(config, null, 2))
   cl.save(autosavePath)
   DMX.close()
@@ -92,7 +102,8 @@ function terminate() {
 }
 
 gpioOff.watch((err, value) => {
-  console.log("Turning off !")
+  console.log("Turning off !!!!!!!!!!!!!!")
+  console.error("Turning off !!!!!!!!!!!!!!")
   require('child_process').exec('sudo halt')
 })
 
