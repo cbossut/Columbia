@@ -50,8 +50,9 @@ const staticroute = require('static-route')
       }))
     , io = require('socket.io')(app)
     , Gpio = require('onoff').Gpio
+    , gpioTemoin = new Gpio(23, 'out') // Running indicator for power relays
     , gpioStart = new Gpio(14, 'in', 'falling', {debounceTimeout: 30})
-    , gpioOff = new Gpio(24, 'in', 'falling', {debounceTimeout: 30}) // TODO Clignote la led un peu, puis passer la led en power led ? (celle brute sur la carte)
+    , gpioOff = new Gpio(24, 'in', 'falling', {debounceTimeout: 1000}) // TODO Clignote la led un peu, puis passer la led en power led ? (celle brute sur la carte)
     , gpioLed = new Gpio(15, 'out')
     , cl = require("./cueList.js")
     , or = cl.orgue
@@ -89,8 +90,6 @@ let soundInterval = null
   , launched = false
   , cuisine = null
 
-new Gpio(23, 'out').writeSync(1) // Running indicator for power relays
-
 console.log("<-----start----->")
 console.error("<-----start----->")
 
@@ -107,11 +106,15 @@ function terminate() {
   process.exit()
 }
 
-gpioOff.watch((err, value) => {
-  console.log("Turning off !!!!!!!!!!!!!!")
-  console.error("Turning off !!!!!!!!!!!!!!")
-  require('child_process').exec('sudo halt')
-})
+gpioTemoin.writeSync(1)
+setTimeout(()=>{
+  gpioOff.watch((err, value) => {
+    console.log("Turning off !!!!!!!!!!!!!!")
+    console.error("Turning off !!!!!!!!!!!!!!")
+    gpioTemoin.writeSync(0)
+    require('child_process').exec('sudo halt')
+  })
+}, 5*60*1000) // tempo 5min avant watch au cas où ça jumpe dans le début
 
 process.on('SIGINT', () => {
   terminate()
