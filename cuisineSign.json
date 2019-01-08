@@ -1,0 +1,27 @@
+[
+  {
+    "channels": [3],
+    "scenario": [
+      {
+        "d": 0.25,
+        "func": "const",
+        "args": [30]
+      },
+      {
+        "d": 1.5,
+        "func": "line",
+        "args": [30, 100]
+      },
+      {
+        "d": 0.5,
+        "func": "const",
+        "args": [100]
+      },
+      {
+        "d": 1.5,
+        "func": "line",
+        "args": [100, 30]
+      }
+    ]
+  }
+]

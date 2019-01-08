@@ -1,30 +1,5 @@
 [
   {
-    "channels": [3],
-    "scenario": [
-      {
-        "d": 0.25,
-        "func": "const",
-        "args": [30]
-      },
-      {
-        "d": 1.5,
-        "func": "line",
-        "args": [30, 100]
-      },
-      {
-        "d": 0.5,
-        "func": "const",
-        "args": [100]
-      },
-      {
-        "d": 1.5,
-        "func": "line",
-        "args": [100, 30]
-      }
-    ]
-  },
-  {
     "channels": [5],
     "scenario": [
       {
@@ -41,6 +16,11 @@
         "d": 5,
         "func": "line",
         "args": [35, 0]
+      },
+      {
+        "d": 300,
+        "func": "const",
+        "args": [0]
       }
     ]
   },
@@ -61,6 +41,11 @@
         "d": 5,
         "func": "line",
         "args": [43, 0]
+      },
+      {
+        "d": 300,
+        "func": "const",
+        "args": [0]
       }
     ]
   }
