@@ -389,7 +389,7 @@ function sendMise(t = 0) { // en s depuis launch
   }
 
   if (isCuisine) {
-    cuisine.update(t).forEach((v,i,a) => DMXvals[i] = Math.max(DMXvals[i], v) || v)
+    DMXvals = mixDMX(cuisine.update(t), DMXvals)
   }
 
   if (DMXvals.length) {
@@ -404,21 +404,14 @@ function formatDMX(data, nAddr) {
     data[i] = data[i] || 0
   }
   return data
-  }
-/*
-function fadeMise(t = 0) { // check closure function ou => ?
-  let grad = 1/(time*miseFPS)
-    , state = 0
-    , inter = null
-    , fade = () => {
-      if (state >= 1) {
-        clearInterval(inter)
-        sendMise(up ? config.mise.valeurs : Array(config.mise.valeurs).fill(0))
-      } else {
-        sendMise(config.mise.valeurs.map(v => v*(up ? state : 1-state)))
-        state += grad
-      }
-    }
-  inter = setInterval(fade, 1000/miseFPS)
 }
-*/
+
+function mixDMX(v1, v2) {
+  let res = []
+  for (let i = 0 ; i < v1.length || i < v2.length ; i++) {
+    if (!v1[i]) res[i] = v2[i]
+    else if (!v2[i]) res[i] = v1[i]
+    else res[i] = Math.max(v1[i], v2[i])
+  }
+  return res
+}
