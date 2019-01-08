@@ -47,6 +47,28 @@ Le curseur de lecture, par la délimitation vert clair / vert foncé, cliquer-gl
 Les dates des mémoires associées à leur numéro, cliquer-glissable pour modifier leur date.
 
 
+## Panneau Mise
+Délai entre l'appui capteur(s) et le départ de la conduite.
+
+Test de la mise seule, démarre à la nième seconde, spécifiée dans le champ suivant.
+
+Stop tout
+
+Ajouter ou enlever une ligne de mise à la fin (- et +). Attention, enlève toujours la dernière ligne.
+
+Reload Cuisine permet de charger a nouveau le fichier cuisine.json s'il a été modifié depuis le lancement.
+Ce bouton renvoie aussi l'état de départ du système complet (mise, cuisine, conduite)
+
+Tableau contenant toutes les lignes de mise. Avec adresse, valeur de mise et valeur pendant la conduite, dates durées des transitions d'une valeur à l'autre.
+Toutes les dates sont comptées à partir de l'appui capteur(s).
+
+
+## Panneau DMX
+Nombre de cannaux DMX. Fonctionne aussi pour l'envoi DMX de la cuisine.
+
+Autant de faders DMX que de cannaux demandés. Fonctionnent comme les faders du jeu d'Orgue.
+
+
 ## Panneau Conduite
 Bouton ajouter pour ajouter une mémoire portant le numéro entré dans le champ juste à gauche. Elle viendra s'insérer dans l'ordre croissant parmi les mémoires existantes. Pour insérer entre deux mémoires consécutives, la notation x.y peut être utilisée (voire x.y.z).
 
