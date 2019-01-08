@@ -14,31 +14,15 @@ sur le site "http://www.cecill.info".
 process.chdir(__dirname) // Run in the module folder if started from elsewhere
 
 /*
-trapèze date high low et adresse PCA
+TODO pouvoir marquer une fin dans un scenario de cuisine
 
-GPIO dispo :
-2.3.4.14.15.17.18.27.22.23.24
+Retour mise date on par rapport à fin séquence (delayStart + soundLength)
+Mais c'est reposer sur soundStat qui n'est pas précis, et des fois on veux pas
+Du coup, plutôt offrir l'option de calculer auto
 
-Mise doit être envoyée état de départ au départ ! Pas seulement à l'appui du capteur (avant launch)
+TODO random valeur const et durée pour diapo dans cuisine cuisine
 
-Sauvegarde régulières de la mise en cas de coupure de courant
-
-Capteurs = très prioritaire
-
-cuisine :
-chaque canal est une fonction du temps écrite soit en dur dans cuisine.js soir en configurable dans cuisine.json, à voir comment une fonction de stringify
-Voir à pouvoir remplacer tout paramètre fixe par un random avec min max et période, y compris la période randomisée ?
-
-Oter le blanc en fin des fichiers wav
-
-8- default pullup 9+ default pulldown
-gpio5 pour jumper wifi, 6ème rangée en partant de l'usb
-
-ATTENTION !!!! pour l'instant cuisine tourne sur mise, mais pour les oscillations des panneaux d'affichage, elles se font alors que la conduite n'est pas lancée, comment faire. Lancé à la fin de la mise de durée infinie et capteur cut et relance ?
-
-Check cuisine t très grand, peut-être boucler sur pgcm des durées totales de chaque param
-
-TODO copie versions finales des conduites, sur mon ordi et par mail à techniquelena
+TODO bug quand on lance testMise, il faudrait cutter tout comme au stop pour ne pas perdre des interval/timeout
 */
 
 const staticroute = require('static-route')

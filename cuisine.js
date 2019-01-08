@@ -24,14 +24,9 @@ sur le site "http://www.cecill.info".
 10:diapo
 */
 
-// TODO random valeur const et durée pour diapo
-
 process.chdir(__dirname)
 
-const /*DMX = require('./DMX.js')
-    , Gpio = require('onoff').Gpio
-    , */fs = require('fs')
-//    , FPS = 40
+const fs = require('fs')
     , funcs =
       {
         const: (p, val) => val
@@ -65,6 +60,7 @@ function scenario(t, s) {
   return funcs[s[i].func].apply(s[i], [t/s[i].d].concat(s[i].args))
 }
 
+// TODO use it ? ability to replace each fixed param by a rand
 function randBetween(min, max) {
   return min + Math.random()*(max-min)
 }
