@@ -137,6 +137,7 @@ let soundFiles = document.getElementById('soundFiles')
       posSpan: document.getElementById('soundPos'),
       posBar: document.getElementById('soundBar'),
       durSpan: document.getElementById('soundDur'),
+      durSecSpan: document.getElementById('soundDurSeconds'),
       minSpan: document.getElementById('soundMin'),
       maxSpan: document.getElementById('soundMax'),
       cursor: document.getElementById('soundCursor'),
@@ -169,6 +170,7 @@ let soundFiles = document.getElementById('soundFiles')
       set dur(d) {
         this.d = d
         this.durSpan.innerHTML = formatTime(d)
+        this.durSecSpan.innerHTML = Math.round(d/1000)
         this.min = 0
         this.max = d
         this.pos = 0
