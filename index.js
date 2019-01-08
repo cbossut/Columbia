@@ -111,6 +111,7 @@ setTimeout(()=>{
   gpioOff.watch((err, value) => {
     console.log("Turning off !!!!!!!!!!!!!!")
     console.error("Turning off !!!!!!!!!!!!!!")
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2))
     gpioTemoin.writeSync(0)
     require('child_process').exec('sudo halt')
   })
@@ -179,12 +180,12 @@ io.on('connection', sock => {
 
   sock.on('conduiteChange', fileName => {
     config.conduite = savePath + fileName + '.json'
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2)) // TODO pourquoi écrire tout de suite ?
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2)) // TODO save button ?
     sock.emit('config', config) // TODO juste pour actualier le nom
   })
   sock.on('configChange', ch => {
     Object.assign(config, ch)
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2)) // TODO pourquoi écrire tout de suite ?
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2))
   })
   sock.on('addMise', () => {
     let newMise = JSON.parse(JSON.stringify(config.protoMise))
@@ -201,6 +202,7 @@ io.on('connection', sock => {
       delete ch.new.circuit
     }
     Object.assign(config.mise[ch.n], ch.new)
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2))
   })
   sock.on('testMise', sendMise)
   sock.on('stopMise', () => clearTimeout(miseTimeout))
