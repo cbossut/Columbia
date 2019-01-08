@@ -51,7 +51,6 @@ const staticroute = require('static-route')
     , io = require('socket.io')(app)
     , Gpio = require('onoff').Gpio
     , gpioTemoin = new Gpio(23, 'out') // Running indicator for power relays
-    , gpioStart = new Gpio(14, 'in', 'falling', {debounceTimeout: 30})
     , gpioOff = new Gpio(24, 'in', 'falling', {debounceTimeout: 1000}) // TODO Clignote la led un peu, puis passer la led en power led ? (celle brute sur la carte)
     , gpioLed = new Gpio(15, 'out')
     , cl = require("./cueList.js")
@@ -70,10 +69,9 @@ const staticroute = require('static-route')
     , isCuisine = fs.existsSync(cuisinePath)
 let soundInterval = null
   , interfaced = false
-// if not interfaced, gpio button starts sequence with no information back
-// else it starts like the interface play button was clicked
   , config = {
     conduite: './conduite.json',
+    starters: [], // GPIO numbers for start
     DMXaddrs: 24, // sends all values from chanel 1 to DMXaddrs, for lame gradators
     protoMise:
       {
@@ -91,6 +89,7 @@ let soundInterval = null
   }
   , launched = false
   , cuisine = null
+  , gpioStarters = []
   , miseTimeout = null
   , conduiteTimeout = null
   , signCuisineInter = null
@@ -108,7 +107,7 @@ function terminate() {
   fs.writeFileSync(configPath, JSON.stringify(config, null, 2))
   cl.save(autosavePath)
   DMX.close()
-  gpioStart.unexport()
+  gpioStarters.forEach(v=>v.unexport())
   gpioOff.unexport()
   gpioLed.writeSync(0)
   gpioLed.unexport()
@@ -144,23 +143,29 @@ if (fs.existsSync(configPath)) {
 cl.load(config.conduite) // init PCA
 config.compte.unshift(0)
 
+if (config.starters.length) {
+  config.starters.forEach(v => {
+    let g = new Gpio(v, 'in', 'falling', {debounceTimeout: 1000})
+    g.watch((err, value) => {
+      if (err) {
+        console.error(err)
+        terminate()
+      }
+
+      if (!launched) {
+        config.compte[0]++ // TODO y a-t-il une ou deux personnes ?
+        launch()
+      }
+    })
+    gpioStarters.push(g)
+  })
+
+  setTimeout(startState, 1000)
+} else {
+  setTimeout(sendMise, 1000)
+}
+
 gpioLed.writeSync(1)
-
-gpioStart.watch((err, value) => {
-  if (err) {
-    console.error(err)
-    terminate()
-  }
-
-  if (!interfaced && value) { // TODO falling ? rising ? both ? cf new
-    config.compte[0]++
-    gpioLed.writeSync(0)
-    launch()
-  }/* else {
-    if (cl.getSoundStat().playing) cl.cut()
-    playInterfaced(0, sock)
-  }*/
-})
 
 io.on('connection', sock => {
 
