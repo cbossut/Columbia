@@ -357,7 +357,7 @@ function startState() {
 }
 
 // TODO cuisine pourrait être un mode, comme DMX, l'addresse étant l'index dans params, et la valeur un subMaster du scenario
-function sendMise(t = 0) { // en s depuis launch
+function sendMise(t = 0, run = true) { // en s depuis launch
   let DMXvals = []
     , dNext = isCuisine ? 1/miseFPS : Number.POSITIVE_INFINITY // en s
     , allEnded = true
@@ -403,15 +403,20 @@ function sendMise(t = 0) { // en s depuis launch
     }
   }
 
-  if (isCuisine) {
+  if (isCuisine && run) {
     DMXvals = mixDMX(cuisine.update(t), DMXvals)
   }
 
+  let res
   if (DMXvals.length) {
-    DMX.write(formatDMX(DMXvals, config.DMXaddrs))
+    res = formatDMX(DMXvals, config.DMXaddrs)
+    DMX.write(res)
   }
-  if (!allEnded) miseTimeout = setTimeout(()=>sendMise(t + dNext), dNext*1000)
-  else gpioLed.writeSync(1)
+  if (run) {
+    if (!allEnded) miseTimeout = setTimeout(()=>sendMise(t + dNext), dNext*1000)
+    else startState()
+  }
+  return res
 }
 
 function formatDMX(data, nAddr) {
