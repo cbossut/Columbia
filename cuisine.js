@@ -46,7 +46,7 @@ module.exports.update = function(t) {
   let res = []
   for (let i in params) {
     for (let j in params[i].channels) {
-      res[params[i].channels[j] - 1] = Math.floor(scenario(t, params[i].scenario)*2.55) // same as mise DMX
+      res[params[i].channels[j] - 1] = Math.round(scenario(t, params[i].scenario)*2.55) // same as mise DMX
     }
   }
   return res
