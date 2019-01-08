@@ -65,7 +65,9 @@ const staticroute = require('static-route')
     , autosavePath = savePath + 'autosave.json'
     , configPath = './config.json'
     , cuisinePath = './cuisine.json'
+    , signPath = './cuisineSign.json'
     , miseFPS = 40
+    , isCuisine = fs.existsSync(cuisinePath)
 let soundInterval = null
   , interfaced = false
 // if not interfaced, gpio button starts sequence with no information back
@@ -89,6 +91,13 @@ let soundInterval = null
   }
   , launched = false
   , cuisine = null
+  , miseTimeout = null
+  , conduiteTimeout = null
+  , signCuisineInter = null
+  , tSignCuisine = 0
+  , startMise = []
+
+if (isCuisine) cuisine = require('./cuisine.js') // TODO Check exists because autoload in cuisine module
 
 console.log("<-----start----->")
 console.error("<-----start----->")
@@ -334,8 +343,12 @@ function launch() {
   if (launched) return;
 
   launched = true
+  gpioLed.writeSync(0)
+  clearInterval(signCuisineInter)
+
+  cuisine.load(cuisinePath)
   sendMise()
-  setTimeout(() => {cl.play()}, config.startDelay/1000)
+  conduiteTimeout = setTimeout(() => {cl.play()}, config.startDelay*1000)
 }
 
 function startState() {
