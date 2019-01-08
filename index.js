@@ -338,10 +338,23 @@ function launch() {
   setTimeout(() => {cl.play()}, config.startDelay/1000)
 }
 
-let miseTimeout
-  , isCuisine = fs.existsSync(cuisinePath)
+function startState() {
+  launched = false
+  gpioLed.writeSync(1)
+  clearTimeout(miseTimeout)
+  clearTimeout(conduiteTimeout)
 
-if (isCuisine) cuisine = require('./cuisine.js')
+  cl.applyCue(0)
+  startMise = sendMise(0, false)
+  if (fs.existsSync(signPath)) {
+    cuisine.load(signPath)
+    tSignCuisine = 0
+    signCuisineInter = setInterval(()=>{
+      DMX.write(formatDMX(mixDMX(cuisine.update(tSignCuisine), startMise), config.DMXaddrs))
+      tSignCuisine += 1/miseFPS
+    }, 1000/miseFPS)
+  }
+}
 
 // TODO cuisine pourrait être un mode, comme DMX, l'addresse étant l'index dans params, et la valeur un subMaster du scenario
 function sendMise(t = 0) { // en s depuis launch
