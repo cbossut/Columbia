@@ -374,9 +374,9 @@ function sendMise(t = 0) { // en s depuis launch
 
         if (!ended) allEnded = false
 
-        if (circuit.mode == 'PCA') {
+        if (circuit.mode == 'NONE') {/*
           v = Math.floor(v * 40.96)
-          PCA.setLed(circuit.addr, circuit.n - 1, v)
+          PCA.setLed(circuit.addr, circuit.n - 1, v)*/
         } else if (circuit.mode == 'DMX') {
           v = Math.floor(v * 2.55)
           DMXvals[circuit.addr - 1] = v

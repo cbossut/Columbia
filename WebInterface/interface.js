@@ -553,7 +553,7 @@ let startDelay = document.getElementById('startDelay')
   , delMise = document.getElementById('delMise')
   , miseLine = document.getElementById('miseLine')
   , miseBody = document.getElementById('miseBody')
-  , addrOptions = ['DMX', 'Orgue', 'PCA']
+  , addrOptions = ['DMX', 'Orgue', 'NONE']
 
 startDelay.onchange = function() {
   socket.emit('configChange', {startDelay: this.valueAsNumber})
