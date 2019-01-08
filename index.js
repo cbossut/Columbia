@@ -214,7 +214,12 @@ io.on('connection', sock => {
     fs.writeFileSync(configPath, JSON.stringify(config, null, 2))
   })
   sock.on('testMise', sendMise)
-  sock.on('stopMise', () => clearTimeout(miseTimeout))
+  sock.on('stopMise', () => {
+    clearTimeout(miseTimeout)
+    clearTimeout(conduiteTimeout)
+    clearInterval(signCuisineInter)
+    cl.cut()
+  })
 
   let DMXinter = undefined
     , DMXorgue = []
@@ -306,7 +311,14 @@ io.on('connection', sock => {
   sock.on('pauseSound', ()=>cl.cut())
 
   sock.emit('cuisine', fs.existsSync(cuisinePath))
-  sock.on('reloadCuisine', () => cuisine ? cuisine.load(cuisinePath) : console.error('NO CUISINE !'))
+  sock.on('reloadCuisine', () => {
+    cuisine ? cuisine.load(cuisinePath) : console.error('NO CUISINE !')
+    clearTimeout(miseTimeout)
+    clearTimeout(conduiteTimeout)
+    clearInterval(signCuisineInter)
+    cl.cut()
+    startState()
+  })
 })
 
 app.listen(8080)
