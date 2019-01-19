@@ -53,9 +53,11 @@ const staticroute = require('static-route')
     , isCuisine = fs.existsSync(cuisinePath)
 let soundInterval = null
   , interfaced = false
+  , sockGPIO = null // TODO could serve as interfaced and sock for all file
   , config = {
     conduite: './conduite.json',
     starters: [], // GPIO numbers for start
+    debounceTimeout: 1000,
     DMXaddrs: 24, // sends all values from chanel 1 to DMXaddrs, for lame gradators
     protoMise:
       {
@@ -101,11 +103,15 @@ function terminate() {
 gpioTemoin.writeSync(1)
 setTimeout(()=>{
   gpioOff.watch((err, value) => {
-    console.log("Turning off !!!!!!!!!!!!!!")
-    console.error("Turning off !!!!!!!!!!!!!!")
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2))
-    gpioTemoin.writeSync(0)
-    require('child_process').exec('sudo halt')
+    if (interfaced && sockGPIO) {
+      sockGPIO.emit('gpio', {type:'off', val:value})
+    } else {
+      console.log("Turning off !!!!!!!!!!!!!!")
+      console.error("Turning off !!!!!!!!!!!!!!")
+      fs.writeFileSync(configPath, JSON.stringify(config, null, 2))
+      gpioTemoin.writeSync(0)
+      require('child_process').exec('sudo halt')
+    }
   })
 }, 5*60*1000) // tempo 5min avant watch au cas où ça jumpe dans le début
 
@@ -122,36 +128,24 @@ process.on('SIGUSR2', () => {
 //process.on('uncaughtException', () => cl.save(autosavePath))
 
 if (fs.existsSync(configPath)) {
-  config = JSON.parse(fs.readFileSync(configPath))
+  config = JSON.parse(fs.readFileSync(configPath)) // TODO shound probably inherit from config
 }
 cl.load(config.conduite) // init PCA
 config.compte.unshift(0)
 
 if (config.starters.length) {
-  config.starters.forEach(v => {
-    let g = new Gpio(v, 'in', 'falling', {debounceTimeout: 1000})
-    g.watch((err, value) => {
-      if (err) {
-        console.error(err)
-        terminate()
-      }
+  watchStarters(config.debounceTimeout || 1000)
 
-      if (!launched) {
-        config.compte[0]++ // TODO y a-t-il une ou deux personnes ?
-        launch()
-      }
-    })
-    gpioStarters.push(g)
-  })
-
-  setTimeout(startState, 1000)
+  setTimeout(startState, 1000) // s'il y a des capteurs, maquette, startState
 } else {
-  setTimeout(sendMise, 1000)
+  setTimeout(sendMise, 1000) // s'il n'y a pas de capteurs, cuisine, mise
 }
 
 gpioLed.writeSync(1)
 
 io.on('connection', sock => {
+
+  sockGPIO = sock
 
   console.log(sock.id, sock.client.conn.remoteAddress)
 
@@ -164,11 +158,24 @@ io.on('connection', sock => {
     cl.cut()
     cl.load(config.conduite)
     gpioLed.writeSync(1)
+    sockGPIO = null
   })
 
   sock.on('exit', () => {
     terminate()
   })
+
+  sock.emit('gpio', {type:'temoin', val:gpioTemoin.readSync()})
+  sock.emit('gpio', {type:'off', val:gpioOff.readSync()})
+  sock.emit('gpio', {type:'led', val:gpioLed.readSync()})
+  gpioStarters.forEach((v,i) => sock.emit('gpio', {type:'starter'+i, val:v.readSync()}))
+  sock.on('launch', launch)
+  sock.on('debounceStarters', dT => {
+    config.debounceTimeout = dT
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2)) // TODO save button ?
+    watchStarters(dT)
+  })
+  sock.emit('debounceTimeout', config.debounceTimeout || 1000)
 
   let tmpPath = config.conduite.split('/')
   if (tmpPath.slice(0,-1).join('/') + '/' != savePath)
@@ -325,6 +332,7 @@ function loadSound(sock) {
 
 function playInterfaced(pos, sock) {
   gpioLed.writeSync(0)
+  sock.emit('gpio', {type:'led', val:0})
 
   if (soundInterval) clearInterval(soundInterval)
   cl.play(pos, function (ongoing, elapsed) {
@@ -336,6 +344,7 @@ function playInterfaced(pos, sock) {
     if (!state.playing) {
       clearInterval(soundInterval)
       gpioLed.writeSync(1)
+      sock.emit('gpio', {type:'led', val:1})
     }
   }, 40)
 }
@@ -345,6 +354,7 @@ function launch() {
 
   launched = true
   gpioLed.writeSync(0)
+  if (interfaced && sockGPIO) sockGPIO.emit('gpio', {type:'led', val:0})
   clearInterval(signCuisineInter)
 
   cuisine.load(cuisinePath)
@@ -355,6 +365,7 @@ function launch() {
 function startState() {
   launched = false
   gpioLed.writeSync(1)
+  if (interfaced && sockGPIO) sockGPIO.emit('gpio', {type:'led', val:1})
   clearTimeout(miseTimeout)
   clearTimeout(conduiteTimeout)
 
@@ -448,4 +459,29 @@ function mixDMX(v1, v2) {
     else res[i] = Math.max(v1[i], v2[i])
   }
   return res
+}
+
+function watchStarters(dT) {
+  gpioStarters.forEach(v => v.unexport())
+  gpioStarters = []
+
+  config.starters.forEach((v,i) => {
+    let g = new Gpio(v, 'in', 'both', {debounceTimeout: dT})
+    g.watch((err, value) => {
+      if (err) {
+        console.error(err)
+        terminate()
+      }
+
+      if (interfaced && sockGPIO) {
+        sockGPIO.emit('gpio', {type:'starter'+i, val:value})
+      }
+
+      else if (!launched && !value) {
+        config.compte[0]++ // TODO y a-t-il une ou deux personnes ?
+        launch()
+      }
+    })
+    gpioStarters.push(g)
+  })
 }

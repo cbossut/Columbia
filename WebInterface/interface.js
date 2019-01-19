@@ -861,6 +861,33 @@ function selAllFaderOn() {
   faders.forEach(v=>{if (v.value) v.classList.add('sel')})
 }
 
+/******************************************* GPIOS *****************/
+
+let gpioLine = document.getElementById('gpios')
+  , gpioLeds = {}
+  , debounceTimeout = document.getElementById('debounceTimeout')
+
+debounceTimeout.onchange = function() {
+  for (type in gpioLeds) if (type.startsWith('starter')) gpioLeds[type].style.backgroundColor = "red"
+  socket.emit('debounceStarters', this.valueAsNumber * 1000)
+}
+socket.on('debounceTimeout', dT => debounceTimeout.valueAsNumber = dT/1000)
+
+socket.on('gpio', obj => {
+  if (!gpioLeds[obj.type]) {
+    let newLed = document.createElement('div')
+    newLed.innerHTML = obj.type
+    newLed.classList.add('led')
+    gpioLine.appendChild(newLed)
+    if (obj.type.startsWith('starter')) {
+      debounceTimeout.style.display = null
+      newLed.onclick = () => socket.emit('launch')
+    }
+    gpioLeds[obj.type] = newLed
+  }
+  gpioLeds[obj.type].style.backgroundColor = obj.val ? "green" : "blue"
+})
+
 /******************************************* CLAVIER *****************/
 
 document.body.onkeydown = e => {
@@ -977,6 +1004,10 @@ function formatTime(t, tab = false) {
 // Autosave toutes les minutes, copie de sauvegarde toutes les 5 minutes
 let saveInter = []
 function setCo(co) {
+  for (type in gpioLeds) gpioLine.removeChild(gpioLeds[type])
+  gpioLeds = []
+  debounceTimeout.style.display = 'none'
+
   saveInter.forEach(clearInterval)
   saveInter = []
   if (co) {
@@ -1005,6 +1036,7 @@ function setCo(co) {
     }, 300000))
   }
   document.getElementById('co').style.backgroundColor = co?"green":"red"
+  if (!co) for (type in gpioLeds) gpioLeds[type].style.backgroundColor = "red"
 }
 
 function populate(sel, opts) {
