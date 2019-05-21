@@ -866,6 +866,7 @@ function selAllFaderOn() {
 let gpioLine = document.getElementById('gpios')
   , gpioLeds = {}
   , debounceTimeout = document.getElementById('debounceTimeout')
+  , relaunchTimeout = document.getElementById('relaunchTimeout')
   , testGPIO = document.getElementById('testGPIO')
 
 debounceTimeout.onchange = function() {
@@ -873,6 +874,11 @@ debounceTimeout.onchange = function() {
   socket.emit('debounceStarters', this.valueAsNumber * 1000)
 }
 socket.on('debounceTimeout', dT => debounceTimeout.valueAsNumber = dT/1000)
+
+relaunchTimeout.onchange = function() {
+  socket.emit('relaunchTimeout', this.valueAsNumber * 1000)
+}
+socket.on('relaunchTimeout', dT => relaunchTimeout.valueAsNumber = dT/1000)
 
 testGPIO.onchange = function() {
   socket.emit('testGPIO', this.checked)

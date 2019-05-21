@@ -27,8 +27,6 @@ TODO bug quand on lance testMise, il faudrait cutter tout comme au stop pour ne 
 BUG check err.txt de pano, exception omx à catcher silently
 
 loadsound 124 kill -9 fail, no process
-
-Loge, trouver une arsouille de timing pour que ça ne se relance pas quand les gens restent assis après la fin
 */
 
 const staticroute = require('static-route')
@@ -77,7 +75,8 @@ let soundInterval = null
       },
     mise: [],
     startDelay: 0, // s start time from launch
-    compte: [] // Nombre d'appuis gpio par lancement de l'appli
+    compte: [], // Nombre d'appuis gpio par lancement de l'appli
+    relaunchTime: 0
   }
   , launched = false
   , cuisine = null
@@ -87,7 +86,10 @@ let soundInterval = null
   , signCuisineInter = null
   , tSignCuisine = 0
   , startMise = []
+  , relaunchTimeout = null
+  , relaunch = true
   , testGPIO = false
+  , starterStates = []
 
 if (isCuisine) cuisine = require('./cuisine.js') // TODO Check exists because autoload in cuisine module
 
@@ -188,6 +190,11 @@ io.on('connection', sock => {
     watchStarters(dT)
   })
   sock.emit('debounceTimeout', config.debounceTimeout || 1000)
+  sock.on('relaunchTimeout', dT => {
+    config.relaunchTime = dT
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2)) // TODO save button ?
+  })
+  sock.emit('relaunchTimeout', config.relaunchTime || 0)
   testGPIO = false
   sock.on('testGPIO', v => {testGPIO = v})
 
@@ -482,19 +489,31 @@ function watchStarters(dT) {
 
   config.starters.forEach((v,i) => {
     let g = new Gpio(v, 'in', 'both', {debounceTimeout: dT})
+    starterStates[i] = g.readSync()
     g.watch((err, value) => {
       if (err) {
         console.error(err)
         terminate()
       }
 
+      starterStates[i] = value
       if (interfaced && sockGPIO) {
         sockGPIO.emit('gpio', {type:'starter'+i, val:value})
       }
 
-      if (!launched && !value && !testGPIO) {
+      if (!relaunch && !value && relaunchTimeout) {
+        clearTimeout(relaunchTimeout)
+        relaunchTimeout = null
+      }
+
+      if (!launched && !value && relaunch && !testGPIO) {
         config.compte[0]++ // TODO y a-t-il une ou deux personnes ?
         launch()
+        relaunch = false
+      }
+
+      else if (starterStates.every(v => v) && config.relaunchTime && !testGPIO) {
+        relaunchTimeout = setTimeout(() => {relaunch = true;relaunchTimeout = null; }, config.relaunchTime)
       }
     })
     gpioStarters.push(g)
