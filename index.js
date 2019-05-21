@@ -23,6 +23,12 @@ Du coup, plutôt offrir l'option de calculer auto
 TODO random valeur const et durée pour diapo dans cuisine cuisine
 
 TODO bug quand on lance testMise, il faudrait cutter tout comme au stop pour ne pas perdre des interval/timeout
+
+BUG check err.txt de pano, exception omx à catcher silently
+
+loadsound 124 kill -9 fail, no process
+
+Loge, trouver une arsouille de timing pour que ça ne se relance pas quand les gens restent assis après la fin
 */
 
 const staticroute = require('static-route')
@@ -91,6 +97,7 @@ console.error("<-----start----->")
 function terminate() {
   console.log('<---terminate--->')
   console.error('<---terminate--->')
+  cl.cut()
   fs.writeFileSync(configPath, JSON.stringify(config, null, 2))
   cl.save(autosavePath)
   DMX.close()
@@ -100,21 +107,6 @@ function terminate() {
   gpioLed.unexport()
   process.exit()
 }
-
-gpioTemoin.writeSync(1)
-setTimeout(()=>{
-  gpioOff.watch((err, value) => {
-    if (interfaced && sockGPIO) {
-      sockGPIO.emit('gpio', {type:'off', val:value})
-    } else {
-      console.log("Turning off !!!!!!!!!!!!!!")
-      console.error("Turning off !!!!!!!!!!!!!!")
-      fs.writeFileSync(configPath, JSON.stringify(config, null, 2))
-      gpioTemoin.writeSync(0)
-      require('child_process').exec('sudo halt')
-    }
-  })
-}, 5*60*1000) // tempo 5min avant watch au cas où ça jumpe dans le début
 
 process.on('SIGINT', () => {
   terminate()
@@ -134,12 +126,30 @@ if (fs.existsSync(configPath)) {
 cl.load(config.conduite) // init PCA
 config.compte.unshift(0)
 
-if (config.starters.length) {
+if (config.starters.length) { // s'il y a des capteurs, maquette, startState, temoin, watch off
   watchStarters(config.debounceTimeout || 1000)
 
-  setTimeout(startState, 1000) // s'il y a des capteurs, maquette, startState
-} else {
-  setTimeout(sendMise, 1000) // s'il n'y a pas de capteurs, cuisine, mise
+  setTimeout(startState, 1000)
+
+  gpioTemoin.writeSync(1)
+  setTimeout(()=>{
+    gpioOff.watch((err, value) => {
+      if (interfaced && sockGPIO) {
+        sockGPIO.emit('gpio', {type:'off', val:value})
+      } else {
+        console.log("Turning off !!!!!!!!!!!!!!")
+        console.error("Turning off !!!!!!!!!!!!!!")
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2))
+        gpioTemoin.writeSync(0)
+        require('child_process').exec('sudo halt')
+      }
+    })
+  }, 5*60*1000) // tempo 5min avant watch au cas où ça jumpe dans le début
+} else { // s'il n'y a pas de capteurs, cuisine, mise, ni temoin ni watch (au kazoo)
+  // TODO cuisine s'éteint-elle toute seule si on remet watch et temoin ?
+  setTimeout(sendMise, 1000)
+
+  gpioTemoin.writeSync(0)
 }
 
 gpioLed.writeSync(1)
@@ -368,6 +378,7 @@ function launch() {
 
 function startState() {
   launched = false
+  cl.cut()
   gpioLed.writeSync(1)
   if (interfaced && sockGPIO) sockGPIO.emit('gpio', {type:'led', val:1})
   clearTimeout(miseTimeout)
