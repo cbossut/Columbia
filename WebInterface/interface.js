@@ -2,12 +2,12 @@
 Copyright ou © ou Copr. Clément Bossut, (2018)
 <bossut.clement@gmail.com>
 
-Ce logiciel est un programme informatique servant à écrire et jouer une conduite lumière synchronisée avec du son sur une Raspberry Pi avec PCA8596. 
+Ce logiciel est un programme informatique servant à écrire et jouer une conduite lumière synchronisée avec du son sur une Raspberry Pi avec PCA8596.
 
 Ce logiciel est régi par la licence CeCILL soumise au droit français et
 respectant les principes de diffusion des logiciels libres. Vous pouvez
 utiliser, modifier et/ou redistribuer ce programme sous les conditions
-de la licence CeCILL telle que diffusée par le CEA, le CNRS et l'INRIA 
+de la licence CeCILL telle que diffusée par le CEA, le CNRS et l'INRIA
 sur le site "http://www.cecill.info".
 */
 
@@ -23,9 +23,14 @@ if (window.NodeList && !NodeList.prototype.forEach) {
 
 //TODO Remove all call to firstElement, lastElement, children[i] because a change in html breaks it all
 
-const factor = 40
+const factor = 40 // 1 point du jeu d'orgue = factor points de PCA
 
-let socket = io(window.location.href)
+let socket = io()
+if (!socket.connected) {
+  let addr = prompt('Address', '10.3.14.15')
+  if (addr) socket = io('http://' + addr + ':8080')
+  else socket.disconnect()
+}
 socket.on('connect', ()=>setCo(true))
 socket.on('reconnect', ()=>setCo(true))
 socket.on('disconnect', ()=>setCo(false))
@@ -37,23 +42,72 @@ socket.on('debug', d => {
 
 interact('#co').on('tap', ()=>socket.emit('print'))
 
+let faders = []
+  , edit = false
+  , edited = false
+  , filename = ''
+  , leCompteur
+editMode(false)
 
-document.getElementById('newFile').onclick = ()=>socket.emit('new')
+function editMode(e) {
+  edit = e
+  document.getElementById('general').style.display = edit ? null : 'none'
+  document.getElementById('cueP').style.display = edit ? null : 'none'
+  document.getElementById('patchP').style.display = edit ? 'none' : null
+  document.getElementById('miseP').style.display = edit ? 'none' : null
+  document.getElementById('DMXP').style.display = edit ? 'none' : null
+}
+
+/******************************************* TITRE *****************/
+
+function updateTitle() {
+  document.getElementById('titre').textContent = "Interface from RPi : "+filename+(edited?'*':'')
+}
+
+socket.on('fileName', f=>{
+  filename = f
+  updateTitle()
+})
+
+/******************************************* PROD *****************/
 
 let files = document.getElementById('files')
   , saveName = document.getElementById('fileName')
 
+socket.on('files', f=>{
+  populate(files, f)
+})
+
 document.getElementById('load')
-  .onclick = ()=>socket.emit('load', files.value)
+  .onclick = ()=>{
+    socket.emit('load', files.value)
+    filename = files.value
+    edited = false
+    updateTitle()
+}
+
+document.getElementById('choose')
+  .onclick = ()=>socket.emit('conduiteChange', filename)
+
+document.getElementById('edit')
+  .onclick = ()=>editMode(!edit)
+
+/******************************************* GENERAL *****************/
+
+document.getElementById('newFile').onclick = ()=>{
+  socket.emit('new')
+  filename = ''
+  edited = false
+  updateTitle()
+}
 document.getElementById('save')
   .onclick = ()=>{
     document.getElementById('co').style.backgroundColor = 'blue'
     socket.emit('save', saveName.value)
+    filename = saveName.value
+    updateTitle()
     socket.emit('refresh')
-  }
-socket.on('files', f=>{
-  populate(files, f)
-})
+}
 /*
 document.getElementById('play').onclick = function() {
   if (this.encours) {
@@ -74,6 +128,7 @@ document.getElementById('patchShow').onclick = function() {
 }
 document.getElementById('exit').onclick = ()=>socket.emit('exit')
 
+/******************************************* SOUNDBAR *****************/
 
 let soundFiles = document.getElementById('soundFiles')
   , playBtn = document.getElementById('soundPlay')
@@ -82,6 +137,7 @@ let soundFiles = document.getElementById('soundFiles')
       posSpan: document.getElementById('soundPos'),
       posBar: document.getElementById('soundBar'),
       durSpan: document.getElementById('soundDur'),
+      durSecSpan: document.getElementById('soundDurSeconds'),
       minSpan: document.getElementById('soundMin'),
       maxSpan: document.getElementById('soundMax'),
       cursor: document.getElementById('soundCursor'),
@@ -114,6 +170,7 @@ let soundFiles = document.getElementById('soundFiles')
       set dur(d) {
         this.d = d
         this.durSpan.innerHTML = formatTime(d)
+        this.durSecSpan.innerHTML = Math.round(d/1000)
         this.min = 0
         this.max = d
         this.pos = 0
@@ -132,6 +189,8 @@ socket.on('soundFiles', f=>{
 })
 document.getElementById('soundLoad').onclick = ()=>{
   socket.emit('loadSound', soundFiles.value)
+  edited = true
+  updateTitle()
 }
 playBtn.onclick = ()=>{
   soundPlaying
@@ -142,7 +201,9 @@ playBtn.onclick = ()=>{
 socket.on('soundInfo', i=>{
   playBtn.disabled = false
   soundTimes.dur = i.duration
-  document.getElementById('soundRepresentation').innerHTML = i.file
+  let soundRep = document.getElementById('soundRepresentation')
+  soundRep.innerHTML = i.file
+  soundRep.style.color = i.error ? 'red' : ''
 })
 socket.on('soundPlayStat', s=>{
   if (!moveWhilePlaying) soundTimes.pos = s.pos
@@ -200,6 +261,8 @@ interact('.cursor').draggable({
   onend: e=>e.currentTarget.time.onchange()
 })
 
+/******************************************* CUELIST *****************/
+
 let mem = document.getElementById('mem')
   , add = document.getElementById('addCue')
   , cl = document.getElementById('cueList')
@@ -215,15 +278,18 @@ mem.onkeyup = ()=>{
 add.onclick = ()=>{
   let c = cl.firstElementChild
   while(c && beforeMem(c.children[2].innerHTML)) c = c.nextElementSibling
-  
+
   socket.emit(
     'addCue',
     mem.value,
     c ? parseInt(c.children[1].innerHTML)-2 : cl.children.length-1
   )
-  
+
   mem.value = ''
   add.disabled = true
+
+  edited = true
+  updateTitle()
 }
 
 function isMem() {
@@ -251,6 +317,8 @@ socket.on('cueList', content => {
     if (v.comment) el.children[0].value = v.comment
     el.children[0].onchange = function() {
       socket.emit('cueChange', {n:i, change:{comment:this.value}})
+      edited = true
+      updateTitle()
     }
     el = el.nextElementSibling
     el.innerHTML = i+1
@@ -260,6 +328,8 @@ socket.on('cueList', content => {
     el.children[0].onclick = function() {
       if (this.classList.contains('sel')) {
         socket.emit('update', i)
+        edited = true
+        updateTitle()
         this.classList.remove('sel')
       } else {
         this.classList.add('sel')
@@ -274,6 +344,8 @@ socket.on('cueList', content => {
       this.parentElement.nextElementSibling.firstElementChild.value = this.value
       this.parentElement.nextElementSibling.nextElementSibling.firstElementChild.value = this.value
       socket.emit('cueChange', {n:this.num, change:{upTime:this.value, downTime:this.value}})
+      edited = true
+      updateTitle()
     }
     el = el.nextElementSibling
     inp = el.children[0]
@@ -291,6 +363,8 @@ socket.on('cueList', content => {
     inp.onchange = inp.onkeyup = function() {
       this.parentElement.previousElementSibling.firstElementChild.value = ''
       socket.emit('cueChange', {n:this.num, change:{upTime:this.value}})
+      edited = true
+      updateTitle()
     }
     el = el.nextElementSibling
     inp = el.children[0]
@@ -308,6 +382,8 @@ socket.on('cueList', content => {
     inp.onchange = inp.onkeyup = function() {
       this.parentElement.previousElementSibling.previousElementSibling.firstElementChild.value = ''
       socket.emit('cueChange', {n:this.num, change:{downTime:this.value}})
+      edited = true
+      updateTitle()
     }
     el = el.nextElementSibling
     let btn = el.children[1]
@@ -341,6 +417,8 @@ socket.on('cueList', content => {
       time.cursor.pos = v.date
       btn.onclick = function() {
         socket.emit('cueChange', {n:i, change:{date: soundTimes.pos}})
+        edited = true
+        updateTitle()
         time.style.display = 'initial'
         btn.style.display = 'none'
         time.cursor.pos = soundTimes.pos
@@ -352,6 +430,8 @@ socket.on('cueList', content => {
     time.onchange = function() {
       time.cursor.pos = this.valueAsNumber
       socket.emit('cueChange', {n:i, change:{date: this.valueAsNumber}})
+      edited = true
+      updateTitle()
     }
     soundTimes.container.appendChild(time.cursor)
     cl.appendChild(line)
@@ -370,6 +450,8 @@ interact('.cueTR')
 
 document.getElementById('delCue').onclick = ()=>{
   socket.emit('delete', selCueIndex)
+  edited = true
+  updateTitle()
 }
 
 document.getElementById('go').onclick = function () {
@@ -406,18 +488,18 @@ function selCue(trNode, setPos = true) {
     unselCue()
     return;
   }
-  
+
   document.querySelectorAll('.cueTR.sel')
     .forEach(v=>v.classList.remove('sel'))
   trNode.classList.add('sel')
   selCueIndex = parseInt(trNode.children[1].innerHTML) - 1
-  
+
   socket.emit('apply', selCueIndex)
-  
+
   if (setPos && soundTimes.cursors[selCueIndex].pos != -1) {
     soundTimes.pos = soundTimes.cursors[selCueIndex].pos
   }
-  
+
   document.querySelectorAll('.cueAct')
     .forEach(v=>v.disabled = false)
 }
@@ -432,7 +514,7 @@ function unselCue() {
   document.querySelectorAll('.cueTR.sel')
     .forEach(v=>v.classList.remove('sel'))
   selCueIndex = -1
-  
+
   document.querySelectorAll('.cueAct')
     .forEach(v=>v.disabled = true)
 }
@@ -456,21 +538,190 @@ function changeSelTimes(d) {
   })
 }
 
+/******************************************* MISE *****************/
 
-let faders = []
-  , ledList = []
-  , fader = document.getElementById('fader')
+let cuisine = document.getElementById('cuisine')
+
+socket.on('cuisine', b => cuisine.disabled = !b)
+cuisine.onclick = () => socket.emit('reloadCuisine')
+
+let startDelay = document.getElementById('startDelay')
+  , testMise = document.getElementById('testMise')
+  , testDelay = document.getElementById('testDelay')
+  , stopMise = document.getElementById('stopMise')
+  , addMise = document.getElementById('addMise')
+  , delMise = document.getElementById('delMise')
+  , miseLine = document.getElementById('miseLine')
+  , miseBody = document.getElementById('miseBody')
+  , addrOptions = ['DMX', 'Orgue', 'NONE']
+
+startDelay.onchange = function() {
+  socket.emit('configChange', {startDelay: this.valueAsNumber})
+}
+
+testMise.onclick = () => socket.emit('testMise', testDelay.valueAsNumber)
+stopMise.onclick = () => socket.emit('stopMise')
+addMise.onclick = () => socket.emit('addMise')
+delMise.onclick = () => socket.emit('delMise')
+
+function updateMise(m) {
+  miseBody.innerHTML = ''
+  m.forEach((v,i,a)=> {
+    let line = miseLine.cloneNode(true)
+    line.removeAttribute('id')
+    line.classList.remove('proto')
+
+    let el = line.firstElementChild
+      , type = el.children[0]
+      , addr = el.children[1]
+    type.selectedIndex = addrOptions.indexOf(v.circuit.mode)
+    addr.valueAsNumber = v.circuit.addr
+    type.onchange = function() {
+      addr.onchange = function() {
+        socket.emit(
+          'miseChange',
+          {n:i, new:{circuit:{addr:this.valueAsNumber}}}
+        )
+      }
+      switch(this.selectedIndex) {
+        case 0:
+          addr.max = document.getElementById('maxDMX').value
+          addr.classList.add('DMXchannelBox')
+          break;
+        case 1:
+          addr.max = faders.length
+          addr.classList.remove('DMXchannelBox')
+          break;
+        case 2:
+          addr.max = 16
+          addr.classList.remove('DMXchannelBox')
+          break;
+      }
+      socket.emit(
+        'miseChange',
+        {n:i, new:{circuit:{mode:addrOptions[this.selectedIndex]}}}
+      )
+    }
+    type.onchange()
+
+    el = el.nextElementSibling
+    let inp = el.children[0]
+    inp.valueAsNumber = v.vHigh
+    inp.onchange = function() {
+      socket.emit('miseChange', {n:i, new:{vHigh:this.valueAsNumber}})
+    }
+
+    el = el.nextElementSibling
+    inp = el.children[0]
+    inp.valueAsNumber = v.vLow
+    inp.onchange = function() {
+      socket.emit('miseChange', {n:i, new:{vLow:this.valueAsNumber}})
+    }
+
+    el = el.nextElementSibling
+    inp = el.children[0]
+    inp.valueAsNumber = v.tOff
+    inp.onchange = function() {
+      socket.emit('miseChange', {n:i, new:{tOff:this.valueAsNumber}})
+    }
+
+    el = el.nextElementSibling
+    inp = el.children[0]
+    inp.valueAsNumber = v.dOff
+    inp.onchange = function() {
+      socket.emit('miseChange', {n:i, new:{dOff:this.valueAsNumber}})
+    }
+
+    el = el.nextElementSibling
+    inp = el.children[0]
+    inp.valueAsNumber = v.tOn
+    inp.onchange = function() {
+      socket.emit('miseChange', {n:i, new:{tOn:this.valueAsNumber}})
+    }
+
+    el = el.nextElementSibling
+    inp = el.children[0]
+    inp.valueAsNumber = v.dOn
+    inp.onchange = function() {
+      socket.emit('miseChange', {n:i, new:{dOn:this.valueAsNumber}})
+    }
+
+    miseBody.appendChild(line)
+  })
+}
+
+socket.on('mise', updateMise)
+
+/******************************************* DMX *****************/
+
+let maxDMX = document.getElementById('maxDMX')
+
+function manageDMXfaders() {
+  let panel = document.getElementById('DMXP')
+    , faders = panel.getElementsByClassName('fader')
+    , n = faders.length
+    , channelBoxes = document.querySelectorAll('.DMXchannelBox')
+    , val = maxDMX.valueAsNumber
+
+  channelBoxes.forEach(v => v.max = val)
+
+  if (val < n) {
+    for (var i = n - 1 ; i >= val ; i--) {
+      panel.removeChild(faders[i])
+    }
+  } else if (val > n) {
+    let fader = document.getElementById('fader')
+    for (var i = 0 ; i < val - n ; i++) {
+      let f = fader.cloneNode(true) // TODO copy-paste from patch ...
+      f.removeAttribute('id')
+      f.classList.remove('proto')
+      f.classList.add('DMX')
+      f.childNodes[0].textContent = f.num = n + i + 1
+      f.childNodes[2].textContent = f.val = 0
+      Object.defineProperty(f, 'value', {
+        enumerable: true,
+        configurable: true,
+        get: function() {return this.val},
+        set: function(v) {
+          this.val = v
+          this.childNodes[2].textContent = v
+        }
+      })
+      panel.appendChild(f)
+    }
+  }
+}
+
+maxDMX.onchange = function() {
+  socket.emit('configChange', {DMXaddrs: this.valueAsNumber})
+  manageDMXfaders()
+}
+
+/******************************************* CONFIG *****************/
+
+socket.on('config', c => {
+  document.getElementById('conduite').innerHTML = c.conduite
+  startDelay.valueAsNumber = c.startDelay
+  maxDMX.valueAsNumber = c.DMXaddrs
+  leCompteur = c.compte
+  manageDMXfaders()
+  updateMise(c.mise)
+})
+
+/******************************************* ORGUE (&PATCH) *****************/
+
+let fader = document.getElementById('fader')
+  , plist = document.getElementById('patchList')
+  , pline = document.getElementById('patchLine')
+  , selFader = null
 
 socket.on('patch', o => {
   let patch = o.patch
     , pcas = o.pcas
     , panel = document.getElementById('orgueP')
-    , spanList = document.getElementById('listLeds')
-    , selLeds = document.getElementById('selLeds')
-    , expInput = document.getElementById('exposantLeds')
   panel.innerHTML = ''
+  plist.innerHTML = ''
   faders = []
-  ledList = []
   patch.forEach((v,i,a) => {
     let f = fader.cloneNode(true)
     f.removeAttribute('id')
@@ -496,37 +747,50 @@ socket.on('patch', o => {
       panel.appendChild(document.createElement('br'))
       panel.appendChild(document.createElement('br'))
     }
-    
-    //CRAPPY
-    if (v.exp) {
-      ledList.push(i+1)
-      expInput.value = v.exp
+
+    let line = pline.cloneNode(true)
+    line.removeAttribute('id')
+    line.classList.remove('proto')
+    let el = line.firstElementChild
+    el.innerHTML = i+1
+    el = el.nextElementSibling
+    let inp = el.children[0]
+    inp.value = v.name || '-'
+    inp.onchange = function() {
+      f.childNodes[0].textContent = this.value
+      socket.emit('patchChange', {n: i, new: {name: this.value}})
+      edited = true
+      updateTitle()
     }
+    el = el.nextElementSibling
+    let pca = el.children[0]
+      , led = el.children[1]
+    populate(pca, pcas)
+    pca.selectedIndex = v.pca
+    pca.onchange = function() {
+      socket.emit('patchChange', {n: i, new: {pca: this.selectedIndex}})
+      edited = true
+      updateTitle()
+    }
+    led.value = v.leds[0] + 1 //TODO multiple ?
+    led.onchange = function() {
+      socket.emit('patchChange', {n: i, new: {leds: [this.value - 1]}})
+      edited = true
+      updateTitle()
+    }
+    el = el.nextElementSibling
+    let c = el.children[0]
+    c.value = v.exp || 1
+    c.onchange = function() {
+      socket.emit('patchChange', {n: i, new: {exp: this.value}})
+      edited = true
+      updateTitle()
+    }
+    plist.appendChild(line)
   })
-  
-  spanList.innerHTML = ledList
-  populate(selLeds, patch.map((v,i)=>i+1))
-  document.getElementById('addLed').onclick = ()=>{
-    let ledVue = parseInt(selLeds.value)
-    if (ledList.indexOf(ledVue) != -1) return;
-    ledList.push(ledVue)
-    spanList.innerHTML = ledList
-    socket.emit('patchChange', {n:ledVue - 1,new:{exp:expInput.value}})
-  }
-  document.getElementById('rmLed').onclick = ()=>{
-    let ledVue = parseInt(selLeds.value)
-      , ind = ledList.indexOf(ledVue)
-    if (ind == -1) return;
-    ledList.splice(ind,1)
-    spanList.innerHTML = ledList
-    socket.emit('patchChange', {n:ledVue - 1,new:{exp:null}})
-  }
-  expInput.onchange = function() {
-    ledList.forEach(v=>socket.emit('patchChange', {n:v-1,new:{exp:this.value}}))
-  }
 })
 
-interact('.fader').draggable({
+interact('.fader').draggable({ // TODO organize ? it's for orgue & DMX
   onmove: e=>changeFader(e.currentTarget, - parseInt(e.dy)/2)
 })
 .pointerEvents()
@@ -545,8 +809,13 @@ socket.on('orgueState', s => {
 
 function changeFader(f, d) {
   if (!d || !f) return;
-  f.value = Math.ceil(100*Math.round(factor*limit(f.value + d))/factor)/100
-  socket.emit('orgue', {led:f.num, val:f.value*factor})
+  if (f.classList.contains('DMX')) {
+    f.value = limit(f.value + d)
+    socket.emit('DMX', {channel:f.num, val:f.value})
+  } else {
+    f.value = Math.ceil(100*Math.round(factor*limit(f.value + d))/factor)/100
+    socket.emit('orgue', {led:f.num, val:f.value*factor})
+  }
 }
 
 function changeSelFaders(d) {
@@ -575,7 +844,7 @@ function nextFader() {
   }
 }
 
-function prevFader() {
+function prevFader() { // TODO bug if DMX fader selected, selects maxDMX
   let seled = document.querySelector('.fader.sel')
   if (!seled) selectFader(faders[faders.length-1])
   else {
@@ -592,6 +861,45 @@ function selAllFaderOn() {
   faders.forEach(v=>{if (v.value) v.classList.add('sel')})
 }
 
+/******************************************* GPIOS *****************/
+
+let gpioLine = document.getElementById('gpios')
+  , gpioLeds = {}
+  , debounceTimeout = document.getElementById('debounceTimeout')
+  , relaunchTimeout = document.getElementById('relaunchTimeout')
+  , testGPIO = document.getElementById('testGPIO')
+
+debounceTimeout.onchange = function() {
+  for (type in gpioLeds) if (type.startsWith('starter')) gpioLeds[type].style.backgroundColor = "red"
+  socket.emit('debounceStarters', this.valueAsNumber * 1000)
+}
+socket.on('debounceTimeout', dT => debounceTimeout.valueAsNumber = dT/1000)
+
+relaunchTimeout.onchange = function() {
+  socket.emit('relaunchTimeout', this.valueAsNumber * 1000)
+}
+socket.on('relaunchTimeout', dT => relaunchTimeout.valueAsNumber = dT/1000)
+
+testGPIO.onchange = function() {
+  socket.emit('testGPIO', this.checked)
+}
+
+socket.on('gpio', obj => {
+  if (!gpioLeds[obj.type]) {
+    let newLed = document.createElement('div')
+    newLed.innerHTML = obj.type
+    newLed.classList.add('led')
+    gpioLine.appendChild(newLed)
+    if (obj.type.startsWith('starter')) {
+      debounceTimeout.style.display = null
+      newLed.onclick = () => socket.emit('launch')
+    }
+    gpioLeds[obj.type] = newLed
+  }
+  gpioLeds[obj.type].style.backgroundColor = obj.val ? "green" : "blue"
+})
+
+/******************************************* CLAVIER *****************/
 
 document.body.onkeydown = e => {
   if (e.target.nodeName == 'INPUT') return;
@@ -611,7 +919,7 @@ document.body.onkeydown = e => {
       }
       document.getElementById('go').onclick()
       break;
-      
+
     case 'Digit5':
       changeSelTimes(1000)
       break;
@@ -624,7 +932,7 @@ document.body.onkeydown = e => {
     case 'KeyY':
       changeSelTimes(-1)
       break;
-      
+
     case 'KeyP':
       changeSelFaders(-100)
       nextFader()
@@ -645,7 +953,7 @@ document.body.onkeydown = e => {
     case 'Escape':
       unselectFader()
       break;
-      
+
     case 'Digit1':
       changeSelFaders(1)
       break;
@@ -664,7 +972,7 @@ document.body.onkeydown = e => {
     case 'KeyE':
       changeSelFaders(-.02)
       break;
-      
+
     default:
       prevent = false
   }
@@ -679,8 +987,13 @@ document.body.onwheel = e => {
 }
 
 
-socket.on('endSave', ()=>document.getElementById('co').style.backgroundColor = 'green')
+socket.on('endSave', ()=>{
+  document.getElementById('co').style.backgroundColor = 'green'
+  edited = false
+  updateTitle()
+})
 
+/******************************************* MISC *****************/
 
 function limit(val, max=100, min=0) {
   if (val < min) val = min
@@ -699,30 +1012,42 @@ function formatTime(t, tab = false) {
   return tab ? tt : tt.join('')
 }
 
+// Autosave toutes les minutes, copie de sauvegarde toutes les 5 minutes
 let saveInter = []
 function setCo(co) {
+  for (type in gpioLeds) gpioLine.removeChild(gpioLeds[type])
+  gpioLeds = []
+  debounceTimeout.style.display = 'none'
+
   saveInter.forEach(clearInterval)
   saveInter = []
   if (co) {
     socket.emit('refresh')
     saveInter.push(setInterval(()=>{
-      document.getElementById('co').style.backgroundColor = 'blue'
-      socket.emit('save', 'autosave')
+      if (edited) {
+        document.getElementById('co').style.backgroundColor = 'blue'
+        socket.emit('save', 'autosave')
+      }
     }, 60000))
     saveInter.push(setInterval(()=>{
-      let d = new Date()
-        , name = [
-          d.getFullYear(),
-          d.getMonth(),
-          d.getDate(),
-          d.getHours(),
-          d.getMinutes()
-        ].join('-')
-      document.getElementById('co').style.backgroundColor = 'blue'
-      socket.emit('save', name)
+      if (edited) {
+        let d = new Date()
+          , name = [
+            d.getFullYear(),
+            d.getMonth(),
+            d.getDate(),
+            d.getHours(),
+            d.getMinutes()
+          ].join('-')
+        document.getElementById('co').style.backgroundColor = 'blue'
+        socket.emit('save', name)
+        filename = name
+        updateTitle()
+      }
     }, 300000))
   }
   document.getElementById('co').style.backgroundColor = co?"green":"red"
+  if (!co) for (type in gpioLeds) gpioLeds[type].style.backgroundColor = "red"
 }
 
 function populate(sel, opts) {

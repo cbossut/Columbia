@@ -2,12 +2,12 @@
 Copyright ou © ou Copr. Clément Bossut, (2018)
 <bossut.clement@gmail.com>
 
-Ce logiciel est un programme informatique servant à écrire et jouer une conduite lumière synchronisée avec du son sur une Raspberry Pi avec PCA8596. 
+Ce logiciel est un programme informatique servant à écrire et jouer une conduite lumière synchronisée avec du son sur une Raspberry Pi avec PCA8596.
 
 Ce logiciel est régi par la licence CeCILL soumise au droit français et
 respectant les principes de diffusion des logiciels libres. Vous pouvez
 utiliser, modifier et/ou redistribuer ce programme sous les conditions
-de la licence CeCILL telle que diffusée par le CEA, le CNRS et l'INRIA 
+de la licence CeCILL telle que diffusée par le CEA, le CNRS et l'INRIA
 sur le site "http://www.cecill.info".
 */
 
@@ -23,13 +23,14 @@ let cl = {
   , cue = {
       name: 'Mise'
     , state: [0]
-    , upTime: 10
-    , downTime: 10
+    , upTime: 10 // s
+    , downTime: 10 // s
     , date: -1
     }
-  , omx = null
+  , player = null
   , soundTimeRef = -1
   , soundPosRef = 0
+  , playerALSA = false
 
 cl.new = function() {
   this.soundPath = ''
@@ -42,13 +43,14 @@ cl.save = function(path) {
     cueList: this.content,
     soundPath: this.soundPath,
     patch: this.orgue.patch
-  }))
+  }, null, 2))
 }
 
 cl.load = function(path) {
   let l = JSON.parse(fs.readFileSync(path))
   this.orgue.init(l.patch)
-  this.orgue.patch = l.patch //TODO crap first set for interface then reseted by pca.init(cb)
+  //TODO crap first set for interface then reseted by pca.init(cb) 20ms after (timeout)
+  this.orgue.patch = l.patch
   this.content = l.cueList
   this.soundPath = l.soundPath
   this.content.forEach((v,i,a)=>{
@@ -83,11 +85,11 @@ cl.applyCue = function(n) {
 
 let playTimeouts = []
 cl.play = function(pos = 0, cb = null) {
-  if (omx) return;
+  if (player) return;
   let second = Math.floor(pos/1000)
   soundPosRef = second*1000
   playTimeouts = []
-  
+
   let lastDateIndex = 0
   for(let i = 0 ; i < this.content.length ; i++) {
     if (this.content[i].date > pos) break;
@@ -95,28 +97,41 @@ cl.play = function(pos = 0, cb = null) {
   }
   this.applyCue(lastDateIndex)
   let offset = soundPosRef - this.content[lastDateIndex].date
-  
-  omx = spawn('omxplayer', [this.soundPath, '-Il', second.toString()])
-  omx.stderr.once('data', () => {
+
+  if (second) {
+    player = spawn('omxplayer', [this.soundPath, '-Il', second.toString()])
+    playerALSA = false
+  }
+  else {
+    player = spawn('aplay', ['-Dhw:CARD=XDA2', this.soundPath, '-v'])
+    playerALSA = true
+  }
+  player.stderr.once('data', () => {
     soundTimeRef = new Date().getTime()
     this.content.forEach((v,i,a)=>{
       if (v.date != -1 && v.date >= pos) playTimeouts[i] = setTimeout(()=>this.go(i-1, cb), v.date-1000*second)
     })
     this.go(lastDateIndex-1, cb, offset)
   })
-  omx.on('close', cleanOmx)
+  player.on('close', cleanPlayer)
 }
 
 cl.cut = function() {
-  if (!omx) return;
+  if (!player) return;
   this.stop()
-  omx.stdin.write('q')
+  if (playerALSA) {
+    player.stdin.write(' ')
+  }
+  player.stdin.write('q')
+  if (playerALSA) {
+    player.kill('SIGINT')
+  }
   soundPosRef = new Date().getTime() - soundTimeRef + soundPosRef
   soundTimeRef = -1
 }
 
 cl.getSoundStat = function() {
-  if (omx) return {playing: true, pos: new Date().getTime() - soundTimeRef + soundPosRef}
+  if (player) return {playing: true, pos: new Date().getTime() - soundTimeRef + soundPosRef}
   return {playing: false, pos: soundPosRef}
 }
 
@@ -144,7 +159,7 @@ cl.go = function(n = 0, cb = null, offset = 0) {
   }
   let downMs = downDiff == -1 ? 0 : this.content[n].downTime * 1000
     , upMs = upDiff == -1 ? 0 : this.content[n].upTime * 1000
-  
+
   this.interMs = Math.max(
     this.orgue.minMsInter,
     Math.min(downMs/downDiff, upMs/upDiff)
@@ -152,11 +167,11 @@ cl.go = function(n = 0, cb = null, offset = 0) {
   this.downFrames = Math.round(downMs/this.interMs)
   this.upFrames = Math.round(upMs/this.interMs)
   this.frameCount = 0
-  
+
   let start = this.from.slice()
   if (!this.downFrames) this.downLeds.forEach(v => start[v] = this.to[v])
   if (!this.upFrames) this.upLeds.forEach(v => start[v] = this.to[v])
-  
+
   this.orgue.state = start
   this.nextFrame = new Date().getTime() - offset
   this.timeOut = setTimeout(()=>{this.inter(cb)}, this.interMs)
@@ -173,7 +188,7 @@ cl.inter = function(cb) {
     this.nextFrame += jumped * this.interMs
     this.frameCount += jumped
   }
-  
+
   let loop = false
     , ratioUp = this.frameCount/this.upFrames
     , ratioDown = this.frameCount/this.downFrames
@@ -195,7 +210,7 @@ cl.inter = function(cb) {
     this.downLeds.forEach(v => res[v] = this.to[v])
   }
   this.orgue.state = res
-  
+
   if (loop) this.timeOut = setTimeout(()=>{this.inter(cb)}, this.interMs - diff)
   if (cb) cb(loop, this.frameCount*this.interMs)
 }
@@ -213,8 +228,8 @@ cl.print = function() {
 }
 
 
-function cleanOmx() {
-  omx = null
+function cleanPlayer() {
+  player = null
   playTimeouts.forEach(v=>clearTimeout(v))
   playTimeouts = []
 }

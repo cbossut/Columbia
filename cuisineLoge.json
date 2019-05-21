@@ -1,0 +1,52 @@
+[
+  {
+    "channels": [5],
+    "scenario": [
+      {
+        "d": 2,
+        "func": "line",
+        "args": [15, 35]
+      },
+      {
+        "d": 3,
+        "func": "const",
+        "args": [35]
+      },
+      {
+        "d": 5,
+        "func": "line",
+        "args": [35, 0]
+      },
+      {
+        "d": 300,
+        "func": "const",
+        "args": [0]
+      }
+    ]
+  },
+  {
+    "channels": [6],
+    "scenario": [
+      {
+        "d": 2,
+        "func": "line",
+        "args": [27, 43]
+      },
+      {
+        "d": 3,
+        "func": "const",
+        "args": [43]
+      },
+      {
+        "d": 5,
+        "func": "line",
+        "args": [43, 0]
+      },
+      {
+        "d": 300,
+        "func": "const",
+        "args": [0]
+      }
+    ]
+  }
+]
