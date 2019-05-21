@@ -255,6 +255,9 @@ th, td {
 #debounceTimeout {
   align-self: center;
 }
+#testGPIO {
+  align-self: center;
+}
 
 
 .proto {

@@ -866,12 +866,17 @@ function selAllFaderOn() {
 let gpioLine = document.getElementById('gpios')
   , gpioLeds = {}
   , debounceTimeout = document.getElementById('debounceTimeout')
+  , testGPIO = document.getElementById('testGPIO')
 
 debounceTimeout.onchange = function() {
   for (type in gpioLeds) if (type.startsWith('starter')) gpioLeds[type].style.backgroundColor = "red"
   socket.emit('debounceStarters', this.valueAsNumber * 1000)
 }
 socket.on('debounceTimeout', dT => debounceTimeout.valueAsNumber = dT/1000)
+
+testGPIO.onchange = function() {
+  socket.emit('testGPIO', this.checked)
+}
 
 socket.on('gpio', obj => {
   if (!gpioLeds[obj.type]) {

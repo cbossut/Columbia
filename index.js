@@ -81,6 +81,7 @@ let soundInterval = null
   , signCuisineInter = null
   , tSignCuisine = 0
   , startMise = []
+  , testGPIO = false
 
 if (isCuisine) cuisine = require('./cuisine.js') // TODO Check exists because autoload in cuisine module
 
@@ -159,6 +160,7 @@ io.on('connection', sock => {
     cl.load(config.conduite)
     gpioLed.writeSync(1)
     sockGPIO = null
+    testGPIO = false
   })
 
   sock.on('exit', () => {
@@ -176,6 +178,8 @@ io.on('connection', sock => {
     watchStarters(dT)
   })
   sock.emit('debounceTimeout', config.debounceTimeout || 1000)
+  testGPIO = false
+  sock.on('testGPIO', v => {testGPIO = v})
 
   let tmpPath = config.conduite.split('/')
   if (tmpPath.slice(0,-1).join('/') + '/' != savePath)
@@ -477,7 +481,7 @@ function watchStarters(dT) {
         sockGPIO.emit('gpio', {type:'starter'+i, val:value})
       }
 
-      else if (!launched && !value) {
+      if (!launched && !value && !testGPIO) {
         config.compte[0]++ // TODO y a-t-il une ou deux personnes ?
         launch()
       }
