@@ -243,7 +243,7 @@ io.on('connection', sock => {
   sock.on('DMX', obj => {
     DMXorgue[obj.channel - 1] = Math.floor(obj.val * 2.55)
     if (!DMXinter) setTimeout(()=>{
-      DMX.write(formatDMX(DMXorgue, config.DMXaddrs))
+      DMX.write(DMXorgue)
       DMXinter = undefined
     }, 1000/miseFPS)
   })
@@ -397,7 +397,7 @@ function startState() {
     cuisine.load(signPath)
     tSignCuisine = 0
     signCuisineInter = setInterval(()=>{
-      DMX.write(formatDMX(mixDMX(cuisine.update(tSignCuisine), startMise), config.DMXaddrs))
+      DMX.write(mixDMX(cuisine.update(tSignCuisine), startMise))
       tSignCuisine += 1/miseFPS
     }, 1000/miseFPS)
   }
@@ -454,23 +454,14 @@ function sendMise(t = 0, run = true) { // en s depuis launch
     DMXvals = mixDMX(cuisine.update(t), DMXvals)
   }
 
-  let res
-  if (DMXvals.length) {
-    res = formatDMX(DMXvals, config.DMXaddrs)
-    DMX.write(res)
-  }
+  DMX.write(DMXvals)
+
   if (run) {
     if (!allEnded) miseTimeout = setTimeout(()=>sendMise(t + dNext), dNext*1000)
     else startState()
   }
-  return res
-}
 
-function formatDMX(data, nAddr) {
-  for (let i = 0 ; i < nAddr ; i++) {
-    data[i] = data[i] || 0
-  }
-  return data
+  return DMXvals
 }
 
 function mixDMX(v1, v2) {
