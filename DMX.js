@@ -20,14 +20,43 @@ const SerialPort = require('serialport')
     , DMX = new SerialPort('/dev/DMX', {baudRate:115200})
     , packetStart = [0x7E, 6]
     , packetEnd = 0xE7
+//    , minSize = 24 // min DMX frame size
+    , minSize = 64 // min size for lame 16bit DMX decoder
+let twoChannelMode = false
 
-module.exports.write = function(data, start = 1) {
-  if (start > 0) {
-    data = Array(start).fill(0).concat(data)
+module.exports.write = function(data, start = 0) {
+
+  let vals = []
+
+  for ( let i = 0 ; i < data.length ; i++ ) {
+    let v = data[i]
+
+    if ( !v || v < 0 ) v = 0
+
+    if ( twoChannelMode ) {
+      if (v >= 65536 ) v = 0
+      vals.push(Math.floor(v/256))
+      vals.push(v%256)
+    } else {
+      if ( v >= 256 ) vals.push(0)
+      else vals.push(v)
+    }
   }
-  //DEBUG console.log(data)
-  let packetLength = [data.length & 0xFF, (data.length >> 8) & 0xFF]
-  DMX.write(packetStart.concat(packetLength, data, packetEnd))
+
+  if ( start > 0 ) {
+    vals = Array(twoChannelMode ? start*2 : start).fill(0).concat(vals)
+  }
+
+  if ( data.length < minSize ) {
+    vals.push(...Array(minSize - data.length).fill(0))
+  }
+
+  let packetLength = [(vals.length + 1) & 0xFF, (vals.length >> 8) & 0xFF]
+  DMX.write(packetStart.concat(packetLength, 0, vals, packetEnd))
 }
 
 module.exports.close = function() {DMX.close()}
+
+module.exports.set16bits = function() {twoChannelMode = true}
+
+module.exports.set8bits = function() {twoChannelMode = false}
