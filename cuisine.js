@@ -30,28 +30,28 @@ const fs = require('fs')
     , funcs =
       {
         const: (p, val) => val
-      , line: (p, start, end) => start + p*(end - start)
-      , sinus: (p, med, amp, n) => Math.sin(p*n*2*Math.PI)*amp+med
-      , loop: function(p, s) {return scenario(p*this.d, s)}
+      , line: (p, start, end) => start + p*(end - start) // p = 0-1 => start -> end
+      , sinus: (p, med, amp, n) => Math.sin(p*n*2*Math.PI)*amp+med // n periods in p = 0-1
+      , loop: function(p, s) {return scenario(p*this.d, s)} // p = 0-1 => 0-d scenario content
       }
 
-let params = JSON.parse(fs.readFileSync('./cuisine.json')) // TODO shouldn't load by default, nor hardCode path, see load
+let chs = JSON.parse(fs.readFileSync('./cuisine.json')) // TODO shouldn't load by default, nor hardCode path, see load
 
 module.exports.update = function(t) {
   let res = []
-  for (let i in params) {
-    for (let j in params[i].channels) {
-      res[params[i].channels[j] - 1] = Math.round(scenario(t, params[i].scenario)*2.55) // same as mise DMX
+  for (let i in chs) {
+    for (let j in chs[i].channels) {
+      res[chs[i].channels[j] - 1] = Math.round(scenario(t, chs[i].scenario)*2.55) // TODO same as mise DMX
     }
   }
   return res
 }
 
 module.exports.load = function(path) {
-  params = JSON.parse(fs.readFileSync(path))
+  chs = JSON.parse(fs.readFileSync(path))
 }
 
-function scenario(t, s) {
+function scenario(t, s) { // t in second
   let i = 0
   while (s[i] && t > s[i].d) {
     t -= s[i].d
