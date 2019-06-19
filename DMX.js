@@ -37,6 +37,7 @@ module.exports.write = function(data, start = 0) {
 
   let vals = []
 
+  // Format data
   for ( let i = 0 ; i < data.length ; i++ ) {
     let v = data[i]
 
@@ -56,14 +57,17 @@ module.exports.write = function(data, start = 0) {
   if ( vals.every((v,i,a) => v == lastVals[i]) ) return;
   lastVals = vals
 
+  // Offset DMX address
   if ( start > 0 ) {
     vals = Array(twoChannelMode ? start*2 : start).fill(0).concat(vals)
   }
 
-  if ( data.length < minSize ) {
-    vals.push(...Array(minSize - data.length).fill(0))
+  // Fill min frame size
+  if ( vals.length < minSize ) {
+    vals.push(...Array(minSize - vals.length).fill(0))
   }
 
+  // Format and write
   let packetLength = [(vals.length + 1) & 0xFF, (vals.length >> 8) & 0xFF]
   if ( DMX ) DMX.write(packetStart.concat(packetLength, 0, vals, packetEnd))
   else for ( v in vals ) if ( vals[v] ) console.log('DMX :', v, vals[v])
