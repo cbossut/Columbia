@@ -37,10 +37,6 @@ const staticroute = require('static-route')
         tryfiles:["index.html"]
       }))
     , io = require('socket.io')(app)
-    , Gpio = require('onoff').Gpio
-    , gpioTemoin = new Gpio(23, 'out') // Running indicator for power relays
-    , gpioOff = new Gpio(24, 'in', 'falling', {debounceTimeout: 1000}) // TODO Clignote la led un peu, puis passer la led en power led ? (celle brute sur la carte)
-    , gpioLed = new Gpio(15, 'out')
     , cl = require("./cueList.js")
     , or = cl.orgue
     , player = require('./player.js') // Player is only loaded to get sound info for interface
@@ -55,6 +51,23 @@ const staticroute = require('static-route')
     , signPath = './cuisineSign.json'
     , miseFPS = 40
     , isCuisine = fs.existsSync(cuisinePath)
+
+let gpioTemoin, gpioOff, gpioLed, Gpio, player, computerMode = false
+try {
+  Gpio = require('onoff').Gpio
+} catch(e) {
+  console.log('Computer Mode !!')
+  computerMode = true
+  let fn = ()=>{}
+  gpioTemoin = gpioOff = gpioLed = {unexport:fn, watch:fn, writeSync:fn, readSync:fn}
+}
+if ( !computerMode ) {
+  player = require('./player.js') // Player is only loaded to get sound info for interface
+  gpioTemoin = new Gpio(23, 'out') // Running indicator for power relays
+  gpioOff = new Gpio(24, 'in', 'falling', {debounceTimeout: 1000}) // TODO Clignote la led un peu, puis passer la led en power led ? (celle brute sur la carte)
+  gpioLed = new Gpio(15, 'out')
+}
+
 let soundInterval = null
   , interfaced = false
   , sockGPIO = null // TODO could serve as interfaced and sock for all file
@@ -341,6 +354,7 @@ io.on('connection', sock => {
 app.listen(8080)
 
 function loadSound(sock) {
+  if (computerMode) return;
   let good = cl.soundPath.endsWith(soundExtensionFilter)
   player.soundPath = cl.soundPath
   setTimeout(
@@ -475,6 +489,8 @@ function mixDMX(v1, v2) {
 }
 
 function watchStarters(dT) {
+  if (computerMode) return;
+
   gpioStarters.forEach(v => v.unexport())
   gpioStarters = []
 
