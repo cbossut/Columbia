@@ -50,6 +50,7 @@ const staticroute = require('static-route')
     , cuisinePath = './cuisine.json'
     , signPath = './cuisineSign.json'
     , miseFPS = 40
+    , cuisine = require('./cuisine.js')
     , isCuisine = fs.existsSync(cuisinePath)
 
 let gpioTemoin, gpioOff, gpioLed, Gpio, player, computerMode = false
@@ -92,7 +93,6 @@ let soundInterval = null
     relaunchTime: 0
   }
   , launched = false
-  , cuisine = null
   , gpioStarters = []
   , miseTimeout = null
   , conduiteTimeout = null
@@ -104,7 +104,6 @@ let soundInterval = null
   , testGPIO = false
   , starterStates = []
 
-if (isCuisine) cuisine = require('./cuisine.js') // TODO Check exists because autoload in cuisine module
 
 console.log("<-----start----->")
 console.error("<-----start----->")
