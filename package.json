@@ -1,0 +1,23 @@
+{
+  "name": "columbia",
+  "version": "1.0.0",
+  "description": "Copyright or © or Copr. Clément Bossut (2018) <bossut.clement@gmail.com>",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cbossut/Columbia.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cbossut/Columbia/issues"
+  },
+  "homepage": "https://github.com/cbossut/Columbia#readme",
+  "dependencies": {
+    "serialport": "^7.1.5",
+    "static-route": "^0.2.0"
+  }
+}
