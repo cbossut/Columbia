@@ -24,6 +24,7 @@ const SerialPort = require('serialport')
     , fs = require('fs')
 
 let twoChannelMode = false
+  , lastVals = []
   , DMX = null
 
 if ( fs.existsSync('/dev/DMX')) {
@@ -50,6 +51,10 @@ module.exports.write = function(data, start = 0) {
       else vals.push(v)
     }
   }
+
+  // Repetition filter
+  if ( vals.every((v,i,a) => v == lastVals[i]) ) return;
+  lastVals = vals
 
   if ( start > 0 ) {
     vals = Array(twoChannelMode ? start*2 : start).fill(0).concat(vals)
