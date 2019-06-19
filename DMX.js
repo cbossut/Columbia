@@ -17,12 +17,20 @@ sur le site "http://www.cecill.info".
 // https://github.com/kim-toms/ultradmx-micro/blob/master/lib/ultradmx-micro.rb
 
 const SerialPort = require('serialport')
-    , DMX = new SerialPort('/dev/DMX', {baudRate:115200})
     , packetStart = [0x7E, 6]
     , packetEnd = 0xE7
 //    , minSize = 24 // min DMX frame size
     , minSize = 64 // min size for lame 16bit DMX decoder
+    , fs = require('fs')
+
 let twoChannelMode = false
+  , DMX = null
+
+if ( fs.existsSync('/dev/DMX')) {
+  DMX = new SerialPort('/dev/DMX', {baudRate:115200})
+} else {
+  console.log('No DMX found ! Print instead')
+}
 
 module.exports.write = function(data, start = 0) {
 
@@ -52,10 +60,11 @@ module.exports.write = function(data, start = 0) {
   }
 
   let packetLength = [(vals.length + 1) & 0xFF, (vals.length >> 8) & 0xFF]
-  DMX.write(packetStart.concat(packetLength, 0, vals, packetEnd))
+  if ( DMX ) DMX.write(packetStart.concat(packetLength, 0, vals, packetEnd))
+  else for ( v in vals ) if ( vals[v] ) console.log('DMX :', v, vals[v])
 }
 
-module.exports.close = function() {DMX.close()}
+module.exports.close = function() {DMX ? DMX.close() : null}
 
 module.exports.set16bits = function() {twoChannelMode = true}
 
