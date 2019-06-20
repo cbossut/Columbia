@@ -274,6 +274,11 @@ mem.onkeyup = ()=>{
 }
 
 add.onclick = ()=>{
+  if ( !mem.value ) {
+    socket.emit('addCue')
+    return;
+  }
+
   let c = cl.firstElementChild
   while(c && beforeMem(c.children[2].innerHTML)) c = c.nextElementSibling
 
@@ -284,14 +289,13 @@ add.onclick = ()=>{
   )
 
   mem.value = ''
-  add.disabled = true
 
   edited = true
   updateTitle()
 }
 
 function isMem() {
-  return mem.value.split('.').every(v=>parseInt(v))
+  return mem.value.split('.').every(v=>parseInt(v)) || !mem.value
 }
 
 function beforeMem(newMem) {

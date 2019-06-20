@@ -307,7 +307,8 @@ io.on('connection', sock => {
     sock.emit('endSave')
   })
   sock.on('addCue', (name,n) => {
-    cl.addCue({name:name},n)
+    if ( !name ) cl.addCue()
+    else cl.addCue({name:name},n)
     sock.emit('cueList', cl.content) //TODO should not update full cueList
   })
   sock.on('cueChange', ch => Object.assign(cl.content[ch.n], ch.change))
