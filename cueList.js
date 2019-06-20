@@ -80,6 +80,7 @@ cl.updateCue = function(n) {
 }
 
 cl.applyCue = function(n) {
+  if ( n < 0 || n >= this.content.length ) return;
   this.orgue.state = this.content[n].state
 }
 
