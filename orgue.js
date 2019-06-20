@@ -11,7 +11,13 @@ de la licence CeCILL telle que diffusée par le CEA, le CNRS et l'INRIA
 sur le site "http://www.cecill.info".
 */
 
-const pca = require("./pca.js")
+
+let pca = null
+try { // TODO should be protected inside PCA
+  pca = require("./pca.js")
+} catch(e) {
+  console.log('No PCA because :', e)
+}
 
 let or = {
     get state() {
@@ -26,11 +32,11 @@ let or = {
 }
 
 or.freq = 200
-or.pcas = pca.getAddresses()
 or.patch = []
 or.levels = []
 
 
+or.pcas = pca ? pca.getAddresses() : []
 or.setLevel = function(n, val) {
   if (!this.patch[n]) return;
   if (val < 0 || !val) val = 0
@@ -46,7 +52,7 @@ or.setLevel = function(n, val) {
 }
 
 or.init = function(p) {
-  pca.init(()=>{ // WARNING ! callback called after 20ms
+  if ( pca ) pca.init(()=>{ // WARNING ! callback called after 20ms
     this.pcas = pca.getAddresses()
     let s = this.levels
     this.levels = []
