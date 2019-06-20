@@ -253,7 +253,7 @@ io.on('connection', sock => {
   let DMXinter = undefined
     , DMXorgue = []
   sock.on('DMX', obj => {
-    DMXorgue[obj.channel - 1] = Math.floor(obj.val * 2.55)
+    DMXorgue[obj.channel - 1] = Math.floor(obj.val * (cl.orgue.sixteenBits?655.35:2.55)) // TODO nonsense
     if (!DMXinter) setTimeout(()=>{
       DMX.write(DMXorgue)
       DMXinter = undefined
@@ -327,7 +327,7 @@ io.on('connection', sock => {
 
   sock.on('print', () => cl.print())
 
-  sock.on('orgue', d=>or.setLevel(d.led, parseInt(d.val, 10)))
+  sock.on('orgue', d=>cl.orgue.setLevel(d.circuit, d.val))// TODO Why ? parseInt(d.val, 10)))
 
   sock.on('patchChange', ch=>Object.assign(or.patch[ch.n], ch.new))
 
@@ -456,8 +456,7 @@ function sendMise(t = 0, run = true) { // en s depuis launch
           v = Math.round(v * 2.55)
           DMXvals[circuit.addr - 1] = v
         } else if (circuit.mode == 'Orgue') {
-          v = Math.floor(v * 40) // TODO 40 = dépendance à l'interface factor
-          or.setLevel(circuit.addr - 1, v)
+          cl.orgue.setLevel(circuit.addr - 1, v)
         }
       }
     }
