@@ -36,7 +36,8 @@ cl.new = function() {
   this.soundPath = ''
   this.content = []
   this.orgue.init()
-  this.orgue.autoPatch()
+//  this.orgue.autoPatch()
+  this.orgue.autoPatch(false, 32)
 }
 
 cl.save = function(path) {

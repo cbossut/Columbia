@@ -45,14 +45,16 @@ let faders = []
   , edited = false
   , filename = ''
   , leCompteur
-editMode(false)
+editMode(true)
+document.getElementById('son').style.display = 'none'
+document.getElementById('miseP').style.display = 'none'
 
 function editMode(e) {
   edit = e
   document.getElementById('general').style.display = edit ? null : 'none'
   document.getElementById('cueP').style.display = edit ? null : 'none'
-  document.getElementById('patchP').style.display = edit ? 'none' : null
-  document.getElementById('miseP').style.display = edit ? 'none' : null
+//  document.getElementById('patchP').style.display = edit ? 'none' : null
+//  document.getElementById('miseP').style.display = edit ? 'none' : null
   document.getElementById('DMXP').style.display = edit ? 'none' : null
 }
 

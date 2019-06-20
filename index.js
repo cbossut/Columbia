@@ -39,8 +39,6 @@ const staticroute = require('static-route')
     , io = require('socket.io')(app)
     , cl = require("./cueList.js")
 //    , PCA = require('./pca.js') // Inited by cl.load
-    , player = require('./player.js') // Player is only loaded to get sound info for interface
-    , PCA = require('./pca.js') // Inited by cl.load
     , DMX = require('./DMX.js')
     , savePath = './data/'
     , soundPath = './sounds/'
@@ -106,6 +104,9 @@ let soundInterval = null
   , testGPIO = false
   , starterStates = []
 
+
+DMX.set16bits()
+cl.orgue.sixteenBits = true
 
 console.log("<-----start----->")
 console.error("<-----start----->")
@@ -413,6 +414,7 @@ function startState() {
 
   cl.applyCue(0)
   startMise = sendMise(0, false)
+  /*
   if (fs.existsSync(signPath)) {
     cuisine.load(signPath)
     tSignCuisine = 0
@@ -421,6 +423,7 @@ function startState() {
       tSignCuisine += 1/miseFPS
     }, 1000/miseFPS)
   }
+  */
 }
 
 // TODO cuisine pourrait être un mode, comme DMX, l'addresse étant l'index dans params, et la valeur un subMaster du scenario
