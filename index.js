@@ -52,6 +52,8 @@ const staticroute = require('static-route')
     , miseFPS = 40
     , cuisine = require('./cuisine.js')
     , isCuisine = fs.existsSync(cuisinePath)
+if ( !fs.existsSync(savePath) ) fs.mkdirSync(savePath)
+if ( !fs.existsSync(soundPath) ) fs.mkdirSync(soundPath)
 
 let gpioTemoin, gpioOff, gpioLed, Gpio, player, computerMode = false
 try {
@@ -137,7 +139,11 @@ process.on('SIGUSR2', () => {
 if (fs.existsSync(configPath)) {
   config = JSON.parse(fs.readFileSync(configPath)) // TODO shound probably inherit from config
 }
-cl.load(config.conduite) // init PCA
+if (fs.existsSync(config.conduite)) {
+  cl.load(config.conduite) // init PCA
+} else {
+  cl.new()
+}
 config.compte.unshift(0)
 
 if (config.starters.length) { // s'il y a des capteurs, maquette, startState, temoin, watch off
@@ -181,7 +187,7 @@ io.on('connection', sock => {
   sock.on('disconnect', ()=>{ // restore state for normally running (load conduite)
     interfaced = false
     cl.cut()
-    cl.load(config.conduite)
+    if (fs.existsSync(config.conduite)) cl.load(config.conduite)
     gpioLed.writeSync(1)
     sockGPIO = null
     testGPIO = false
