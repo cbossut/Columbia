@@ -2,12 +2,12 @@
 Copyright ou © ou Copr. Clément Bossut, (2018)
 <bossut.clement@gmail.com>
 
-Ce logiciel est un programme informatique servant à écrire et jouer une conduite lumière synchronisée avec du son sur une Raspberry Pi avec PCA8596. 
+Ce logiciel est un programme informatique servant à écrire et jouer une conduite lumière synchronisée avec du son sur une Raspberry Pi avec PCA8596.
 
 Ce logiciel est régi par la licence CeCILL soumise au droit français et
 respectant les principes de diffusion des logiciels libres. Vous pouvez
 utiliser, modifier et/ou redistribuer ce programme sous les conditions
-de la licence CeCILL telle que diffusée par le CEA, le CNRS et l'INRIA 
+de la licence CeCILL telle que diffusée par le CEA, le CNRS et l'INRIA
 sur le site "http://www.cecill.info".
 */
 
@@ -36,7 +36,7 @@ pca.init = function(cb) {
   }, 20)
 }
 
-pca.setLed = function(addr, n, val) {
+pca.setLed = function(addr, n, val) { // TODO protection for val out of 0-4095
   if (n < 0 || n > 15) return;
   if (addrs.indexOf(addr) == -1) {console.log('no addr', addr, n, val); return;}
   if (val <= 0) bus.writeByteSync(addr, LED0ON+3+n*4, 16)

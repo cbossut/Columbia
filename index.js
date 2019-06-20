@@ -38,7 +38,7 @@ const staticroute = require('static-route')
       }))
     , io = require('socket.io')(app)
     , cl = require("./cueList.js")
-    , or = cl.orgue
+//    , PCA = require('./pca.js') // Inited by cl.load
     , player = require('./player.js') // Player is only loaded to get sound info for interface
     , PCA = require('./pca.js') // Inited by cl.load
     , DMX = require('./DMX.js')
@@ -178,7 +178,7 @@ io.on('connection', sock => {
 
   interfaced = true
 
-  sock.on('disconnect', ()=>{
+  sock.on('disconnect', ()=>{ // restore state for normally running (load conduite)
     interfaced = false
     cl.cut()
     cl.load(config.conduite)
@@ -250,7 +250,7 @@ io.on('connection', sock => {
     cl.cut()
   })
 
-  let DMXinter = undefined
+  let DMXinter = undefined // TODO what for ?
     , DMXorgue = []
   sock.on('DMX', obj => {
     DMXorgue[obj.channel - 1] = Math.floor(obj.val * (cl.orgue.sixteenBits?655.35:2.55)) // TODO nonsense
@@ -329,7 +329,7 @@ io.on('connection', sock => {
 
   sock.on('orgue', d=>cl.orgue.setLevel(d.circuit, d.val))// TODO Why ? parseInt(d.val, 10)))
 
-  sock.on('patchChange', ch=>Object.assign(or.patch[ch.n], ch.new))
+  sock.on('patchChange', ch=>Object.assign(cl.orgue.patch[ch.n], ch.new))
 
   soundInterval = null
   sock.on('loadSound', f => {
