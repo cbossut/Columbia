@@ -24,11 +24,13 @@ if (window.NodeList && !NodeList.prototype.forEach) {
 //TODO Remove all call to firstElement, lastElement, children[i] because a change in html breaks it all
 
 let socket = io()
-if (!socket.connected) {
+/*
+if (!socket.connected) { // TODO Allways show !
   let addr = prompt('Address', '10.3.14.15')
   if (addr) socket = io('http://' + addr + ':8080')
   else socket.disconnect()
 }
+*/
 socket.on('connect', ()=>setCo(true))
 socket.on('reconnect', ()=>setCo(true))
 socket.on('disconnect', ()=>setCo(false))
@@ -805,7 +807,7 @@ socket.on('patch', o => {
 })
 
 interact('.fader').draggable({ // TODO organize ? it's for orgue & DMX
-  onmove: e=>changeFader(e.currentTarget, - parseInt(e.dy)/2)
+  onmove: e=>changeFader(e.currentTarget, - parseInt(e.dy)/2) // TODO only .5 ?
 })
 .pointerEvents()
 .on('tap', e=>selectFader(e.currentTarget))
