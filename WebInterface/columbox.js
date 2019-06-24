@@ -17,9 +17,9 @@ let CBlinesDiv = document.getElementById('CBlines')
 
 for ( let i in CBlines ) {
   let cbl = CBlines[i]
-    , cblDiv = nD('CBL')
-    , chsDiv = nD('CHS')
-    , boxesDiv = nD('boxes')
+    , cblDiv = newDiv('CBL') // ColumBoxLine
+    , chsDiv = newDiv('CHS') // CblHeadingSection
+    , boxesDiv = newDiv('boxes')
 
   chsDiv.textContent = cbl.channels
   cblDiv.appendChild(chsDiv)
@@ -33,28 +33,28 @@ for ( let i in CBlines ) {
 function boxulate(container, scenario) {
   for ( let i in scenario ) {
     let box = scenario[i]
-      , boxDiv = nD('columbox')
+      , boxDiv = newDiv('columbox')
 
     boxDiv.style.width = Math.floor(200000 * box.d / soundDur) / 2000 + '%'
     boxDiv.textContent = box.func + ' ' + box.args
 
     switch ( box.func ) {
       case 'const':
-        let line = nD('horizontalLine')
+        let line = newDiv('horizontalLine')
         line.style.bottom = box.args[0] + '%'
         boxDiv.appendChild(line)
         break;
 
       case 'line':
-        let diag = nD('horizontalLine')
+        let diag = newDiv('horizontalLine')
         diag.style.bottom = (box.args[0] + box.args[1]) / 2 + '%'
         boxDiv.appendChild(diag)
         diag.style.transform = /*window.getComputedStyle(diag) +*/ 'rotate(-45deg)'
         break;
 
       case 'sinus':
-        let min = nD('horizontalLine')
-          , max = nD('horizontalLine')
+        let min = newDiv('horizontalLine')
+          , max = newDiv('horizontalLine')
         min.style.bottom = box.args[0] - box.args[1] + '%'
         max.style.bottom = box.args[0] + box.args[1] + '%'
         boxDiv.appendChild(min)
@@ -66,7 +66,7 @@ function boxulate(container, scenario) {
   }
 }
 
-function nD(cl) {
+function newDiv(cl) {
   let d = document.createElement('div')
   if ( cl ) d.classList.add(cl)
   return d
