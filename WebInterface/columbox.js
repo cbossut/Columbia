@@ -13,9 +13,17 @@ sur le site "http://www.cecill.info".
 
 const soundDur = 140
 
+const funcs = {
+  const: {name: 'Constante',   args: ['Valeur']},
+  line:  {name: 'Transition',  args: ['Début', 'Fin']},
+  sinus: {name: 'Oscillation', args: ['Médiane', 'Amplitude', 'Répétitions']}
+}
+
 const restrictToParent = interact.modifiers.restrict({
   restriction: 'parent'
 })
+
+populate('.funcs', Object.keys(funcs).map(v => funcs[v].name))
 
 const CBlinesDiv = document.getElementById('CBlines')
 
@@ -41,6 +49,48 @@ CBlines.map(cbl => { // TODO add fsRead to fill CBLines
   CBlinesDiv.appendChild(cblDiv)
   boxViewModels.push(cblVM)
 })
+
+let selBoxCoord = [0,0]
+updateEditPanel(selBoxCoord)
+
+function updateEditPanel(boxCoord) {
+  document.getElementById('boxID').innerHTML = 'Line ' + boxCoord[0] + ' Box ' + boxCoord[1]
+
+  const boxDiv = boxViewModels[boxCoord[0]][boxCoord[1]]
+      , dur = document.getElementById('boxDuration')
+      , func = document.getElementById('boxFunc')
+      , args = []
+  let i = 0, arg
+  while ( arg = document.getElementById('boxArg' + i++) ) args.push(arg)
+
+  dur.valueAsNumber = boxDiv.model.d * 1000
+  dur.onchange = () => {
+    boxDiv.updateDuration(dur.valueAsNumber / 1000)
+  }
+
+  func.selectedIndex = Object.keys(funcs).indexOf(boxDiv.model.func)
+  func.onchange = () => {
+    boxDiv.updateFunc(Object.keys(funcs)[func.selectedIndex])
+  }
+
+  for ( let i in args ) {
+    let argName = funcs[boxDiv.model.func].args[i]
+      , argSpan = args[i]
+      , argInput = argSpan.querySelector('input')
+      , argTextNode = argInput.previousSibling
+    if ( !argName ) argSpan.style.display = 'none'
+    else {
+      argSpan.style.display = null
+
+      argTextNode.textContent = argName + ' : '
+
+      argInput.valueAsNumber = boxDiv.model.args[i]
+      argInput.onchange = () => {
+        boxDiv.updateArg(i, argInput.valueAsNumber)
+      }
+    }
+  }
+}
 
 function boxulate(boxDiv) {
 
@@ -146,10 +196,23 @@ interact('.horizontalLine').draggable({
   }
 })
 
+// TODO misc utility file (module ?)
+
 function newDiv(cl) {
   let d = document.createElement('div')
   if ( cl ) d.classList.add(cl)
   return d
+}
+
+function populate(selector, opts) {
+  document.querySelectorAll(selector).forEach(el => {
+    el.innerHTML = ''
+    opts.forEach(v => {
+      let o = document.createElement('option')
+      o.innerHTML = v
+      el.appendChild(o)
+    })
+  })
 }
 
 function transformFromEvent(e) {
