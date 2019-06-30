@@ -17,45 +17,55 @@ const restrictToParent = interact.modifiers.restrict({
   restriction: 'parent'
 })
 
-let CBlinesDiv = document.getElementById('CBlines')
+const CBlinesDiv = document.getElementById('CBlines')
 
-for ( let i in CBlines ) {
-  let cbl = CBlines[i]
-    , cblDiv = newDiv('CBL') // ColumBoxLine
+let boxViewModels = []
+CBlines.map(cbl => { // TODO add fsRead to fill CBLines
+  let cblDiv = newDiv('CBL') // ColumBoxLine
     , chsDiv = newDiv('CHS') // CblHeadingSection
     , boxesDiv = newDiv('boxes')
+    , cblVM = []
 
   chsDiv.textContent = cbl.channels
   cblDiv.appendChild(chsDiv)
 
-  boxulate(boxesDiv, cbl.scenario)
+  cbl.scenario.map(box => {
+    let boxDiv = newDiv('columbox')
+    boxDiv.model = box
+    boxulate(boxDiv)
+    boxesDiv.appendChild(boxDiv)
+    cblVM.push(boxDiv)
+  })
   cblDiv.appendChild(boxesDiv)
 
   CBlinesDiv.appendChild(cblDiv)
-}
+  boxViewModels.push(cblVM)
+})
 
-function boxulate(container, scenario) {
-  for ( let i in scenario ) {
-    let box = scenario[i]
-      , boxDiv = newDiv('columbox')
+function boxulate(boxDiv) {
 
-    boxDiv.style.width = Math.floor(200000 * box.d / soundDur) / 2000 + '%'
-    boxDiv.textContent = box.func + ' ' + box.args
+  boxDiv.updateDuration = d => {
+    boxDiv.style.width = 100 * d / soundDur + '%'
+    boxDiv.model.d = d
+  }
 
-    switch ( box.func ) {
+  boxDiv.updateFunc = (func, args) => {
+    for ( let div of boxDiv.getElementsByTagName('div') ) boxDiv.removeChild(div)
+
+    switch ( func ) {
       case 'const':
         let line = newDiv('horizontalLine')
         line.updateValue = p => {
-          box.args[0] = p
           line.style.bottom = p + '%'
+          boxDiv.model.args[0] = p
         }
-        line.updateValue(box.args[0])
+        line.updateValue(args[0] || 0)
         boxDiv.appendChild(line)
         break;
 
       case 'line':
         let diag = newDiv('horizontalLine')
-        diag.style.bottom = (box.args[0] + box.args[1]) / 2 + '%'
+        diag.style.bottom = ((args[0] || 0) + (args[1] || 100)) / 2 + '%'
         boxDiv.appendChild(diag)
         diag.style.transform = /*window.getComputedStyle(diag) +*/ 'rotate(-45deg)'
         break;
@@ -63,27 +73,34 @@ function boxulate(container, scenario) {
       case 'sinus':
         let min = newDiv('horizontalLine')
           , max = newDiv('horizontalLine')
-        min.style.bottom = box.args[0] - box.args[1] + '%'
-        max.style.bottom = box.args[0] + box.args[1] + '%'
+        min.style.bottom = (args[0] - args[1] + '%') || '0%'
+        max.style.bottom = (args[0] + args[1] + '%') || '100%'
         min.updateValue = p => {
-          let maxP = box.args[0] + box.args[1]
-          box.args[0] = (p + maxP) / 2
-          box.args[1] = (maxP - p) / 2
+          let maxP = (args[0] + args[1]) || 100
           min.style.bottom = p + '%'
+          boxDiv.model.args[0] = (p + maxP) / 2
+          boxDiv.model.args[1] = (maxP - p) / 2
         }
         max.updateValue = p => {
-          let minP = box.args[0] - box.args[1]
-          box.args[0] = (p + minP) / 2
-          box.args[1] = (p - minP) / 2
+          let minP = (args[0] - args[1]) || 0
           max.style.bottom = p + '%'
+          boxDiv.model.args[0] = (p + minP) / 2
+          boxDiv.model.args[1] = (p - minP) / 2
         }
         boxDiv.appendChild(min)
         boxDiv.appendChild(max)
         break;
     }
-
-    container.appendChild(boxDiv)
   }
+
+  boxDiv.updateAll = box => {
+
+    boxDiv.textContent = boxDiv.model.func + ' ' + boxDiv.model.args
+    boxDiv.updateDuration(box.d)
+    boxDiv.updateFunc(box.func, box.args)
+  }
+
+  boxDiv.updateAll(boxDiv.model)
 }
 
 interact('.horizontalLine').draggable({
