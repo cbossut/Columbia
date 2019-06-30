@@ -45,48 +45,79 @@ CBlines.map(cbl => { // TODO add fsRead to fill CBLines
 function boxulate(boxDiv) {
 
   boxDiv.updateDuration = d => {
-    boxDiv.style.width = 100 * d / soundDur + '%'
     boxDiv.model.d = d
+    boxDiv.style.width = 100 * d / soundDur + '%'
   }
 
-  boxDiv.updateFunc = (func, args) => {
-    for ( let div of boxDiv.getElementsByTagName('div') ) boxDiv.removeChild(div)
+  boxDiv.updateArg = (n, v) => {
+    boxDiv.model.args[n] = v
+    boxDiv.updateCurve()
+  }
+
+  boxDiv.updateAllArgs = args => {
+    for ( let i in args ) boxDiv.model.args[i] = args[i]
+    boxDiv.updateCurve()
+  }
+
+  boxDiv.updateFunc = (func, args = []) => {
+    boxDiv.model.func = func
+
+    let toRm = []
+    for ( let div of boxDiv.getElementsByTagName('div') ) toRm.push(div)
+    for ( let div of toRm ) boxDiv.removeChild(div) // Rm from static list, not live htmlColl
 
     switch ( func ) {
       case 'const':
         let line = newDiv('horizontalLine')
-        line.updateValue = p => {
-          line.style.bottom = p + '%'
-          boxDiv.model.args[0] = p
+        line.updateValue = p => boxDiv.updateArg(0, p)
+
+        boxDiv.updateCurve = () => {
+          line.style.bottom = boxDiv.model.args[0] + '%'
         }
-        line.updateValue(args[0] || 0)
+
+        boxDiv.updateArg(0, args[0] || 0)
         boxDiv.appendChild(line)
         break;
 
       case 'line':
         let diag = newDiv('horizontalLine')
-        diag.style.bottom = ((args[0] || 0) + (args[1] || 100)) / 2 + '%'
-        boxDiv.appendChild(diag)
         diag.style.transform = /*window.getComputedStyle(diag) +*/ 'rotate(-45deg)'
+
+        boxDiv.updateCurve = () => {
+          diag.style.bottom = (boxDiv.model.args[0] + boxDiv.model.args[1]) / 2 + '%'
+        }
+
+        if ( Number.isNaN(+args[0]) ) args[0] = 0
+        if ( Number.isNaN(+arsg[1]) ) args[1] = 100
+        boxDiv.updateAllArgs(args)
+        boxDiv.appendChild(diag)
         break;
 
       case 'sinus':
         let min = newDiv('horizontalLine')
           , max = newDiv('horizontalLine')
-        min.style.bottom = (args[0] - args[1] + '%') || '0%'
-        max.style.bottom = (args[0] + args[1] + '%') || '100%'
-        min.updateValue = p => {
-          let maxP = (args[0] + args[1]) || 100
-          min.style.bottom = p + '%'
+        min.updateValue = boxDiv.updateMin = p => {
+          let maxP = boxDiv.model.args[0] + boxDiv.model.args[1]
           boxDiv.model.args[0] = (p + maxP) / 2
           boxDiv.model.args[1] = (maxP - p) / 2
+          min.style.bottom = p + '%'
         }
-        max.updateValue = p => {
-          let minP = (args[0] - args[1]) || 0
-          max.style.bottom = p + '%'
+        max.updateValue = boxDiv.updateMax = p => {
+          let minP = boxDiv.model.args[0] - boxDiv.model.args[1]
           boxDiv.model.args[0] = (p + minP) / 2
           boxDiv.model.args[1] = (p - minP) / 2
+          max.style.bottom = p + '%'
         }
+
+        boxDiv.updateCurve = () => {
+          min.style.bottom = boxDiv.model.args[0] - boxDiv.model.args[1] + '%'
+          max.style.bottom = boxDiv.model.args[0] + boxDiv.model.args[1] + '%'
+        }
+
+        if ( Number.isNan(+args[0]) ) args[0] = 50
+        if ( Number.isNan(+args[1]) ) args[1] = 50
+        if ( Number.isNan(+args[2]) ) args[2] = 1
+        boxDiv.updateAllArgs(args)
         boxDiv.appendChild(min)
         boxDiv.appendChild(max)
         break;
@@ -94,7 +125,6 @@ function boxulate(boxDiv) {
   }
 
   boxDiv.updateAll = box => {
-
     boxDiv.textContent = boxDiv.model.func + ' ' + boxDiv.model.args
     boxDiv.updateDuration(box.d)
     boxDiv.updateFunc(box.func, box.args)
