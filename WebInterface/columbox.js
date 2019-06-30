@@ -138,7 +138,7 @@ function boxulate(boxDiv) {
         }
 
         if ( Number.isNaN(+args[0]) ) args[0] = 0
-        if ( Number.isNaN(+arsg[1]) ) args[1] = 100
+        if ( Number.isNaN(+args[1]) ) args[1] = 100
         boxDiv.updateAllArgs(args)
         boxDiv.appendChild(diag)
         break;
@@ -164,9 +164,9 @@ function boxulate(boxDiv) {
           max.style.bottom = boxDiv.model.args[0] + boxDiv.model.args[1] + '%'
         }
 
-        if ( Number.isNan(+args[0]) ) args[0] = 50
-        if ( Number.isNan(+args[1]) ) args[1] = 50
-        if ( Number.isNan(+args[2]) ) args[2] = 1
+        if ( Number.isNaN(+args[0]) ) args[0] = 50
+        if ( Number.isNaN(+args[1]) ) args[1] = 50
+        if ( Number.isNaN(+args[2]) ) args[2] = 1
         boxDiv.updateAllArgs(args)
         boxDiv.appendChild(min)
         boxDiv.appendChild(max)
