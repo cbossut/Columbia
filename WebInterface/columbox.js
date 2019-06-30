@@ -28,7 +28,7 @@ populate('.funcs', Object.keys(funcs).map(v => funcs[v].name))
 const CBlinesDiv = document.getElementById('CBlines')
 
 let boxViewModels = []
-CBlines.map(cbl => { // TODO add fsRead to fill CBLines
+CBlines.map((cbl, i) => { // TODO add fsRead to fill CBLines
   let cblDiv = newDiv('CBL') // ColumBoxLine
     , chsDiv = newDiv('CHS') // CblHeadingSection
     , boxesDiv = newDiv('boxes')
@@ -37,9 +37,10 @@ CBlines.map(cbl => { // TODO add fsRead to fill CBLines
   chsDiv.textContent = cbl.channels
   cblDiv.appendChild(chsDiv)
 
-  cbl.scenario.map(box => {
+  cbl.scenario.map((box, j) => {
     let boxDiv = newDiv('columbox')
     boxDiv.model = box
+    boxDiv.coord = [i, j]
     boxulate(boxDiv)
     boxesDiv.appendChild(boxDiv)
     cblVM.push(boxDiv)
@@ -51,6 +52,7 @@ CBlines.map(cbl => { // TODO add fsRead to fill CBLines
 })
 
 let selBoxCoord = [0,0]
+boxViewModels[0][0].classList.add('seled')
 updateEditPanel(selBoxCoord)
 
 function updateEditPanel(boxCoord) {
@@ -97,16 +99,19 @@ function boxulate(boxDiv) {
   boxDiv.updateDuration = d => {
     boxDiv.model.d = d
     boxDiv.style.width = 100 * d / soundDur + '%'
+    if ( boxDiv.classList.contains('seled') ) updateEditPanel(boxDiv.coord)
   }
 
   boxDiv.updateArg = (n, v) => {
     boxDiv.model.args[n] = v
     boxDiv.updateCurve()
+    if ( boxDiv.classList.contains('seled') ) updateEditPanel(boxDiv.coord)
   }
 
   boxDiv.updateAllArgs = args => {
     for ( let i in args ) boxDiv.model.args[i] = args[i]
     boxDiv.updateCurve()
+    if ( boxDiv.classList.contains('seled') ) updateEditPanel(boxDiv.coord)
   }
 
   boxDiv.updateFunc = (func, args = []) => {
