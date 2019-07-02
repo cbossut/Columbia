@@ -89,3 +89,7 @@ div {
   vertical-align: middle;
   align-items: center;
 }
+
+.removeBtn {
+  background-color: indianred;
+}

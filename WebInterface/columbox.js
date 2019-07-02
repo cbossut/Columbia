@@ -28,12 +28,15 @@ populate('.funcs', Object.keys(funcs).map(v => funcs[v].name))
 const CBlinesDiv = document.getElementById('CBlines')
     , firstPlusBtn = document.querySelector('.plusBtn')
     , plusBtnProto = firstPlusBtn.cloneNode(true)
+    , editPanelRmBtn = document.querySelector('.removeBtn')
+    , rmBtnProto = editPanelRmBtn.cloneNode(true)
 
 firstPlusBtn.style.position = 'initial'
 firstPlusBtn.style.display = 'block'
 firstPlusBtn.onclick = () => {
   addLine(JSON.parse(JSON.stringify(defaultLine)), 0)
 }
+editPanelRmBtn.onclick = rmSelBox
 
 const defaultLine = {channels: [0], scenario: []}
     , defaultBox = {d: 5, func: 'const', args: [10]}
@@ -51,9 +54,17 @@ function addLine(model, n, toModel = true) {
     , chsDiv = newDiv('CHS') // CblHeadingSection
     , plusBtn = plusBtnProto.cloneNode(true)
     , plusBoxBtn = plusBtnProto.cloneNode(true)
+    , rmBtn = rmBtnProto.cloneNode(true)
     , boxesDiv = newDiv('boxes')
 
   chsDiv.textContent = model.channels
+  rmBtn.style.position = 'absolute'
+  rmBtn.style.top = '0'
+  rmBtn.textContent = 'RM'
+  rmBtn.onclick = () => {
+    rmLine(cblDiv)
+  }
+  chsDiv.appendChild(rmBtn)
   plusBtn.style.left = '0'
   plusBtn.onclick = () => {
     addLine(JSON.parse(JSON.stringify(defaultLine)), cblDiv.lineIndex+1)
@@ -82,6 +93,14 @@ function addLine(model, n, toModel = true) {
   }
 
   model.scenario.map((box, j) => addBox(box, cbl.lineIndex, j, false))
+}
+
+function rmLine(lineDiv) {
+  CBlines.splice(lineDiv.lineIndex, 1)
+  CBlinesDiv.removeChild(lineDiv)
+  boxViewModels.splice(lineDiv.lineIndex, 1)
+  let col = CBlinesDiv.children
+  for ( let i = lineDiv.lineIndex ; i < col.length ; i++ ) col.item(i).lineIndex--
 }
 
 function addBox(model, nLine, n, toModel = true) {
@@ -115,6 +134,18 @@ function addBox(model, nLine, n, toModel = true) {
 
 let selBoxDiv
 updateEditPanel()
+
+function rmSelBox() {
+  let lineIndex = selBoxDiv.parentNode.parentNode.lineIndex
+    , lineVM = boxViewModels[lineIndex]
+    , boxIndex = selBoxDiv.boxIndex
+  CBlines[lineIndex].scenario.splice(boxIndex, 1)
+  selBoxDiv.parentNode.removeChild(selBoxDiv)
+  boxViewModels[lineIndex].splice(boxIndex, 1)
+  for ( let i = boxIndex ; i < lineVM.length ; i++ ) lineVM[i].boxIndex--
+  selBoxDiv = null
+  updateEditPanel()
+}
 
 function updateEditPanel() {
   if ( !selBoxDiv ) {
