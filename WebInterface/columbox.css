@@ -36,6 +36,7 @@ div {
 }
 
 .CHS {
+  position: relative;
   border-color: greenyellow;
   width: 5ch;
   display: flex;
@@ -44,6 +45,7 @@ div {
 }
 
 .boxes {
+  position: relative;
   border-color: yellowgreen;
   flex: auto;
   display: flex;
@@ -63,11 +65,24 @@ div {
 
 .horizontalLine {
   position: absolute;
-  object-position: center;
   border: none;
   background-color: skyblue;
   left: 0;
   width: 100%;
   height: 2px;
   margin-bottom: -1px;
+}
+
+.plusBtn {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  font-size: 10pt;
+  width: 2ch;
+  height: 2ch;
+  border: none;
+  background-color: dodgerblue;
+  text-align: center;
+  vertical-align: middle;
+  align-items: center;
 }

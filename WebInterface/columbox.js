@@ -26,40 +26,84 @@ const restrictToParent = interact.modifiers.restrict({
 populate('.funcs', Object.keys(funcs).map(v => funcs[v].name))
 
 const CBlinesDiv = document.getElementById('CBlines')
+    , firstPlusBtn = document.querySelector('.plusBtn')
+    , plusBtnProto = firstPlusBtn.cloneNode(true)
+
+firstPlusBtn.style.position = 'initial'
+firstPlusBtn.style.display = 'block'
+firstPlusBtn.onclick = () => addLine(JSON.parse(JSON.stringify(defaultLine)), 0)
+
+const defaultLine = {channels: [0], scenario: []}
+    , defaultBox = {d: 5, func: 'const', args: [10]}
+    , CBlines = []
 
 let boxViewModels = []
-CBlines.map((cbl, i) => { // TODO add fsRead to fill CBLines
+
+function load(model) {
+  CBlines = []
+  model.map((cbl, i) => addLine(cbl, i, false))
+}
+
+function addLine(model, n, toModel = true) {
   let cblDiv = newDiv('CBL') // ColumBoxLine
     , chsDiv = newDiv('CHS') // CblHeadingSection
+    , plusBtn = plusBtnProto.cloneNode(true)
+    , plusBoxBtn = plusBtnProto.cloneNode(true)
     , boxesDiv = newDiv('boxes')
-    , cblVM = []
 
-  chsDiv.textContent = cbl.channels
+  chsDiv.textContent = model.channels
+  plusBtn.style.left = '0'
+  plusBtn.onclick = () => addLine(JSON.parse(JSON.stringify(defaultLine)), n+1)
+  plusBoxBtn.onclick = () => addBox(JSON.parse(JSON.stringify(defaultBox)), n, 0)
+  chsDiv.appendChild(plusBtn)
+  chsDiv.appendChild(plusBoxBtn)
   cblDiv.appendChild(chsDiv)
-
-  cbl.scenario.map((box, j) => {
-    let boxDiv = newDiv('columbox')
-    boxDiv.model = box
-    boxDiv.coord = [i, j]
-    boxulate(boxDiv)
-    boxesDiv.appendChild(boxDiv)
-    cblVM.push(boxDiv)
-  })
   cblDiv.appendChild(boxesDiv)
 
-  CBlinesDiv.appendChild(cblDiv)
-  boxViewModels.push(cblVM)
-})
+  if ( n == boxViewModels.length ) {
+    if ( toModel ) CBlines.push(model)
+    CBlinesDiv.appendChild(cblDiv)
+    boxViewModels.push([])
+  } else {
+    if ( toModel ) CBlines.splice(n, 0, model)
+    CBlinesDiv.insertBefore(cblDiv, CBlinesDiv.children[n])
+    boxViewModels.splice(n, 0, [])
+  }
 
+  model.scenario.map((box, j) => addBox(box, n, j, false))
+}
+
+function addBox(model, nLine, n, toModel = true) {
+  let boxDiv = newDiv('columbox')
+    , plusBtn = plusBtnProto.cloneNode(true)
+    , boxesDiv = CBlinesDiv.children[nLine].querySelector('.boxes')
+    , lineVM = boxViewModels[nLine]
+
+  boxDiv.model = model
+  boxulate(boxDiv)
+  plusBtn.onclick = () => addBox(JSON.parse(JSON.stringify(defaultBox)), nLine, n+1)
+  boxDiv.appendChild(plusBtn)
+
+  if ( n == lineVM.length ) {
+    if ( toModel ) CBlines[nLine].scenario.push(model)
+    boxesDiv.appendChild(boxDiv)
+    lineVM.push(boxDiv)
+  } else {
+    if ( toModel ) CBlines[nLine].scenario.splice(n, 0, model)
+    boxesDiv.insertBefore(boxDiv, boxesDiv.children[n])
+    lineVM.splice(n, 0, model)
+  }
+}
+
+/*
 let selBoxCoord = [0,0]
 boxViewModels[0][0].classList.add('seled')
 updateEditPanel(selBoxCoord)
+*/
+function updateEditPanel(boxDiv) {
+//  document.getElementById('boxID').innerHTML = 'Line ' + boxDiv.parentNode.parentNode.lineIndex + ' Box ' + boxDiv.boxIndex
 
-function updateEditPanel(boxCoord) {
-  document.getElementById('boxID').innerHTML = 'Line ' + boxCoord[0] + ' Box ' + boxCoord[1]
-
-  const boxDiv = boxViewModels[boxCoord[0]][boxCoord[1]]
-      , dur = document.getElementById('boxDuration')
+  const dur = document.getElementById('boxDuration')
       , func = document.getElementById('boxFunc')
       , args = []
   let i = 0, arg
@@ -99,19 +143,19 @@ function boxulate(boxDiv) {
   boxDiv.updateDuration = d => {
     boxDiv.model.d = d
     boxDiv.style.width = 100 * d / soundDur + '%'
-    if ( boxDiv.classList.contains('seled') ) updateEditPanel(boxDiv.coord)
+    if ( boxDiv.classList.contains('seled') ) updateEditPanel(boxDiv)
   }
 
   boxDiv.updateArg = (n, v) => {
     boxDiv.model.args[n] = v
     boxDiv.updateCurve()
-    if ( boxDiv.classList.contains('seled') ) updateEditPanel(boxDiv.coord)
+    if ( boxDiv.classList.contains('seled') ) updateEditPanel(boxDiv)
   }
 
   boxDiv.updateAllArgs = args => {
     for ( let i in args ) boxDiv.model.args[i] = args[i]
     boxDiv.updateCurve()
-    if ( boxDiv.classList.contains('seled') ) updateEditPanel(boxDiv.coord)
+    if ( boxDiv.classList.contains('seled') ) updateEditPanel(boxDiv)
   }
 
   boxDiv.updateFunc = (func, args = []) => {
