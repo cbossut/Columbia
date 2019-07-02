@@ -408,8 +408,8 @@ function sendMise(t = 0, run = true) { // en s depuis launch
   let DMXvals = []
     , dNext = isCuisine ? 1/miseFPS : Number.POSITIVE_INFINITY // en s
     , allEnded = true
-  for (let i in config.mise) {
-    with(config.mise[i]){
+  for (let line of config.mise) {
+    with(line){
       if (circuit) {
         let v // en %
           , ended = false

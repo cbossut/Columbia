@@ -870,7 +870,7 @@ let gpioLine = document.getElementById('gpios')
   , testGPIO = document.getElementById('testGPIO')
 
 debounceTimeout.onchange = function() {
-  for (type in gpioLeds) if (type.startsWith('starter')) gpioLeds[type].style.backgroundColor = "red"
+  for (let type in gpioLeds) if (type.startsWith('starter')) gpioLeds[type].style.backgroundColor = "red"
   socket.emit('debounceStarters', this.valueAsNumber * 1000)
 }
 socket.on('debounceTimeout', dT => debounceTimeout.valueAsNumber = dT/1000)
@@ -1015,7 +1015,7 @@ function formatTime(t, tab = false) {
 // Autosave toutes les minutes, copie de sauvegarde toutes les 5 minutes
 let saveInter = []
 function setCo(co) {
-  for (type in gpioLeds) gpioLine.removeChild(gpioLeds[type])
+  for (let div of gpioLeds) gpioLine.removeChild(div)
   gpioLeds = []
   debounceTimeout.style.display = 'none'
 
@@ -1047,7 +1047,7 @@ function setCo(co) {
     }, 300000))
   }
   document.getElementById('co').style.backgroundColor = co?"green":"red"
-  if (!co) for (type in gpioLeds) gpioLeds[type].style.backgroundColor = "red"
+  if (!co) for (let div of gpioLeds) div.style.backgroundColor = "red"
 }
 
 function populate(sel, opts) {

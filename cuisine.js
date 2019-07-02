@@ -39,9 +39,9 @@ let chs = JSON.parse(fs.readFileSync('./cuisine.json')) // TODO shouldn't load b
 
 module.exports.update = function(t) {
   let res = []
-  for (let i in chs) {
-    for (let j in chs[i].channels) {
-      res[chs[i].channels[j] - 1] = Math.round(scenario(t, chs[i].scenario)*2.55) // TODO same as mise DMX
+  for (let ch of chs) {
+    for (let c of ch.channels) {
+      res[c - 1] = Math.round(scenario(t, ch.scenario)*2.55) // TODO same as mise DMX
     }
   }
   return res
