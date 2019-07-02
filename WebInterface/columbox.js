@@ -95,11 +95,6 @@ function addBox(model, nLine, n, toModel = true) {
   }
 }
 
-/*
-let selBoxCoord = [0,0]
-boxViewModels[0][0].classList.add('seled')
-updateEditPanel(selBoxCoord)
-*/
 function updateEditPanel(boxDiv) {
 //  document.getElementById('boxID').innerHTML = 'Line ' + boxDiv.parentNode.parentNode.lineIndex + ' Box ' + boxDiv.boxIndex
 
@@ -139,6 +134,13 @@ function updateEditPanel(boxDiv) {
 }
 
 function boxulate(boxDiv) {
+
+  boxDiv.onclick = e => {
+    if ( e.target != boxDiv ) return;
+    for ( let sel of document.querySelectorAll('.seled') ) sel.classList.remove('seled')
+    boxDiv.classList.add('seled')
+    updateEditPanel(boxDiv)
+  }
 
   boxDiv.updateDuration = d => {
     boxDiv.model.d = d
