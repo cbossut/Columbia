@@ -31,7 +31,9 @@ const CBlinesDiv = document.getElementById('CBlines')
 
 firstPlusBtn.style.position = 'initial'
 firstPlusBtn.style.display = 'block'
-firstPlusBtn.onclick = () => addLine(JSON.parse(JSON.stringify(defaultLine)), 0)
+firstPlusBtn.onclick = () => {
+  addLine(JSON.parse(JSON.stringify(defaultLine)), 0)
+}
 
 const defaultLine = {channels: [0], scenario: []}
     , defaultBox = {d: 5, func: 'const', args: [10]}
@@ -53,12 +55,18 @@ function addLine(model, n, toModel = true) {
 
   chsDiv.textContent = model.channels
   plusBtn.style.left = '0'
-  plusBtn.onclick = () => addLine(JSON.parse(JSON.stringify(defaultLine)), n+1)
-  plusBoxBtn.onclick = () => addBox(JSON.parse(JSON.stringify(defaultBox)), n, 0)
+  plusBtn.onclick = () => {
+    addLine(JSON.parse(JSON.stringify(defaultLine)), cblDiv.lineIndex+1)
+  }
+  plusBoxBtn.onclick = () => {
+    addBox(JSON.parse(JSON.stringify(defaultBox)), cblDiv.lineIndex, 0)
+  }
   chsDiv.appendChild(plusBtn)
   chsDiv.appendChild(plusBoxBtn)
   cblDiv.appendChild(chsDiv)
   cblDiv.appendChild(boxesDiv)
+
+  cblDiv.lineIndex = n
 
   if ( n == boxViewModels.length ) {
     if ( toModel ) CBlines.push(model)
@@ -68,21 +76,29 @@ function addLine(model, n, toModel = true) {
     if ( toModel ) CBlines.splice(n, 0, model)
     CBlinesDiv.insertBefore(cblDiv, CBlinesDiv.children[n])
     boxViewModels.splice(n, 0, [])
+
+    let col = CBlinesDiv.children
+    for (let i = n + 1 ; i < col.length ; i++ ) col.item(i).lineIndex++
   }
 
-  model.scenario.map((box, j) => addBox(box, n, j, false))
+  model.scenario.map((box, j) => addBox(box, cbl.lineIndex, j, false))
 }
 
 function addBox(model, nLine, n, toModel = true) {
   let boxDiv = newDiv('columbox')
     , plusBtn = plusBtnProto.cloneNode(true)
-    , boxesDiv = CBlinesDiv.children[nLine].querySelector('.boxes')
+    , lineDiv = CBlinesDiv.children[nLine]
+    , boxesDiv = lineDiv.querySelector('.boxes')
     , lineVM = boxViewModels[nLine]
 
   boxDiv.model = model
   boxulate(boxDiv)
-  plusBtn.onclick = () => addBox(JSON.parse(JSON.stringify(defaultBox)), nLine, n+1)
+  plusBtn.onclick = () => {
+    addBox(JSON.parse(JSON.stringify(defaultBox)), lineDiv.lineIndex, boxDiv.boxIndex+1)
+  }
   boxDiv.appendChild(plusBtn)
+
+  boxDiv.boxIndex = n
 
   if ( n == lineVM.length ) {
     if ( toModel ) CBlines[nLine].scenario.push(model)
@@ -91,12 +107,23 @@ function addBox(model, nLine, n, toModel = true) {
   } else {
     if ( toModel ) CBlines[nLine].scenario.splice(n, 0, model)
     boxesDiv.insertBefore(boxDiv, boxesDiv.children[n])
-    lineVM.splice(n, 0, model)
+    lineVM.splice(n, 0, boxDiv)
+
+    for ( let i = n + 1 ; i < lineVM.length ; i++ ) lineVM[i].boxIndex++
   }
 }
 
-function updateEditPanel(boxDiv) {
-//  document.getElementById('boxID').innerHTML = 'Line ' + boxDiv.parentNode.parentNode.lineIndex + ' Box ' + boxDiv.boxIndex
+let selBoxDiv
+updateEditPanel()
+
+function updateEditPanel() {
+  if ( !selBoxDiv ) {
+    document.getElementById('boxEdit').style.display = 'none'
+    return;
+  }
+  document.getElementById('boxEdit').style.display = null
+
+//  document.getElementById('boxID').innerHTML = 'Line ' + selBoxDiv.parentNode.parentNode.lineIndex + ' Box ' + selBoxDiv.boxIndex
 
   const dur = document.getElementById('boxDuration')
       , func = document.getElementById('boxFunc')
@@ -104,18 +131,18 @@ function updateEditPanel(boxDiv) {
   let i = 0, arg
   while ( arg = document.getElementById('boxArg' + i++) ) args.push(arg)
 
-  dur.valueAsNumber = boxDiv.model.d * 1000
+  dur.valueAsNumber = selBoxDiv.model.d * 1000
   dur.onchange = () => {
-    boxDiv.updateDuration(dur.valueAsNumber / 1000)
+    selBoxDiv.updateDuration(dur.valueAsNumber / 1000)
   }
 
-  func.selectedIndex = Object.keys(funcs).indexOf(boxDiv.model.func)
+  func.selectedIndex = Object.keys(funcs).indexOf(selBoxDiv.model.func)
   func.onchange = () => {
-    boxDiv.updateFunc(Object.keys(funcs)[func.selectedIndex])
+    selBoxDiv.updateFunc(Object.keys(funcs)[func.selectedIndex])
   }
 
   for ( let i in args ) {
-    let argName = funcs[boxDiv.model.func].args[i]
+    let argName = funcs[selBoxDiv.model.func].args[i]
       , argSpan = args[i]
       , argInput = argSpan.querySelector('input')
       , argTextNode = argInput.previousSibling
@@ -125,9 +152,9 @@ function updateEditPanel(boxDiv) {
 
       argTextNode.textContent = argName + ' : '
 
-      argInput.valueAsNumber = boxDiv.model.args[i]
+      argInput.valueAsNumber = selBoxDiv.model.args[i]
       argInput.onchange = () => {
-        boxDiv.updateArg(i, argInput.valueAsNumber)
+        selBoxDiv.updateArg(i, argInput.valueAsNumber)
       }
     }
   }
@@ -139,25 +166,26 @@ function boxulate(boxDiv) {
     if ( e.target != boxDiv ) return;
     for ( let sel of document.querySelectorAll('.seled') ) sel.classList.remove('seled')
     boxDiv.classList.add('seled')
-    updateEditPanel(boxDiv)
+    selBoxDiv = boxDiv
+    updateEditPanel()
   }
 
   boxDiv.updateDuration = d => {
     boxDiv.model.d = d
     boxDiv.style.width = 100 * d / soundDur + '%'
-    if ( boxDiv.classList.contains('seled') ) updateEditPanel(boxDiv)
+    if ( boxDiv.classList.contains('seled') ) updateEditPanel()
   }
 
   boxDiv.updateArg = (n, v) => {
     boxDiv.model.args[n] = v
     boxDiv.updateCurve()
-    if ( boxDiv.classList.contains('seled') ) updateEditPanel(boxDiv)
+    if ( boxDiv.classList.contains('seled') ) updateEditPanel()
   }
 
   boxDiv.updateAllArgs = args => {
     for ( let i in args ) boxDiv.model.args[i] = args[i]
     boxDiv.updateCurve()
-    if ( boxDiv.classList.contains('seled') ) updateEditPanel(boxDiv)
+    if ( boxDiv.classList.contains('seled') ) updateEditPanel()
   }
 
   boxDiv.updateFunc = (func, args = []) => {
