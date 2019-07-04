@@ -33,6 +33,7 @@ div {
 .CBL {
   border-color: blue;
   display: flex;
+  height: 5em;
 }
 
 .CHS {
@@ -60,7 +61,6 @@ div {
   padding: 1ch;
   background-color: mediumpurple;
   color: goldenrod;
-  height: 5em;
 }
 .columbox.seled {
   border: 1px solid red;

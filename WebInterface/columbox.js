@@ -57,14 +57,6 @@ function addLine(model, n, toModel = true) {
     , rmBtn = rmBtnProto.cloneNode(true)
     , boxesDiv = newDiv('boxes')
 
-  chsDiv.textContent = model.channels
-  rmBtn.style.position = 'absolute'
-  rmBtn.style.top = '0'
-  rmBtn.textContent = 'RM'
-  rmBtn.onclick = () => {
-    rmLine(cblDiv)
-  }
-  chsDiv.appendChild(rmBtn)
   plusBtn.style.left = '0'
   plusBtn.onclick = () => {
     addLine(JSON.parse(JSON.stringify(defaultLine)), cblDiv.lineIndex+1)
@@ -74,6 +66,15 @@ function addLine(model, n, toModel = true) {
   }
   chsDiv.appendChild(plusBtn)
   chsDiv.appendChild(plusBoxBtn)
+
+  rmBtn.style.position = 'absolute'
+  rmBtn.style.top = '0'
+  rmBtn.textContent = 'RM'
+  rmBtn.onclick = () => {
+    rmLine(cblDiv)
+  }
+  chsDiv.appendChild(rmBtn)
+
   cblDiv.appendChild(chsDiv)
   cblDiv.appendChild(boxesDiv)
 
