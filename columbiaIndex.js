@@ -37,14 +37,8 @@ const staticroute = require('static-route')
         tryfiles:["index.html"]
       }))
     , io = require('socket.io')(app)
-    , Gpio = require('onoff').Gpio
-    , gpioTemoin = new Gpio(23, 'out') // Running indicator for power relays
-    , gpioOff = new Gpio(24, 'in', 'falling', {debounceTimeout: 1000}) // TODO Clignote la led un peu, puis passer la led en power led ? (celle brute sur la carte)
-    , gpioLed = new Gpio(15, 'out')
     , cl = require("./cueList.js")
-    , or = cl.orgue
-    , player = require('./player.js') // Player is only loaded to get sound info for interface
-    , PCA = require('./pca.js') // Inited by cl.load
+//    , PCA = require('./pca.js') // Inited by cl.load
     , DMX = require('./DMX.js')
     , savePath = './data/'
     , soundPath = './sounds/'
@@ -54,7 +48,27 @@ const staticroute = require('static-route')
     , cuisinePath = './cuisine.json'
     , signPath = './cuisineSign.json'
     , miseFPS = 40
+    , cuisine = require('./cuisine.js')
     , isCuisine = fs.existsSync(cuisinePath)
+if ( !fs.existsSync(savePath) ) fs.mkdirSync(savePath)
+if ( !fs.existsSync(soundPath) ) fs.mkdirSync(soundPath)
+
+let gpioTemoin, gpioOff, gpioLed, Gpio, player, computerMode = false
+try {
+  Gpio = require('onoff').Gpio
+} catch(e) {
+  console.log('Computer Mode !!')
+  computerMode = true
+  let fn = ()=>{}
+  gpioTemoin = gpioOff = gpioLed = {unexport:fn, watch:fn, writeSync:fn, readSync:fn}
+}
+if ( !computerMode ) {
+  player = require('./player.js') // Player is only loaded to get sound info for interface
+  gpioTemoin = new Gpio(23, 'out') // Running indicator for power relays
+  gpioOff = new Gpio(24, 'in', 'falling', {debounceTimeout: 1000}) // TODO Clignote la led un peu, puis passer la led en power led ? (celle brute sur la carte)
+  gpioLed = new Gpio(15, 'out')
+}
+
 let soundInterval = null
   , interfaced = false
   , sockGPIO = null // TODO could serve as interfaced and sock for all file
@@ -79,7 +93,6 @@ let soundInterval = null
     relaunchTime: 0
   }
   , launched = false
-  , cuisine = null
   , gpioStarters = []
   , miseTimeout = null
   , conduiteTimeout = null
@@ -91,7 +104,9 @@ let soundInterval = null
   , testGPIO = false
   , starterStates = []
 
-if (isCuisine) cuisine = require('./cuisine.js') // TODO Check exists because autoload in cuisine module
+
+DMX.set16bits()
+cl.orgue.sixteenBits = true
 
 console.log("<-----start----->")
 console.error("<-----start----->")
@@ -125,7 +140,11 @@ process.on('SIGUSR2', () => {
 if (fs.existsSync(configPath)) {
   config = JSON.parse(fs.readFileSync(configPath)) // TODO shound probably inherit from config
 }
-cl.load(config.conduite) // init PCA
+if (fs.existsSync(config.conduite)) {
+  cl.load(config.conduite) // init PCA
+} else {
+  cl.new()
+}
 config.compte.unshift(0)
 
 if (config.starters.length) { // s'il y a des capteurs, maquette, startState, temoin, watch off
@@ -166,10 +185,10 @@ io.on('connection', sock => {
 
   interfaced = true
 
-  sock.on('disconnect', ()=>{
+  sock.on('disconnect', ()=>{ // restore state for normally running (load conduite)
     interfaced = false
     cl.cut()
-    cl.load(config.conduite)
+    if (fs.existsSync(config.conduite)) cl.load(config.conduite)
     gpioLed.writeSync(1)
     sockGPIO = null
     testGPIO = false
@@ -238,10 +257,10 @@ io.on('connection', sock => {
     cl.cut()
   })
 
-  let DMXinter = undefined
+  let DMXinter = undefined // TODO what for ?
     , DMXorgue = []
   sock.on('DMX', obj => {
-    DMXorgue[obj.channel - 1] = Math.floor(obj.val * 2.55)
+    DMXorgue[obj.channel - 1] = Math.floor(obj.val * (cl.orgue.sixteenBits?655.35:2.55)) // TODO nonsense
     if (!DMXinter) setTimeout(()=>{
       DMX.write(DMXorgue)
       DMXinter = undefined
@@ -289,7 +308,8 @@ io.on('connection', sock => {
     sock.emit('endSave')
   })
   sock.on('addCue', (name,n) => {
-    cl.addCue({name:name},n)
+    if ( !name ) cl.addCue()
+    else cl.addCue({name:name},n)
     sock.emit('cueList', cl.content) //TODO should not update full cueList
   })
   sock.on('cueChange', ch => Object.assign(cl.content[ch.n], ch.change))
@@ -315,9 +335,9 @@ io.on('connection', sock => {
 
   sock.on('print', () => cl.print())
 
-  sock.on('orgue', d=>or.setLevel(d.led, parseInt(d.val, 10)))
+  sock.on('orgue', d=>cl.orgue.setLevel(d.circuit, d.val))// TODO Why ? parseInt(d.val, 10)))
 
-  sock.on('patchChange', ch=>Object.assign(or.patch[ch.n], ch.new))
+  sock.on('patchChange', ch=>Object.assign(cl.orgue.patch[ch.n], ch.new))
 
   soundInterval = null
   sock.on('loadSound', f => {
@@ -341,6 +361,7 @@ io.on('connection', sock => {
 app.listen(8080)
 
 function loadSound(sock) {
+  if (computerMode) return;
   let good = cl.soundPath.endsWith(soundExtensionFilter)
   player.soundPath = cl.soundPath
   setTimeout(
@@ -393,6 +414,7 @@ function startState() {
 
   cl.applyCue(0)
   startMise = sendMise(0, false)
+  /*
   if (fs.existsSync(signPath)) {
     cuisine.load(signPath)
     tSignCuisine = 0
@@ -401,6 +423,7 @@ function startState() {
       tSignCuisine += 1/miseFPS
     }, 1000/miseFPS)
   }
+  */
 }
 
 // TODO cuisine pourrait être un mode, comme DMX, l'addresse étant l'index dans params, et la valeur un subMaster du scenario
@@ -443,8 +466,7 @@ function sendMise(t = 0, run = true) { // en s depuis launch
           v = Math.round(v * 2.55)
           DMXvals[circuit.addr - 1] = v
         } else if (circuit.mode == 'Orgue') {
-          v = Math.floor(v * 40) // TODO 40 = dépendance à l'interface factor
-          or.setLevel(circuit.addr - 1, v)
+          cl.orgue.setLevel(circuit.addr - 1, v)
         }
       }
     }
@@ -475,6 +497,8 @@ function mixDMX(v1, v2) {
 }
 
 function watchStarters(dT) {
+  if (computerMode) return;
+
   gpioStarters.forEach(v => v.unexport())
   gpioStarters = []
 

@@ -22,7 +22,10 @@ const fs = require('fs')
       , loop: function(p, s) {return scenario(p*this.d, s)} // p = 0-1 => 0-d scenario content
       }
 
-let chs = JSON.parse(fs.readFileSync('./cuisine.json')) // TODO shouldn't load by default, nor hardCode path, see load
+let chs
+if ( fs.existsSync('./cuisine.json') )
+  chs = JSON.parse(fs.readFileSync('./cuisine.json')) // TODO shouldn't load by default, nor hardCode path, see load
+else chs = []
 
 module.exports.update = function(t) {
   let res = []

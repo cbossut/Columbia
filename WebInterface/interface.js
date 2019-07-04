@@ -23,14 +23,14 @@ if (window.NodeList && !NodeList.prototype.forEach) {
 
 //TODO Remove all call to firstElement, lastElement, children[i] because a change in html breaks it all
 
-const factor = 40 // 1 point du jeu d'orgue = factor points de PCA
-
 let socket = io()
-if (!socket.connected) {
+/*
+if (!socket.connected) { // TODO Allways show !
   let addr = prompt('Address', '10.3.14.15')
   if (addr) socket = io('http://' + addr + ':8080')
   else socket.disconnect()
 }
+*/
 socket.on('connect', ()=>setCo(true))
 socket.on('reconnect', ()=>setCo(true))
 socket.on('disconnect', ()=>setCo(false))
@@ -47,14 +47,16 @@ let faders = []
   , edited = false
   , filename = ''
   , leCompteur
-editMode(false)
+editMode(true)
+document.getElementById('son').style.display = 'none'
+document.getElementById('miseP').style.display = 'none'
 
 function editMode(e) {
   edit = e
   document.getElementById('general').style.display = edit ? null : 'none'
   document.getElementById('cueP').style.display = edit ? null : 'none'
-  document.getElementById('patchP').style.display = edit ? 'none' : null
-  document.getElementById('miseP').style.display = edit ? 'none' : null
+//  document.getElementById('patchP').style.display = edit ? 'none' : null
+//  document.getElementById('miseP').style.display = edit ? 'none' : null
   document.getElementById('DMXP').style.display = edit ? 'none' : null
 }
 
@@ -276,6 +278,11 @@ mem.onkeyup = ()=>{
 }
 
 add.onclick = ()=>{
+  if ( !mem.value ) {
+    socket.emit('addCue')
+    return;
+  }
+
   let c = cl.firstElementChild
   while(c && beforeMem(c.children[2].innerHTML)) c = c.nextElementSibling
 
@@ -286,14 +293,13 @@ add.onclick = ()=>{
   )
 
   mem.value = ''
-  add.disabled = true
 
   edited = true
   updateTitle()
 }
 
 function isMem() {
-  return mem.value.split('.').every(v=>parseInt(v))
+  return mem.value.split('.').every(v=>parseInt(v)) || !mem.value
 }
 
 function beforeMem(newMem) {
@@ -719,6 +725,7 @@ socket.on('patch', o => {
   let patch = o.patch
     , pcas = o.pcas
     , panel = document.getElementById('orgueP')
+  pcas.unshift('DMX')
   panel.innerHTML = ''
   plist.innerHTML = ''
   faders = []
@@ -736,7 +743,7 @@ socket.on('patch', o => {
       get: function() {return this.val},
       set: function(v) {
         this.val = v
-        this.childNodes[2].textContent = v
+        this.childNodes[2].textContent = +v.toFixed(3)
       }
     })
     panel.appendChild(f)
@@ -748,6 +755,7 @@ socket.on('patch', o => {
       panel.appendChild(document.createElement('br'))
     }
 
+    // TODO All this is directly dependent from orgue, really bad design !!!
     let line = pline.cloneNode(true)
     line.removeAttribute('id')
     line.classList.remove('proto')
@@ -766,15 +774,23 @@ socket.on('patch', o => {
     let pca = el.children[0]
       , led = el.children[1]
     populate(pca, pcas)
-    pca.selectedIndex = v.pca
+    pca.selectedIndex = (v.pca + 1) || 0
     pca.onchange = function() {
-      socket.emit('patchChange', {n: i, new: {pca: this.selectedIndex}})
+      socket.emit('patchChange',
+                  {n: i,
+                   new: this.selectedIndex ?
+                        {pca: this.selectedIndex - 1, led: led.value - 1} :
+                        {dimmer: led.valueAsNumber}})
       edited = true
       updateTitle()
     }
-    led.value = v.leds[0] + 1 //TODO multiple ?
+    led.value = pca.selectedIndex ? v.led + 1 : v.dimmer
     led.onchange = function() {
-      socket.emit('patchChange', {n: i, new: {leds: [this.value - 1]}})
+      socket.emit('patchChange',
+                  {n: i,
+                   new: pca.selectedIndex ?
+                        {led: this.value - 1} :
+                        {dimmer: this.valueAsNumber}})
       edited = true
       updateTitle()
     }
@@ -791,7 +807,7 @@ socket.on('patch', o => {
 })
 
 interact('.fader').draggable({ // TODO organize ? it's for orgue & DMX
-  onmove: e=>changeFader(e.currentTarget, - parseInt(e.dy)/2)
+  onmove: e=>changeFader(e.currentTarget, - parseInt(e.dy)/2) // TODO only .5 ?
 })
 .pointerEvents()
 .on('tap', e=>selectFader(e.currentTarget))
@@ -804,17 +820,16 @@ interact('#selAllFader')
 })
 
 socket.on('orgueState', s => {
-  faders.forEach((v,i,a)=>v.value = Math.ceil(100*s[i]/factor)/100)
+  faders.forEach((v,i,a) => v.value = s[i])
 })
 
 function changeFader(f, d) {
   if (!d || !f) return;
+  f.value = limit(f.value + d)
   if (f.classList.contains('DMX')) {
-    f.value = limit(f.value + d)
     socket.emit('DMX', {channel:f.num, val:f.value})
   } else {
-    f.value = Math.ceil(100*Math.round(factor*limit(f.value + d))/factor)/100
-    socket.emit('orgue', {led:f.num, val:f.value*factor})
+    socket.emit('orgue', {circuit:f.num, val:f.value})
   }
 }
 

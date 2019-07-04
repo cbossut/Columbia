@@ -36,6 +36,8 @@ cl.new = function() {
   this.soundPath = ''
   this.content = []
   this.orgue.init()
+//  this.orgue.autoPatch()
+  this.orgue.autoPatch(false, 32)
 }
 
 cl.save = function(path) {
@@ -48,8 +50,7 @@ cl.save = function(path) {
 
 cl.load = function(path) {
   let l = JSON.parse(fs.readFileSync(path))
-  this.orgue.init(l.patch)
-  //TODO crap first set for interface then reseted by pca.init(cb) 20ms after (timeout)
+  this.orgue.init()
   this.orgue.patch = l.patch
   this.content = l.cueList
   this.soundPath = l.soundPath
@@ -80,6 +81,7 @@ cl.updateCue = function(n) {
 }
 
 cl.applyCue = function(n) {
+  if ( n < 0 || n >= this.content.length ) return;
   this.orgue.state = this.content[n].state
 }
 
@@ -160,10 +162,15 @@ cl.go = function(n = 0, cb = null, offset = 0) {
   let downMs = downDiff == -1 ? 0 : this.content[n].downTime * 1000
     , upMs = upDiff == -1 ? 0 : this.content[n].upTime * 1000
 
+  /* TODO Temporarily replaced by orgue.freq and repetition filters in orgue and DMX.
+  Because vals now are 0-100 for 65536 in DMX 16 bits
+  Could it be useful anymore ? If not, remove diffs
   this.interMs = Math.max(
     this.orgue.minMsInter,
     Math.min(downMs/downDiff, upMs/upDiff)
     )
+    */
+  this.interMs = this.orgue.minMsInter
   this.downFrames = Math.round(downMs/this.interMs)
   this.upFrames = Math.round(upMs/this.interMs)
   this.frameCount = 0
@@ -196,7 +203,7 @@ cl.inter = function(cb) {
   if (ratioUp < 1) {
     loop = true
     this.upLeds.forEach(
-      v => res[v] = Math.round(this.from[v] + ratioUp * (this.to[v]-this.from[v]))
+      v => res[v] = this.from[v] + ratioUp * (this.to[v]-this.from[v])
     )
   } else {
     this.upLeds.forEach(v => res[v] = this.to[v])
@@ -204,7 +211,7 @@ cl.inter = function(cb) {
   if (ratioDown < 1) {
     loop = true
     this.downLeds.forEach(
-      v => res[v] = Math.round(this.from[v] + ratioDown * (this.to[v]-this.from[v]))
+      v => res[v] = this.from[v] + ratioDown * (this.to[v]-this.from[v])
     )
   } else {
     this.downLeds.forEach(v => res[v] = this.to[v])

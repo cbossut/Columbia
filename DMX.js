@@ -17,17 +17,27 @@ sur le site "http://www.cecill.info".
 // https://github.com/kim-toms/ultradmx-micro/blob/master/lib/ultradmx-micro.rb
 
 const SerialPort = require('serialport')
-    , DMX = new SerialPort('/dev/DMX', {baudRate:115200})
     , packetStart = [0x7E, 6]
     , packetEnd = 0xE7
 //    , minSize = 24 // min DMX frame size
     , minSize = 64 // min size for lame 16bit DMX decoder
+    , fs = require('fs')
+
 let twoChannelMode = false
+  , lastVals = []
+  , DMX = null
+
+if ( fs.existsSync('/dev/DMX')) {
+  DMX = new SerialPort('/dev/DMX', {baudRate:115200})
+} else {
+  console.log('No DMX found ! Print instead')
+}
 
 module.exports.write = function(data, start = 0) {
 
   let vals = []
 
+  // Format data
   for ( let i = 0 ; i < data.length ; i++ ) {
     let v = data[i]
 
@@ -43,19 +53,27 @@ module.exports.write = function(data, start = 0) {
     }
   }
 
+  // Repetition filter
+  if ( vals.every((v,i,a) => v == lastVals[i]) ) return;
+  lastVals = vals
+
+  // Offset DMX address
   if ( start > 0 ) {
     vals = Array(twoChannelMode ? start*2 : start).fill(0).concat(vals)
   }
 
-  if ( data.length < minSize ) {
-    vals.push(...Array(minSize - data.length).fill(0))
+  // Fill min frame size
+  if ( vals.length < minSize ) {
+    vals.push(...Array(minSize - vals.length).fill(0))
   }
 
+  // Format and write
   let packetLength = [(vals.length + 1) & 0xFF, (vals.length >> 8) & 0xFF]
-  DMX.write(packetStart.concat(packetLength, 0, vals, packetEnd))
+  if ( DMX ) DMX.write(packetStart.concat(packetLength, 0, vals, packetEnd))
+  else for ( v in vals ) if ( vals[v] ) console.log('DMX :', v, vals[v])
 }
 
-module.exports.close = function() {DMX.close()}
+module.exports.close = function() {DMX ? DMX.close() : null}
 
 module.exports.set16bits = function() {twoChannelMode = true}
 
