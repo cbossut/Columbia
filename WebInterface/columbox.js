@@ -52,10 +52,19 @@ function load(model) {
 function addLine(model, n, toModel = true) {
   let cblDiv = newDiv('CBL') // ColumBoxLine
     , chsDiv = newDiv('CHS') // CblHeadingSection
+    , channelEdit = document.createElement('input')
     , plusBtn = plusBtnProto.cloneNode(true)
     , plusBoxBtn = plusBtnProto.cloneNode(true)
     , rmBtn = rmBtnProto.cloneNode(true)
     , boxesDiv = newDiv('boxes')
+
+  channelEdit.setAttribute('type', 'number')
+  channelEdit.classList.add('channel')
+  channelEdit.valueAsNumber = model.channels[0]
+  channelEdit.onchange = () => {
+    model.channels[0] = channelEdit.valueAsNumber
+  }
+  chsDiv.appendChild(channelEdit)
 
   plusBtn.style.left = '0'
   plusBtn.onclick = () => {
