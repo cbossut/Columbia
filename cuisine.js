@@ -11,19 +11,6 @@ de la licence CeCILL telle que diffusée par le CEA, le CNRS et l'INRIA
 sur le site "http://www.cecill.info".
 */
 
-/* PATCH cuisine
-1:niche
-2:cuisine
-3:plafond centre
-4:plafond pano
-5:table in
-6:presse
-7:table out
-8:piou
-9:plafond loge
-10:diapo
-*/
-
 process.chdir(__dirname)
 
 const fs = require('fs')
