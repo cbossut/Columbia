@@ -23,9 +23,11 @@ let cbs = []
 
 module.exports.read = function(t) {
   let res = []
-  for (let ch of cbs) {
-    for (let c of ch.channels) {
-      res[c - 1] = scenario(t, ch.scenario)
+  for ( let ch of cbs ) {
+    if ( !ch.scenario.length ) continue;
+    let val = scenario(t, ch.scenario)
+    for ( let c of ch.channels ) {
+      res[c - 1] = val
     }
   }
   return res
