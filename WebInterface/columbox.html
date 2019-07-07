@@ -16,6 +16,7 @@ sur le site "http://www.cecill.info".
 <html lang="fr">
 <head>
   <meta charset="utf-8">
+  <script src="./socket.io.dev.js"></script>
   <script src="./interact.js"></script>
   <link rel="stylesheet" type="text/css" href="./columbox.css">
 </head>
@@ -24,10 +25,14 @@ sur le site "http://www.cecill.info".
   <h1 id="titre">ColumBox Editor</h1>
 
   <div id="main">
+    <button id="playBtn">Play</button>
+    <button id="saveBtn">Save</button>
+
     <span class="timeText" id="soundDur">0:00.000</span>
     (<span id="soundDurSeconds">0</span>secondes)
     <span class="timeText" id="TVmin">0:00.000</span>
     <span class="timeText" id="TVmax">0:00.000</span>
+    <span class="timeText" id="curTime">0:00.000</span>
     <div class="plusBtn">+</div>
     <div id="CBlines">
       <!-- Has to contain nothing -->

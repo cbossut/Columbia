@@ -11,6 +11,9 @@ de la licence CeCILL telle que diffusée par le CEA, le CNRS et l'INRIA
 sur le site "http://www.cecill.info".
 */
 
+let socket = io() // TODO should be in an index.html that uses this 'module'
+socket.emit('fn', 'test', 'lala')
+
 const soundDur = 140
 
 const funcs = {
@@ -30,6 +33,8 @@ const CBlinesDiv = document.getElementById('CBlines')
     , plusBtnProto = firstPlusBtn.cloneNode(true)
     , editPanelRmBtn = document.querySelector('.removeBtn')
     , rmBtnProto = editPanelRmBtn.cloneNode(true)
+    , playBtn = document.getElementById('playBtn')
+    , curTime = document.getElementById('curTime')
 
 firstPlusBtn.style.position = 'initial'
 firstPlusBtn.style.display = 'block'
@@ -38,16 +43,34 @@ firstPlusBtn.onclick = () => {
 }
 editPanelRmBtn.onclick = rmSelBox
 
+playBtn.onclick = () => {
+  socket.emit('fn', playBtn.textContent.toLowerCase(), CBlines)
+}
+socket.on('playTime', t => {
+  curTime.textContent = formatTime(t)
+  playBtn.textContent = 'Stop'
+})
+socket.on('stopped', () => {
+  curTime.textContent = formatTime(0)
+  playBtn.textContent = 'Play'
+})
+document.getElementById('saveBtn').onclick = () => {
+  socket.emit('fn', 'save', CBlines)
+}
+
 const defaultLine = {channels: [0], scenario: []}
     , defaultBox = {d: 5, func: 'const', args: [10]}
-    , CBlines = []
 
-let boxViewModels = []
+let CBlines = []
+  , boxViewModels = []
 
 function load(model) {
-  CBlines = []
+  CBlines = model
+  boxViewModels = []
+  CBlinesDiv.innerHTML = ''
   model.map((cbl, i) => addLine(cbl, i, false))
 }
+socket.on('model', load)
 
 function addLine(model, n, toModel = true) {
   let cblDiv = newDiv('CBL') // ColumBoxLine
@@ -102,7 +125,7 @@ function addLine(model, n, toModel = true) {
     for (let i = n + 1 ; i < col.length ; i++ ) col.item(i).lineIndex++
   }
 
-  model.scenario.map((box, j) => addBox(box, cbl.lineIndex, j, false))
+  model.scenario.map((box, j) => addBox(box, n, j, false))
 }
 
 function rmLine(lineDiv) {
@@ -333,6 +356,17 @@ function populate(selector, opts) {
       el.appendChild(o)
     })
   })
+}
+
+function formatTime(t, tab = false) {
+  let tt = [
+    Math.floor(t/60000),
+    ':',
+    ('0'+Math.floor((t%60000)/1000)).slice(-2),
+    '.',
+    ('00'+Math.round(t%1000)).slice(-3)
+  ]
+  return tab ? tt : tt.join('')
 }
 
 function transformFromEvent(e) {
