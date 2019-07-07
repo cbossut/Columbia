@@ -48,7 +48,7 @@ const staticroute = require('static-route')
     , cuisinePath = './cuisine.json'
     , signPath = './cuisineSign.json'
     , miseFPS = 40
-    , cuisine = require('./cuisine.js')
+    , cuisine = require('./columboxReader.js')
     , isCuisine = fs.existsSync(cuisinePath)
 if ( !fs.existsSync(savePath) ) fs.mkdirSync(savePath)
 if ( !fs.existsSync(soundPath) ) fs.mkdirSync(soundPath)

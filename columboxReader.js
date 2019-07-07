@@ -11,10 +11,7 @@ de la licence CeCILL telle que diffusée par le CEA, le CNRS et l'INRIA
 sur le site "http://www.cecill.info".
 */
 
-process.chdir(__dirname)
-
-const fs = require('fs')
-    , funcs =
+const funcs =
       {
         const: (p, val) => val
       , line: (p, start, end) => start + p*(end - start) // p = 0-1 => start -> end
@@ -22,24 +19,23 @@ const fs = require('fs')
       , loop: function(p, s) {return scenario(p*this.d, s)} // p = 0-1 => 0-d scenario content
       }
 
-let chs
-if ( fs.existsSync('./cuisine.json') )
-  chs = JSON.parse(fs.readFileSync('./cuisine.json')) // TODO shouldn't load by default, nor hardCode path, see load
-else chs = []
+let cbs = []
 
-module.exports.update = function(t) {
+module.exports.read = function(t) {
   let res = []
-  for (let ch of chs) {
+  for (let ch of cbs) {
     for (let c of ch.channels) {
-      res[c - 1] = Math.round(scenario(t, ch.scenario)*2.55) // TODO same as mise DMX
+      res[c - 1] = scenario(t, ch.scenario)
     }
   }
   return res
 }
 
-module.exports.load = function(path) {
-  chs = JSON.parse(fs.readFileSync(path))
+module.exports.setModel = function(model) {
+  cbs = model
 }
+
+module.exports.getModel = () => cbs
 
 function scenario(t, s) { // t in second
   let i = 0
