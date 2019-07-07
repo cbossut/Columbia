@@ -36,6 +36,10 @@ const CBlinesDiv = document.getElementById('CBlines')
     , playBtn = document.getElementById('playBtn')
     , curTime = document.getElementById('curTime')
 
+document.getElementById('quit').onclick = () => {
+  socket.emit('fn', 'quit')
+}
+
 firstPlusBtn.style.position = 'initial'
 firstPlusBtn.style.display = 'block'
 firstPlusBtn.onclick = () => {

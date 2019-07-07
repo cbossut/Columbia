@@ -44,6 +44,7 @@ expose.play = model => {
 }
 expose.stop = stop
 expose.test = arg => console.log('yay', arg)
+expose.quit = () => require('child_process').exec('sudo halt')
 io.on('connection', s => {
   sock = s
 
