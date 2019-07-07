@@ -34,6 +34,10 @@ if ( fs.existsSync('/dev/DMX')) {
 }
 
 module.exports.write = function(data, start = 0) {
+  if ( !DMX ) {
+    console.log('DMX packet : ', data.join(' '))
+    return;
+  }
 
   let vals = []
 
@@ -69,8 +73,7 @@ module.exports.write = function(data, start = 0) {
 
   // Format and write
   let packetLength = [(vals.length + 1) & 0xFF, (vals.length >> 8) & 0xFF]
-  if ( DMX ) DMX.write(packetStart.concat(packetLength, 0, vals, packetEnd))
-  else for ( v in vals ) if ( vals[v] ) console.log('DMX :', v, vals[v])
+  DMX.write(packetStart.concat(packetLength, 0, vals, packetEnd))
 }
 
 module.exports.close = function() {DMX ? DMX.close() : null}
