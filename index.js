@@ -20,10 +20,10 @@ const saveModule = require('./save.js')
     , DMX = require('./DMX.js') // TODO should use orgue, or separate patch module
 
 let cbLines = saveModule.load(saveModule.savePath) || [] // columbox Model
-  , nextTime = -1
-  , initialTime = -1
-  , playTimeout = null
-  , sock = null
+  , nextTime = -1 // time in MS from the start of the partition
+  , initialTime = -1 // date in MS when the play started
+  , playTimeout = null // Timeout that loops the reading
+  , sock = null // socket to client
 
 // prepare DMX
 DMX.set16bits()
@@ -48,16 +48,21 @@ function play(model = cbLines, t = 0) {
   goCB()
 }
 
+// stop reading
 function stop() {
   webModule.emit('stopped')
 
   clearTimeout(playTimeout)
 }
 
+//TODO could timeout with interMS each time and read with the real time value instead of derive
+// read nextFrame and prepare timeout for the next one
 function goCB() {
   webModule.emit('playTime', nextTime)
 
   DMX.write(CB.read(nextTime / 1000).map(v => Math.round(v * 655.35)))
+
+  // Calc diff between expected time and real time
   let derive = new Date().getTime() - initialTime - nextTime
   nextTime += interMS
   playTimeout = setTimeout(goCB, interMS - derive)

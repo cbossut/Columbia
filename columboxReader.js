@@ -21,7 +21,7 @@ const funcs =
 
 let cbs = []
 
-module.exports.read = function(t) {
+module.exports.read = function(t) { // t in second
   let res = []
   for ( let ch of cbs ) {
     if ( !ch.scenario.length ) continue;
