@@ -13,64 +13,49 @@ sur le site "http://www.cecill.info".
 
 process.chdir(__dirname) // Run in the module folder if started from elsewhere
 
-const fs = require('fs')
-    , savePath = './data/columbox.json' // TODO should be done by save module
-    , staticroute = require('static-route')
-    , app = require('http').createServer(staticroute({
-        dir:"./WebInterface",
-        autoindex:true,
-        tryfiles:["columbox.html"],
-        logger: function () {console.error(arguments)}
-      }))
-    , io = require('socket.io')(app) // TODO should be done by interface module
-    , expose = {}
+const saveModule = require('./save.js')
+    , webModule = require('./webGUI.js')
     , CB = require('./columboxReader.js')
     , interMS = 1000/44 // DMX
     , DMX = require('./DMX.js') // TODO should use orgue, or separate patch module
 
-let cbLines = []
+let cbLines = saveModule.load(saveModule.savePath) || [] // columbox Model
   , nextTime = -1
   , initialTime = -1
   , playTimeout = null
   , sock = null
 
-if ( fs.existsSync(savePath) ) cbLines = JSON.parse(fs.readFileSync(savePath))
-CB.setModel(cbLines)
+// prepare DMX
 DMX.set16bits()
 
-expose.play = model => {
-  CB.setModel(model)
-  play()
-}
-expose.stop = stop
-expose.test = arg => console.log('yay', arg)
-expose.quit = () => require('child_process').exec('sudo halt')
-io.on('connection', s => {
-  sock = s
+// functions exposed to the client
+webModule.expose(play)
+webModule.expose(stop)
+webModule.expose(quit)
+webModule.exposeModule(saveModule)
 
-  sock.emit('model', CB.getModel())
-
-  sock.on('fn', (name, ...args) => {
-    if ( !expose[name] ) console.error('No function exposed for ', name)
-    else expose[name](...args)
-  })
+// launch client listening and init messages
+webModule.init(() => {
+  webModule.emit('model', cbLines)
 })
-app.listen(8080)
 
-function play(t = 0) {
+
+// start reading at t in ms
+function play(model = cbLines, t = 0) {
+  CB.setModel(model)
   nextTime = t
   initialTime = new Date().getTime()
   goCB()
 }
 
 function stop() {
-  if ( sock ) sock.emit('stopped')
+  webModule.emit('stopped')
 
   clearTimeout(playTimeout)
 }
 
 function goCB() {
-  if ( sock ) sock.emit('playTime', nextTime)
+  webModule.emit('playTime', nextTime)
 
   DMX.write(CB.read(nextTime / 1000).map(v => Math.round(v * 655.35)))
   let derive = new Date().getTime() - initialTime - nextTime
@@ -78,6 +63,6 @@ function goCB() {
   playTimeout = setTimeout(goCB, interMS - derive)
 }
 
-////////////////////////////// SAVE MODULE
-
-expose.save = model => fs.writeFileSync(savePath, JSON.stringify(model, null, 2))
+function quit() {
+  require('child_process').exec('sudo halt')
+}
