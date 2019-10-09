@@ -31,6 +31,7 @@ loadsound 124 kill -9 fail, no process
 
 const staticroute = require('static-route')
     , fs = require('fs')
+    , spawn = require('child_process').spawn
     , app = require('http').createServer(staticroute({
         dir:"./WebInterface",
         autoindex:true,
@@ -149,6 +150,9 @@ if (config.starters.length) { // s'il y a des capteurs, maquette, startState, te
   }, 5*60*1000) // tempo 5min avant watch au cas où ça jumpe dans le début
 } else { // s'il n'y a pas de capteurs, cuisine, mise, ni temoin ni watch (au kazoo)
   // TODO cuisine s'éteint-elle toute seule si on remet watch et temoin ?
+  setTimeout(() => {
+    spawn('omxplayer', [this.soundPath, '--loop'])
+  }, 500)
   setTimeout(sendMise, 1000)
 
   gpioTemoin.writeSync(0)
